@@ -47,8 +47,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 accessibleProducts
             }
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro no login:', error);
-        return res.status(500).json({ error: 'Erro interno no servidor' });
+        return res.status(500).json({
+            error: 'Erro interno no servidor de login',
+            details: error?.message || 'Desconhecido'
+        });
     }
 }
