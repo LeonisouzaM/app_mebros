@@ -20,15 +20,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         console.log('Webhook Recebido da Hotmart:', JSON.stringify(payload, null, 2));
 
-        const eventType = payload?.event;
-        const status = payload?.status || payload?.data?.status;
+        const eventType = payload?.event?.toUpperCase();
+        const status = (payload?.status || payload?.data?.status)?.toUpperCase();
 
         const email = payload?.data?.buyer?.email || payload?.email;
         let name = payload?.data?.buyer?.name || payload?.name || email?.split('@')[0];
         const transactionId = payload?.data?.purchase?.transaction || payload?.transaction;
         const productIdHotmart = payload?.data?.product?.id || payload?.product_id;
 
-        if (eventType === 'PURCHASE_APPROVED' || status === 'APPROVED' || status === 'COMPLETED' || payload?.status === 'approved') {
+        const isApproved = eventType === 'PURCHASE_APPROVED' ||
+            eventType === 'COMPRA_APROVADA' ||
+            status === 'APPROVED' ||
+            status === 'COMPLETED';
+
+        if (isApproved) {
             if (!email) {
                 return res.status(400).json({ error: 'Email não fornecido no payload.' });
             }
@@ -61,6 +66,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             `;
 
             console.log(`Acesso liberado para: ${email}`);
+        } else {
+            console.log(`Ignorando evento não-compra ou não-aprovado: eventType=${eventType}, status=${status}`);
         }
 
         return res.status(200).json({ message: 'Webhook processado com sucesso!!' });
