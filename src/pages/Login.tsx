@@ -6,8 +6,10 @@ import { LogIn, Download } from 'lucide-react';
 export default function Login() {
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const login = useStore((state) => state.login);
+    const setCurrentUser = useStore((state) => state.setCurrentUser);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,20 +39,52 @@ export default function Login() {
         }
     };
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
         if (!email) {
             setError('Por favor, digite seu e-mail.');
+            setIsLoading(false);
             return;
         }
 
-        const success = login(email);
-        if (!success) {
-            setError('E-mail não autorizado ou não encontrado na lista.');
-        } else {
-            navigate('/');
+        // Check local users first (like Admin)
+        if (email === 'admin@admin.com' || email === 'aluno@teste.com') {
+            const success = login(email);
+            if (success) navigate('/');
+            setIsLoading(false);
+            return;
+        }
+
+        try {
+            // Check Database (Vercel API)
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.user) {
+                setCurrentUser(data.user);
+                navigate('/');
+            } else {
+                setError(data.error || 'E-mail não autorizado ou não encontrado na lista.');
+            }
+        } catch (err) {
+            console.error('Erro de conexão ao BD:', err);
+            // Fallback for local testing if API isn't present
+            const success = login(email);
+            if (!success) {
+                setError('E-mail não autorizado ou sistema temporariamente indisponível.');
+            } else {
+                navigate('/');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -105,9 +139,10 @@ export default function Login() {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-md shadow-blue-500/30"
+                            disabled={isLoading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-md shadow-blue-500/30 disabled:opacity-50"
                         >
-                            Entrar na Área de Membros
+                            {isLoading ? 'Checando...' : 'Entrar na Área de Membros'}
                         </button>
                     </div>
                 </form>

@@ -26,6 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const email = payload?.data?.buyer?.email || payload?.email;
         let name = payload?.data?.buyer?.name || payload?.name || email?.split('@')[0];
         const transactionId = payload?.data?.purchase?.transaction || payload?.transaction;
+        const productIdHotmart = payload?.data?.product?.id || payload?.product_id;
 
         if (eventType === 'PURCHASE_APPROVED' || status === 'APPROVED' || status === 'COMPLETED' || payload?.status === 'approved') {
             if (!email) {
@@ -49,8 +50,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log(`Aluno já existe via Webhook: ${email}`);
             }
 
-            // Mapeando para o id default do projeto (Adestrador)
-            const systemProductId = 'default';
+            // Salva o ID do produto igual vem da Hotmart para facilitar o mapeamento futuro,
+            // Opcionalmente, pode salvar 'default' se você só tem 1 curso no painel hoje.
+            const systemProductId = productIdHotmart ? String(productIdHotmart) : 'default';
 
             await sql`
                 INSERT INTO product_access (user_id, product_id, transaction_id)
@@ -62,8 +64,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         return res.status(200).json({ message: 'Webhook processado com sucesso!!' });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Erro ao processar Webhook Hotmart:', error);
-        return res.status(500).json({ error: 'Erro interno no servidor webhook' });
+        return res.status(500).json({
+            error: 'Erro interno no servidor webhook',
+            details: error?.message || 'Desconhecido'
+        });
     }
 }

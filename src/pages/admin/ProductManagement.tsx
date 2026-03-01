@@ -18,6 +18,7 @@ export default function ProductManagement() {
     const [coverUrl, setCoverUrl] = useState('');
     const [language, setLanguage] = useState('pt');
     const [supportNumber, setSupportNumber] = useState('');
+    const [hotmartId, setHotmartId] = useState('');
     const [banners, setBanners] = useState<string[]>([]);
     const [success, setSuccess] = useState('');
 
@@ -26,10 +27,10 @@ export default function ProductManagement() {
         if (!name) return;
 
         if (isEditing) {
-            updateProduct(isEditing, { name, description, coverUrl, language, banners, supportNumber });
+            updateProduct(isEditing, { name, description, coverUrl, language, banners, supportNumber, hotmartId });
             setSuccess('Produto atualizado com sucesso!');
         } else {
-            addProduct({ name, description, coverUrl, language, banners, supportNumber });
+            addProduct({ name, description, coverUrl, language, banners, supportNumber, hotmartId });
             setSuccess('Novo produto criado!');
         }
 
@@ -44,6 +45,7 @@ export default function ProductManagement() {
         setCoverUrl(product.coverUrl || '');
         setLanguage(product.language || 'pt');
         setSupportNumber(product.supportNumber || '');
+        setHotmartId(product.hotmartId || '');
         setBanners(product.banners || []);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -55,6 +57,7 @@ export default function ProductManagement() {
         setCoverUrl('');
         setLanguage('pt');
         setSupportNumber('');
+        setHotmartId('');
         setBanners([]);
     };
 
@@ -172,6 +175,17 @@ export default function ProductManagement() {
                             placeholder="Ex: 5511999999999"
                         />
                         <p className="text-xs text-text-muted mt-1">Coloque apenas números, com código do país e DDD (Ex: 55 para Brasil). Aparecerá um botão de WhatsApp para o aluno.</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">ID do Produto na Hotmart (Para Webhook)</label>
+                        <input
+                            type="text"
+                            value={hotmartId}
+                            onChange={(e) => setHotmartId(e.target.value)}
+                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
+                            placeholder="Ex: 16025479281"
+                        />
+                        <p className="text-xs text-text-muted mt-1">Isso liga este painel diretamente com a compra feita lá na Hotmart. Preencha com o número que está no histórico de webhooks.</p>
                     </div>
 
                     {isEditing && (

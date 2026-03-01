@@ -9,6 +9,7 @@ export interface User {
     role: Role;
     name: string;
     photo?: string;
+    accessibleProducts?: string[];
 }
 
 export interface Product {
@@ -18,6 +19,7 @@ export interface Product {
     coverUrl?: string;
     language?: string;
     supportNumber?: string;
+    hotmartId?: string;
     banners?: string[];
     createdAt: string;
 }
@@ -63,6 +65,7 @@ interface AppState {
 
     // Actions
     login: (email: string) => boolean;
+    setCurrentUser: (user: User) => void;
     logout: () => void;
     addUser: (email: string) => void;
 
@@ -104,6 +107,7 @@ export const useStore = create<AppState>()(
                 }
                 return false;
             },
+            setCurrentUser: (user: User) => set({ currentUser: user }),
             logout: () => set({ currentUser: null }),
             addUser: (email: string) =>
                 set((state) => ({

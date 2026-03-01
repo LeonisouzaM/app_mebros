@@ -18,11 +18,23 @@ export default function Home() {
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
     const [searchParams] = useSearchParams();
 
+    // Filter globally allowed products for this user
+    const accessibleProductIds = user?.accessibleProducts || [];
+    const isMaster = user?.role === 'admin' || user?.email === 'aluno@teste.com';
+
+    const allowedProducts = products.filter(p => {
+        if (isMaster) return true;
+        // Default product fallback se for id 'default'
+        if (p.id === 'default' && accessibleProductIds.includes('default')) return true;
+        // Check regular hotmart access
+        return p.hotmartId && accessibleProductIds.includes(p.hotmartId);
+    });
+
     // Check if a specific product was requested via URL (e.g., ?p=123)
     const urlProductId = searchParams.get('p') || searchParams.get('product') || searchParams.get('produto');
     const visibleProducts = urlProductId
-        ? products.filter(p => p.id === urlProductId)
-        : products;
+        ? allowedProducts.filter(p => p.id === urlProductId)
+        : allowedProducts;
 
     useEffect(() => {
         if (!systemBanners || systemBanners.length <= 1) return;
@@ -99,7 +111,7 @@ export default function Home() {
 
             {visibleProducts.length === 0 ? (
                 <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
-                    <p className="text-text-muted">{t('noProducts')}</p>
+                    <p className="text-text-muted">Você ainda não tem acesso aos produtos ou nenhuma aula foi disponibilizada.</p>
                 </div>
             ) : (
                 <div className="space-y-8">

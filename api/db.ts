@@ -1,14 +1,17 @@
 import { neon } from '@neondatabase/serverless';
 
-if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is missing in environment variables');
-}
+export const sql = (strings: TemplateStringsArray, ...values: any[]) => {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is missing in Vercel environment variables');
+  }
+  const db = neon(process.env.DATABASE_URL);
+  return db(strings, ...values);
+};
 
-export const sql = neon(process.env.DATABASE_URL);
 
 // Function to initialize tables
 export async function initDb() {
-    await sql`
+  await sql`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       email VARCHAR(255) UNIQUE NOT NULL,
@@ -19,7 +22,7 @@ export async function initDb() {
     );
   `;
 
-    await sql`
+  await sql`
     CREATE TABLE IF NOT EXISTS product_access (
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       product_id VARCHAR(255) NOT NULL,
