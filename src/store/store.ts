@@ -506,7 +506,34 @@ export const useStore = create<AppState>()(
             addComment: async (item) => {
                 const tempId = `comm_${Date.now()}`;
                 const newItem = { ...item, id: tempId, createdAt: new Date().toISOString() };
-                set((state) => ({ comments: [newItem, ...state.comments] }));
+
+                if (item.parentId) {
+                    // É uma resposta — adicionar dentro do replies do comentário pai
+                    set((state) => ({
+                        comments: state.comments.map(c =>
+                            c.id === item.parentId
+                                ? { ...c, replies: [...(c.replies || []), newItem] }
+                                : c
+                        )
+                    }));
+                } else {
+                    // É um post novo — vai para o topo da lista
+                    set((state) => ({ comments: [newItem, ...state.comments] }));
+                }
+
+                const revert = () => {
+                    if (item.parentId) {
+                        set((state) => ({
+                            comments: state.comments.map(c =>
+                                c.id === item.parentId
+                                    ? { ...c, replies: (c.replies || []).filter(r => r.id !== tempId) }
+                                    : c
+                            )
+                        }));
+                    } else {
+                        set((state) => ({ comments: state.comments.filter(c => c.id !== tempId) }));
+                    }
+                };
 
                 try {
                     const res = await apiFetch(
@@ -516,11 +543,11 @@ export const useStore = create<AppState>()(
                         () => set({ currentUser: null, authToken: null })
                     );
                     if (!res.ok) {
-                        set((state) => ({ comments: state.comments.filter(c => c.id !== tempId) }));
+                        revert();
                         showToast('Erro ao enviar comentário.', 'error');
                     }
                 } catch (err) {
-                    set((state) => ({ comments: state.comments.filter(c => c.id !== tempId) }));
+                    revert();
                     console.error('Erro ao salvar comentário:', err);
                     showToast('Erro de rede ao enviar comentário.', 'error');
                 }
