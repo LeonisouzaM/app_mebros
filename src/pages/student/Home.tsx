@@ -17,10 +17,10 @@ export default function Home() {
     const systemBanners = useStore((state) => state.systemBanners);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
     const [searchParams] = useSearchParams();
-    const fetchProducts = useStore((state) => state.fetchProducts);
+    const fetchInitialData = useStore((state) => state.fetchInitialData);
 
     useEffect(() => {
-        fetchProducts();
+        fetchInitialData();
     }, []);
 
     // Filter globally allowed products for this user

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { Package, Plus, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
@@ -11,6 +11,11 @@ export default function ProductManagement() {
     const removeProduct = useStore((state) => state.removeProduct);
     const systemBanners = useStore((state) => state.systemBanners);
     const updateSystemBanners = useStore((state) => state.updateSystemBanners);
+    const fetchProducts = useStore((state) => state.fetchProducts);
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [name, setName] = useState('');

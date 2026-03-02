@@ -10,6 +10,7 @@ export default function Login() {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const login = useStore((state) => state.login);
     const setCurrentUser = useStore((state) => state.setCurrentUser);
+    const fetchInitialData = useStore((state) => state.fetchInitialData);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -70,6 +71,7 @@ export default function Login() {
 
             if (res.ok && data.user) {
                 setCurrentUser(data.user);
+                await fetchInitialData();
                 navigate('/');
             } else {
                 setError(data.error || 'E-mail não autorizado ou não encontrado na lista.');

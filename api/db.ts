@@ -37,6 +37,28 @@ export async function initDb() {
   `;
 
   await sql`
+    CREATE TABLE IF NOT EXISTS classes (
+      id VARCHAR(255) PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      cloudinary_url TEXT NOT NULL,
+      cover_url TEXT,
+      description TEXT,
+      button_text VARCHAR(255),
+      product_id VARCHAR(255) REFERENCES products(id) ON DELETE CASCADE,
+      unlock_date TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS system_banners (
+      id SERIAL PRIMARY KEY,
+      url TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
     CREATE TABLE IF NOT EXISTS product_access (
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       product_id VARCHAR(255) NOT NULL,

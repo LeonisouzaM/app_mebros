@@ -64,7 +64,10 @@ interface AppState {
     systemBanners: string[];
 
     // Actions
+    fetchInitialData: () => Promise<void>;
     fetchProducts: () => Promise<void>;
+    fetchClasses: () => Promise<void>;
+    fetchBanners: () => Promise<void>;
     login: (email: string) => boolean;
     setCurrentUser: (user: User) => void;
     logout: () => void;
@@ -123,17 +126,62 @@ export const useStore = create<AppState>()(
                         },
                     ],
                 })),
-            updateSystemBanners: (banners) => set({ systemBanners: banners }),
+            updateSystemBanners: async (banners) => {
+                set({ systemBanners: banners });
+                try {
+                    await fetch('/api/banners', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ banners })
+                    });
+                } catch (err) {
+                    console.error('Erro ao salvar banners:', err);
+                }
+            },
+
+            fetchInitialData: async () => {
+                await Promise.all([
+                    get().fetchProducts(),
+                    get().fetchClasses(),
+                    get().fetchBanners()
+                ]);
+            },
 
             fetchProducts: async () => {
                 try {
                     const res = await fetch('/api/products');
                     if (res.ok) {
                         const data = await res.json();
-                        set({ products: data });
+                        if (data && data.length > 0) {
+                            set({ products: data });
+                        }
                     }
                 } catch (err) {
                     console.error('Erro ao buscar produtos do banco:', err);
+                }
+            },
+
+            fetchClasses: async () => {
+                try {
+                    const res = await fetch('/api/classes');
+                    if (res.ok) {
+                        const data = await res.json();
+                        set({ classes: data });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar aulas do banco:', err);
+                }
+            },
+
+            fetchBanners: async () => {
+                try {
+                    const res = await fetch('/api/banners');
+                    if (res.ok) {
+                        const data = await res.json();
+                        set({ systemBanners: data });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar banners do banco:', err);
                 }
             },
 
@@ -188,21 +236,52 @@ export const useStore = create<AppState>()(
                 }
             },
             setCurrentProductId: (id) => set({ currentProductId: id }),
-            addClass: (item) =>
-                set((state) => ({
-                    classes: [
-                        { ...item, id: Date.now().toString(), createdAt: new Date().toISOString() },
-                        ...state.classes,
-                    ],
-                })),
-            updateClass: (id, updatedItem) =>
+            addClass: async (item) => {
+                const tempId = `class_${Date.now()}`;
+                const newItem = { ...item, id: tempId, createdAt: new Date().toISOString() };
+                set((state) => ({ classes: [...state.classes, newItem] }));
+
+                try {
+                    await fetch('/api/classes', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newItem)
+                    });
+                } catch (err) {
+                    console.error('Erro ao salvar aula:', err);
+                }
+            },
+
+            updateClass: async (id, updatedItem) => {
                 set((state) => ({
                     classes: state.classes.map((c) => (c.id === id ? { ...c, ...updatedItem } : c)),
-                })),
-            removeClass: (id: string) =>
+                }));
+
+                const fullClass = get().classes.find(c => c.id === id);
+                if (fullClass) {
+                    try {
+                        await fetch('/api/classes', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(fullClass)
+                        });
+                    } catch (err) {
+                        console.error('Erro ao atualizar aula:', err);
+                    }
+                }
+            },
+
+            removeClass: async (id) => {
                 set((state) => ({
                     classes: state.classes.filter((c) => c.id !== id),
-                })),
+                }));
+
+                try {
+                    await fetch(`/api/classes?id=${id}`, { method: 'DELETE' });
+                } catch (err) {
+                    console.error('Erro ao deletar aula:', err);
+                }
+            },
             addFeedPost: (item) =>
                 set((state) => ({
                     feedPosts: [

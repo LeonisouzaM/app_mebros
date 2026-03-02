@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { UploadCloud, CheckCircle2, FileUp, Loader2 } from 'lucide-react';
 
@@ -8,6 +8,11 @@ export default function ContentUpload() {
     const removeClass = useStore((state) => state.removeClass);
     const classes = useStore((state) => state.classes);
     const products = useStore((state) => state.products);
+    const fetchInitialData = useStore((state) => state.fetchInitialData);
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [title, setTitle] = useState('');
     const [url, setUrl] = useState('');
