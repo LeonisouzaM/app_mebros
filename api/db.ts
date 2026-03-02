@@ -65,9 +65,22 @@ export async function initDb() {
       id SERIAL PRIMARY KEY,
       user_name VARCHAR(255) NOT NULL,
       user_photo TEXT,
+      user_email VARCHAR(255),
       text TEXT NOT NULL,
+      image_url TEXT,
       product_id VARCHAR(255) REFERENCES products(id) ON DELETE CASCADE,
+      parent_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
+      likes_count INTEGER DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS comment_likes (
+      id SERIAL PRIMARY KEY,
+      comment_id INTEGER REFERENCES comments(id) ON DELETE CASCADE,
+      user_email VARCHAR(255) NOT NULL,
+      UNIQUE(comment_id, user_email)
     );
   `;
 

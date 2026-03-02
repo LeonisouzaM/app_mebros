@@ -48,9 +48,15 @@ export interface Comment {
     id: string;
     userName: string;
     userPhoto: string;
+    userEmail?: string;
     text: string;
+    imageUrl?: string;
     productId?: string;
+    parentId?: string;
+    likesCount?: number;
+    hasLiked?: boolean;
     createdAt: string;
+    replies?: any[];
 }
 
 interface AppState {
@@ -88,6 +94,7 @@ interface AppState {
     removeFeedPost: (id: string) => void;
     addComment: (item: Omit<Comment, 'id' | 'createdAt'>) => void;
     removeComment: (id: string) => void;
+    likeComment: (commentId: string, userEmail: string) => Promise<void>;
 }
 
 export const useStore = create<AppState>()(
@@ -301,8 +308,12 @@ export const useStore = create<AppState>()(
             },
 
             fetchComments: async (productId) => {
+                const user = get().currentUser;
                 try {
-                    const url = productId ? `/api/community?productId=${productId}` : '/api/community';
+                    let url = productId ? `/api/community?productId=${productId}` : '/api/community';
+                    if (user?.email) {
+                        url += (url.includes('?') ? '&' : '?') + `email=${user.email}`;
+                    }
                     const res = await fetch(url);
                     if (res.ok) {
                         const data = await res.json();
@@ -363,6 +374,34 @@ export const useStore = create<AppState>()(
                     await fetch(`/api/community?id=${id}`, { method: 'DELETE' });
                 } catch (err) {
                     console.error('Erro ao remover comentário:', err);
+                }
+            },
+
+            likeComment: async (commentId, userEmail) => {
+                // Optimistic update
+                set((state) => ({
+                    comments: state.comments.map(c => {
+                        if (c.id === commentId) {
+                            const newHasLiked = !c.hasLiked;
+                            return {
+                                ...c,
+                                hasLiked: newHasLiked,
+                                likesCount: (c.likesCount || 0) + (newHasLiked ? 1 : -1)
+                            };
+                        }
+                        return c;
+                    })
+                }));
+
+                try {
+                    await fetch('/api/community?action=like', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ commentId, userEmail })
+                    });
+                } catch (err) {
+                    console.error('Erro ao dar like:', err);
+                    // Revert on error could be added here
                 }
             },
         }),
