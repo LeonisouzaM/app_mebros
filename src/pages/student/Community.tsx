@@ -11,13 +11,26 @@ export default function Community() {
     const currentProductId = useStore((state) => state.currentProductId);
     const fetchComments = useStore((state) => state.fetchComments);
     const addComment = useStore((state) => state.addComment);
+    const fetchInitialData = useStore((state) => state.fetchInitialData);
     const comments = useStore((state) => state.comments);
     const user = useStore((state) => state.currentUser);
     const products = useStore((state) => state.products);
     const setCurrentProductId = useStore((state) => state.setCurrentProductId);
 
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.email === 'admin@admin.com';
     const [newComment, setNewComment] = useState('');
+
+    console.log('DEBUG COMMUNITY:', {
+        userEmail: user?.email,
+        userRole: user?.role,
+        isAdmin,
+        currentProductId,
+        productsCount: products.length
+    });
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
 
     useEffect(() => {
         if (currentProductId) {
