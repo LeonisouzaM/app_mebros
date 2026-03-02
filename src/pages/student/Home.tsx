@@ -28,8 +28,8 @@ export default function Home() {
     const isMaster = user?.role === 'admin' || user?.email === 'aluno@teste.com';
 
     console.log('DEBUG - Usuário:', user?.email);
-    console.log('DEBUG - IDs da Hotmart liberados:', accessibleProductIds);
-    console.log('DEBUG - Produtos no Sistema:', products.map(p => ({ id: p.id, hotmartId: p.hotmartId })));
+    console.log('DEBUG - IDs da Hotmart liberados p/ este aluno:', JSON.stringify(accessibleProductIds));
+    console.log('DEBUG - IDs de Hotmart cadastrados nos Produtos:', JSON.stringify(products.map(p => p.hotmartId)));
 
     const allowedProducts = products.filter(p => {
         if (isMaster) return true;

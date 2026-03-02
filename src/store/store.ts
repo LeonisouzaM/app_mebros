@@ -152,9 +152,7 @@ export const useStore = create<AppState>()(
                     const res = await fetch('/api/products');
                     if (res.ok) {
                         const data = await res.json();
-                        if (data && data.length > 0) {
-                            set({ products: data });
-                        }
+                        set({ products: data || [] });
                     }
                 } catch (err) {
                     console.error('Erro ao buscar produtos do banco:', err);
