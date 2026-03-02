@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useStore } from '../../store/store';
-import { MessageCircle, Clock, Send } from 'lucide-react';
+import { MessageCircle, Clock, Send, Smile } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
+import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
 
 export default function Community() {
     const { t, language } = useTranslation();
@@ -21,6 +22,12 @@ export default function Community() {
     const isAdmin = user?.role === 'admin' || (user?.email && adminEmails.includes(user.email));
     const [newComment, setNewComment] = useState('');
     const [targetProductId, setTargetProductId] = useState<string>('');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+    const onEmojiClick = (emojiData: EmojiClickData) => {
+        setNewComment(prev => prev + emojiData.emoji);
+        setShowEmojiPicker(false);
+    };
 
     // Update targetProductId when currentProductId changes (for ease of use)
     useEffect(() => {
@@ -149,7 +156,35 @@ export default function Community() {
                                     className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-none text-sm"
                                     rows={3}
                                 />
-                                <div className="flex justify-end">
+                                <div className="flex justify-between items-center relative">
+                                    <div className="relative">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                                            className="p-2 text-gray-400 hover:text-primary transition-colors flex items-center justify-center rounded-lg hover:bg-surface-100"
+                                            title="Inserir emoji"
+                                        >
+                                            <Smile className="w-5 h-5" />
+                                        </button>
+
+                                        {showEmojiPicker && (
+                                            <div className="absolute bottom-full left-0 mb-2 z-50">
+                                                <div className="fixed inset-0" onClick={() => setShowEmojiPicker(false)} />
+                                                <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-surface-200">
+                                                    <EmojiPicker
+                                                        onEmojiClick={onEmojiClick}
+                                                        theme={Theme.LIGHT}
+                                                        lazyLoadEmojis={true}
+                                                        searchPlaceholder="Buscar emoji..."
+                                                        previewConfig={{ showPreview: false }}
+                                                        width={320}
+                                                        height={400}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <button
                                         type="submit"
                                         disabled={!newComment.trim()}

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { Rss, Send, Trash2, Calendar } from 'lucide-react';
+import { Rss, Send, Trash2, Calendar, Smile } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
 
 export default function FeedManagement() {
     const addFeedPost = useStore((state) => state.addFeedPost);
@@ -14,6 +15,18 @@ export default function FeedManagement() {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [productId, setProductId] = useState('');
+    const [showTitleEmojis, setShowTitleEmojis] = useState(false);
+    const [showDescEmojis, setShowDescEmojis] = useState(false);
+
+    const onTitleEmojiClick = (emojiData: EmojiClickData) => {
+        setTitle(prev => prev + emojiData.emoji);
+        setShowTitleEmojis(false);
+    };
+
+    const onDescEmojiClick = (emojiData: EmojiClickData) => {
+        setDescription(prev => prev + emojiData.emoji);
+        setShowDescEmojis(false);
+    };
 
     useEffect(() => {
         fetchFeed();
@@ -64,30 +77,68 @@ export default function FeedManagement() {
                         <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-1">
                             Título do Aviso
                         </label>
-                        <input
-                            id="title"
-                            type="text"
-                            required
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
-                            placeholder="Ex: Nova aula liberada!"
-                        />
+                        <div className="relative">
+                            <input
+                                id="title"
+                                type="text"
+                                required
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 pr-12"
+                                placeholder="Ex: Nova aula liberada!"
+                            />
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTitleEmojis(!showTitleEmojis)}
+                                    className="p-2 text-gray-400 hover:text-primary transition-colors hover:bg-surface-100 rounded-lg"
+                                >
+                                    <Smile className="w-5 h-5" />
+                                </button>
+                                {showTitleEmojis && (
+                                    <div className="absolute right-0 top-full mt-2 z-50">
+                                        <div className="fixed inset-0" onClick={() => setShowTitleEmojis(false)} />
+                                        <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-surface-200">
+                                            <EmojiPicker onEmojiClick={onTitleEmojiClick} theme={Theme.LIGHT} width={300} height={350} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div>
                         <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-1">
                             Conteúdo do Aviso
                         </label>
-                        <textarea
-                            id="description"
-                            rows={3}
-                            required
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-y"
-                            placeholder="Digite todos os detalhes da atualização..."
-                        />
+                        <div className="relative">
+                            <textarea
+                                id="description"
+                                rows={3}
+                                required
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-y"
+                                placeholder="Digite todos os detalhes da atualização..."
+                            />
+                            <div className="absolute right-2 bottom-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowDescEmojis(!showDescEmojis)}
+                                    className="p-2 text-gray-400 hover:text-primary transition-colors hover:bg-surface-100 rounded-lg"
+                                >
+                                    <Smile className="w-5 h-5" />
+                                </button>
+                                {showDescEmojis && (
+                                    <div className="absolute right-0 bottom-full mb-2 z-50">
+                                        <div className="fixed inset-0" onClick={() => setShowDescEmojis(false)} />
+                                        <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-surface-200">
+                                            <EmojiPicker onEmojiClick={onDescEmojiClick} theme={Theme.LIGHT} width={300} height={350} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex justify-end pt-2">

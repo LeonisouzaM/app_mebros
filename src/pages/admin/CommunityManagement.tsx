@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { MessageSquare, UserPlus, Trash2 } from 'lucide-react';
+import { MessageSquare, UserPlus, Trash2, Smile } from 'lucide-react';
+import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
 
 export default function CommunityManagement() {
     const addComment = useStore((state) => state.addComment);
@@ -14,6 +15,12 @@ export default function CommunityManagement() {
     const [userPhoto, setUserPhoto] = useState('');
     const [text, setText] = useState('');
     const [productId, setProductId] = useState('');
+    const [showEmojis, setShowEmojis] = useState(false);
+
+    const onEmojiClick = (emojiData: EmojiClickData) => {
+        setText(prev => prev + emojiData.emoji);
+        setShowEmojis(false);
+    };
 
     useEffect(() => {
         fetchInitialData();
@@ -110,15 +117,34 @@ export default function CommunityManagement() {
                         <label htmlFor="text" className="block text-sm font-semibold text-gray-700 mb-1">
                             Comentário
                         </label>
-                        <textarea
-                            id="text"
-                            rows={4}
-                            required
-                            value={text}
-                            onChange={(e) => setText(e.target.value)}
-                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-y"
-                            placeholder="O curso está incrível! Muito obrigado..."
-                        />
+                        <div className="relative">
+                            <textarea
+                                id="text"
+                                rows={4}
+                                required
+                                value={text}
+                                onChange={(e) => setText(e.target.value)}
+                                className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-y"
+                                placeholder="O curso está incrível! Muito obrigado..."
+                            />
+                            <div className="absolute right-2 bottom-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEmojis(!showEmojis)}
+                                    className="p-2 text-gray-400 hover:text-primary transition-colors hover:bg-surface-100 rounded-lg"
+                                >
+                                    <Smile className="w-5 h-5" />
+                                </button>
+                                {showEmojis && (
+                                    <div className="absolute right-0 bottom-full mb-2 z-50">
+                                        <div className="fixed inset-0" onClick={() => setShowEmojis(false)} />
+                                        <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-surface-200">
+                                            <EmojiPicker onEmojiClick={onEmojiClick} theme={Theme.LIGHT} width={300} height={350} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex justify-end pt-4">
