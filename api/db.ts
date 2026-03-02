@@ -23,6 +23,20 @@ export async function initDb() {
   `;
 
   await sql`
+    CREATE TABLE IF NOT EXISTS products (
+      id VARCHAR(255) PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      cover_url TEXT,
+      language VARCHAR(10) DEFAULT 'pt',
+      support_number VARCHAR(50),
+      hotmart_id VARCHAR(100),
+      banners TEXT[],
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
     CREATE TABLE IF NOT EXISTS product_access (
       user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
       product_id VARCHAR(255) NOT NULL,

@@ -17,17 +17,27 @@ export default function Home() {
     const systemBanners = useStore((state) => state.systemBanners);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
     const [searchParams] = useSearchParams();
+    const fetchProducts = useStore((state) => state.fetchProducts);
+
+    useEffect(() => {
+        fetchProducts();
+    }, []);
 
     // Filter globally allowed products for this user
     const accessibleProductIds = user?.accessibleProducts || [];
     const isMaster = user?.role === 'admin' || user?.email === 'aluno@teste.com';
 
+    console.log('DEBUG - Usuário:', user?.email);
+    console.log('DEBUG - IDs da Hotmart liberados:', accessibleProductIds);
+    console.log('DEBUG - Produtos no Sistema:', products.map(p => ({ id: p.id, hotmartId: p.hotmartId })));
+
     const allowedProducts = products.filter(p => {
         if (isMaster) return true;
         // Default product fallback se for id 'default'
         if (p.id === 'default' && accessibleProductIds.includes('default')) return true;
-        // Check regular hotmart access
-        return p.hotmartId && accessibleProductIds.includes(p.hotmartId);
+        // Check regular hotmart access (Convert everything to string for safety)
+        if (!p.hotmartId) return false;
+        return accessibleProductIds.some(id => String(id) === String(p.hotmartId));
     });
 
     // Check if a specific product was requested via URL (e.g., ?p=123)

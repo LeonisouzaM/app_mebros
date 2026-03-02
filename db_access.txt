@@ -1,0 +1,4 @@
+﻿=== USER ACCESS MAP ===
+Email: teste2@hotmail.com | Has Access To: default
+Email: testeComprador271101postman15@example.com | Has Access To: default
+Email: certificacionsuporte@proton.me | Has Access To: 7305069

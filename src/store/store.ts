@@ -64,6 +64,7 @@ interface AppState {
     systemBanners: string[];
 
     // Actions
+    fetchProducts: () => Promise<void>;
     login: (email: string) => boolean;
     setCurrentUser: (user: User) => void;
     logout: () => void;
@@ -122,25 +123,71 @@ export const useStore = create<AppState>()(
                         },
                     ],
                 })),
-            addProduct: (item) =>
-                set((state) => ({
-                    products: [
-                        ...state.products,
-                        { ...item, id: Date.now().toString(), createdAt: new Date().toISOString() },
-                    ],
-                })),
-            updateProduct: (id, updatedItem) =>
+            updateSystemBanners: (banners) => set({ systemBanners: banners }),
+
+            fetchProducts: async () => {
+                try {
+                    const res = await fetch('/api/products');
+                    if (res.ok) {
+                        const data = await res.json();
+                        set({ products: data });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar produtos do banco:', err);
+                }
+            },
+
+            addProduct: async (item) => {
+                const tempId = `prod_${Date.now()}`;
+                const newItem = { ...item, id: tempId, createdAt: new Date().toISOString() };
+
+                // Optimistic UI update
+                set((state) => ({ products: [...state.products, newItem] }));
+
+                try {
+                    await fetch('/api/products', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newItem)
+                    });
+                } catch (err) {
+                    console.error('Erro ao salvar produto no banco:', err);
+                }
+            },
+
+            updateProduct: async (id, updatedItem) => {
+                // Optimistic UI update
                 set((state) => ({
                     products: state.products.map((p) => (p.id === id ? { ...p, ...updatedItem } : p)),
-                })),
-            removeProduct: (id) =>
+                }));
+
+                const fullProduct = get().products.find(p => p.id === id);
+                if (fullProduct) {
+                    try {
+                        await fetch('/api/products', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(fullProduct)
+                        });
+                    } catch (err) {
+                        console.error('Erro ao atualizar produto no banco:', err);
+                    }
+                }
+            },
+
+            removeProduct: async (id) => {
                 set((state) => ({
                     products: state.products.filter((p) => p.id !== id),
-                    // If the removed product was the current one, reset it
                     currentProductId: state.currentProductId === id ? null : state.currentProductId,
-                })),
+                }));
+
+                try {
+                    await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+                } catch (err) {
+                    console.error('Erro ao deletar produto no banco:', err);
+                }
+            },
             setCurrentProductId: (id) => set({ currentProductId: id }),
-            updateSystemBanners: (banners) => set({ systemBanners: banners }),
             addClass: (item) =>
                 set((state) => ({
                     classes: [
