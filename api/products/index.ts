@@ -1,13 +1,17 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
+import { requireAuth, requireAdmin } from '../_lib/authMiddleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         await initDb();
 
         if (req.method === 'GET') {
+            // Qualquer usuário autenticado pode ver produtos
+            const auth = requireAuth(req, res);
+            if (!auth) return;
+
             const products = await sql`SELECT * FROM products ORDER BY created_at DESC`;
-            // Map DB underscored names to frontend camelCase
             const mappedProducts = products.map(p => ({
                 id: p.id,
                 name: p.name,
@@ -23,6 +27,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'POST') {
+            // Apenas admin pode criar/editar produtos
+            const auth = requireAdmin(req, res);
+            if (!auth) return;
+
             const { id, name, description, coverUrl, language, supportNumber, hotmartId, banners } = req.body;
 
             if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
@@ -46,6 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'DELETE') {
+            // Apenas admin pode deletar produtos
+            const auth = requireAdmin(req, res);
+            if (!auth) return;
+
             const { id } = req.query;
             if (!id) return res.status(400).json({ error: 'ID é obrigatório' });
             await sql`DELETE FROM products WHERE id = ${String(id)}`;

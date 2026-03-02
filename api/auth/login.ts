@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
+import { signToken } from '../_lib/authMiddleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
@@ -7,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
-        await initDb(); // Ensures table exists
+        await initDb();
 
         const { email } = req.body;
 
@@ -37,14 +38,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const accessibleProducts = accessResult.map(row => row.product_id);
 
+        // Generate signed JWT token
+        const token = signToken({
+            userId: user.id.toString(),
+            email: user.email,
+            role: user.role,
+        });
+
         return res.status(200).json({
+            token,
             user: {
                 id: user.id.toString(),
                 email: user.email,
                 name: user.name,
                 role: user.role,
                 photo: user.photo,
-                accessibleProducts
+                accessibleProducts,
             }
         });
     } catch (error: any) {

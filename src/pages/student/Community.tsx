@@ -315,7 +315,7 @@ export default function Community() {
                                     <div className="px-6 py-4">
                                         <div className="flex items-center gap-8">
                                             <button
-                                                onClick={() => user?.email && likeComment(comment.id, user.email)}
+                                                onClick={() => likeComment(comment.id)}
                                                 className={`flex items-center gap-2 text-xs font-bold transition-all active:scale-125 ${comment.hasLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
                                             >
                                                 <Heart className={`w-4 h-4 ${comment.hasLiked ? 'fill-current' : ''}`} />

@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
+import { requireAuth, requireAdmin } from '../_lib/authMiddleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
@@ -8,6 +9,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { productId } = req.query;
 
         if (req.method === 'GET') {
+            const auth = requireAuth(req, res);
+            if (!auth) return;
+
             let posts;
             if (productId) {
                 posts = await sql`SELECT * FROM feed_posts WHERE product_id = ${String(productId)} ORDER BY created_at DESC`;
@@ -26,17 +30,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'POST') {
-            const { title, description, productId } = req.body;
-            if (!title || !productId) return res.status(400).json({ error: 'Título e ProductId são obrigatórios' });
+            const auth = requireAdmin(req, res);
+            if (!auth) return;
+
+            const { title, description, productId: bodyProductId } = req.body;
+            if (!title || !bodyProductId) return res.status(400).json({ error: 'Título e ProductId são obrigatórios' });
 
             await sql`
                 INSERT INTO feed_posts (title, description, product_id)
-                VALUES (${title}, ${description}, ${productId})
+                VALUES (${title}, ${description}, ${bodyProductId})
             `;
             return res.status(200).json({ message: 'Post criado' });
         }
 
         if (req.method === 'DELETE') {
+            const auth = requireAdmin(req, res);
+            if (!auth) return;
+
             const { id } = req.query;
             if (!id) return res.status(400).json({ error: 'ID é obrigatório' });
             await sql`DELETE FROM feed_posts WHERE id = ${Number(id)}`;

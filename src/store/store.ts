@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { showToast } from '../hooks/useToast';
 
 export type Role = 'student' | 'admin';
 
@@ -68,6 +69,7 @@ interface AppState {
     currentUser: User | null;
     currentProductId: string | null;
     systemBanners: string[];
+    authToken: string | null;
 
     // Actions
     fetchInitialData: () => Promise<void>;
@@ -77,53 +79,110 @@ interface AppState {
     fetchFeed: (productId?: string) => Promise<void>;
     fetchComments: (productId?: string) => Promise<void>;
     login: (email: string) => boolean;
-    setCurrentUser: (user: User) => void;
+    loginWithApi: (email: string) => Promise<boolean>;
+    setCurrentUser: (user: User, token?: string) => void;
     logout: () => void;
     addUser: (email: string) => void;
 
-    addProduct: (item: Omit<Product, 'id' | 'createdAt'>) => void;
-    updateProduct: (id: string, item: Partial<Omit<Product, 'id' | 'createdAt'>>) => void;
-    removeProduct: (id: string) => void;
+    addProduct: (item: Omit<Product, 'id' | 'createdAt'>) => Promise<void>;
+    updateProduct: (id: string, item: Partial<Omit<Product, 'id' | 'createdAt'>>) => Promise<void>;
+    removeProduct: (id: string) => Promise<void>;
     setCurrentProductId: (id: string | null) => void;
-    updateSystemBanners: (banners: string[]) => void;
+    updateSystemBanners: (banners: string[]) => Promise<void>;
 
-    addClass: (item: Omit<ClassItem, 'id' | 'createdAt'>) => void;
-    updateClass: (id: string, item: Partial<Omit<ClassItem, 'id' | 'createdAt'>>) => void;
-    removeClass: (id: string) => void;
-    addFeedPost: (item: Omit<FeedPost, 'id' | 'createdAt'>) => void;
-    removeFeedPost: (id: string) => void;
-    addComment: (item: Omit<Comment, 'id' | 'createdAt'>) => void;
-    removeComment: (id: string) => void;
-    likeComment: (commentId: string, userEmail: string) => Promise<void>;
+    addClass: (item: Omit<ClassItem, 'id' | 'createdAt'>) => Promise<void>;
+    updateClass: (id: string, item: Partial<Omit<ClassItem, 'id' | 'createdAt'>>) => Promise<void>;
+    removeClass: (id: string) => Promise<void>;
+    addFeedPost: (item: Omit<FeedPost, 'id' | 'createdAt'>) => Promise<void>;
+    removeFeedPost: (id: string) => Promise<void>;
+    addComment: (item: Omit<Comment, 'id' | 'createdAt'>) => Promise<void>;
+    removeComment: (id: string) => Promise<void>;
+    likeComment: (commentId: string) => Promise<void>;
+}
+
+/** Helper: constrói headers com JWT quando disponível */
+function authHeaders(token: string | null): HeadersInit {
+    const headers: HeadersInit = { 'Content-Type': 'application/json' };
+    if (token) {
+        (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
+/** Helper: fetch autenticado com tratamento global de 401/403 */
+async function apiFetch(
+    url: string,
+    options: RequestInit,
+    token: string | null,
+    onUnauthorized?: () => void
+): Promise<Response> {
+    const res = await fetch(url, {
+        ...options,
+        headers: {
+            ...authHeaders(token),
+            ...(options.headers || {}),
+        },
+    });
+
+    if (res.status === 401) {
+        showToast('Sessão expirada. Faça login novamente.', 'error');
+        onUnauthorized?.();
+    } else if (res.status === 403) {
+        showToast('Você não tem permissão para realizar esta ação.', 'error');
+    }
+
+    return res;
 }
 
 export const useStore = create<AppState>()(
     persist(
         (set, get) => ({
-            users: [
-                { id: '1', email: 'admin@admin.com', role: 'admin', name: 'Admin', photo: 'https://ui-avatars.com/api/?name=Admin&background=3B82F6&color=fff' },
-                { id: '2', email: 'aluno@teste.com', role: 'student', name: 'Aluno Teste', photo: 'https://ui-avatars.com/api/?name=Aluno&background=10B981&color=fff' },
-            ],
-            products: [
-                { id: 'default', name: 'Projeto Inicial', description: 'Seu primeiro produto / curso.', language: 'pt', createdAt: new Date().toISOString() }
-            ],
+            users: [],
+            products: [],
             classes: [],
             feedPosts: [],
             comments: [],
             currentUser: null,
             currentProductId: null,
             systemBanners: [],
+            authToken: null,
 
-            login: (email: string) => {
-                const user = get().users.find((u) => u.email === email);
-                if (user) {
-                    set({ currentUser: user });
-                    return true;
-                }
+            // Legacy local-only login (disabled — use loginWithApi)
+            login: (_email: string) => {
                 return false;
             },
-            setCurrentUser: (user: User) => set({ currentUser: user }),
-            logout: () => set({ currentUser: null }),
+
+            // Full API login that stores JWT
+            loginWithApi: async (email: string): Promise<boolean> => {
+                try {
+                    const res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email }),
+                    });
+
+                    const data = await res.json();
+
+                    if (res.ok && data.user && data.token) {
+                        set({ currentUser: data.user, authToken: data.token });
+                        await get().fetchInitialData();
+                        return true;
+                    } else {
+                        showToast(data.error || 'E-mail não autorizado ou não encontrado.', 'error');
+                        return false;
+                    }
+                } catch (err) {
+                    console.error('Erro de conexão ao BD:', err);
+                    showToast('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+                    return false;
+                }
+            },
+
+            setCurrentUser: (user: User, token?: string) =>
+                set({ currentUser: user, ...(token ? { authToken: token } : {}) }),
+
+            logout: () => set({ currentUser: null, authToken: null }),
+
             addUser: (email: string) =>
                 set((state) => ({
                     users: [
@@ -137,16 +196,27 @@ export const useStore = create<AppState>()(
                         },
                     ],
                 })),
+
             updateSystemBanners: async (banners) => {
+                const previousBanners = get().systemBanners;
                 set({ systemBanners: banners });
                 try {
-                    await fetch('/api/banners', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ banners })
-                    });
+                    const res = await apiFetch(
+                        '/api/banners',
+                        { method: 'POST', body: JSON.stringify({ banners }) },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set({ systemBanners: previousBanners });
+                        showToast('Erro ao salvar banners. Tente novamente.', 'error');
+                    } else {
+                        showToast('Banners atualizados com sucesso!', 'success');
+                    }
                 } catch (err) {
+                    set({ systemBanners: previousBanners });
                     console.error('Erro ao salvar banners:', err);
+                    showToast('Erro de rede ao salvar banners.', 'error');
                 }
             },
 
@@ -156,13 +226,13 @@ export const useStore = create<AppState>()(
                     get().fetchClasses(),
                     get().fetchBanners(),
                     get().fetchFeed(),
-                    get().fetchComments()
+                    get().fetchComments(),
                 ]);
             },
 
             fetchProducts: async () => {
                 try {
-                    const res = await fetch('/api/products');
+                    const res = await apiFetch('/api/products', { method: 'GET' }, get().authToken);
                     if (res.ok) {
                         const data = await res.json();
                         set({ products: data || [] });
@@ -174,7 +244,7 @@ export const useStore = create<AppState>()(
 
             fetchClasses: async () => {
                 try {
-                    const res = await fetch('/api/classes');
+                    const res = await apiFetch('/api/classes', { method: 'GET' }, get().authToken);
                     if (res.ok) {
                         const data = await res.json();
                         set({ classes: data });
@@ -186,7 +256,7 @@ export const useStore = create<AppState>()(
 
             fetchBanners: async () => {
                 try {
-                    const res = await fetch('/api/banners');
+                    const res = await apiFetch('/api/banners', { method: 'GET' }, get().authToken);
                     if (res.ok) {
                         const data = await res.json();
                         set({ systemBanners: data });
@@ -204,18 +274,28 @@ export const useStore = create<AppState>()(
                 set((state) => ({ products: [...state.products, newItem] }));
 
                 try {
-                    await fetch('/api/products', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newItem)
-                    });
+                    const res = await apiFetch(
+                        '/api/products',
+                        { method: 'POST', body: JSON.stringify(newItem) },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        // Revert
+                        set((state) => ({ products: state.products.filter(p => p.id !== tempId) }));
+                        showToast('Erro ao salvar produto. Tente novamente.', 'error');
+                    } else {
+                        showToast('Produto salvo com sucesso!', 'success');
+                    }
                 } catch (err) {
+                    set((state) => ({ products: state.products.filter(p => p.id !== tempId) }));
                     console.error('Erro ao salvar produto no banco:', err);
+                    showToast('Erro de rede ao salvar produto.', 'error');
                 }
             },
 
             updateProduct: async (id, updatedItem) => {
-                // Optimistic UI update
+                const previous = get().products;
                 set((state) => ({
                     products: state.products.map((p) => (p.id === id ? { ...p, ...updatedItem } : p)),
                 }));
@@ -223,47 +303,82 @@ export const useStore = create<AppState>()(
                 const fullProduct = get().products.find(p => p.id === id);
                 if (fullProduct) {
                     try {
-                        await fetch('/api/products', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(fullProduct)
-                        });
+                        const res = await apiFetch(
+                            '/api/products',
+                            { method: 'POST', body: JSON.stringify(fullProduct) },
+                            get().authToken,
+                            () => set({ currentUser: null, authToken: null })
+                        );
+                        if (!res.ok) {
+                            set({ products: previous });
+                            showToast('Erro ao atualizar produto.', 'error');
+                        } else {
+                            showToast('Produto atualizado!', 'success');
+                        }
                     } catch (err) {
+                        set({ products: previous });
                         console.error('Erro ao atualizar produto no banco:', err);
+                        showToast('Erro de rede ao atualizar produto.', 'error');
                     }
                 }
             },
 
             removeProduct: async (id) => {
+                const previous = get().products;
                 set((state) => ({
                     products: state.products.filter((p) => p.id !== id),
                     currentProductId: state.currentProductId === id ? null : state.currentProductId,
                 }));
 
                 try {
-                    await fetch(`/api/products?id=${id}`, { method: 'DELETE' });
+                    const res = await apiFetch(
+                        `/api/products?id=${id}`,
+                        { method: 'DELETE' },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set({ products: previous });
+                        showToast('Erro ao remover produto.', 'error');
+                    } else {
+                        showToast('Produto removido.', 'success');
+                    }
                 } catch (err) {
+                    set({ products: previous });
                     console.error('Erro ao deletar produto no banco:', err);
+                    showToast('Erro de rede ao remover produto.', 'error');
                 }
             },
+
             setCurrentProductId: (id) => set({ currentProductId: id }),
+
             addClass: async (item) => {
                 const tempId = `class_${Date.now()}`;
                 const newItem = { ...item, id: tempId, createdAt: new Date().toISOString() };
                 set((state) => ({ classes: [...state.classes, newItem] }));
 
                 try {
-                    await fetch('/api/classes', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newItem)
-                    });
+                    const res = await apiFetch(
+                        '/api/classes',
+                        { method: 'POST', body: JSON.stringify(newItem) },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set((state) => ({ classes: state.classes.filter(c => c.id !== tempId) }));
+                        showToast('Erro ao salvar aula.', 'error');
+                    } else {
+                        showToast('Aula salva com sucesso!', 'success');
+                    }
                 } catch (err) {
+                    set((state) => ({ classes: state.classes.filter(c => c.id !== tempId) }));
                     console.error('Erro ao salvar aula:', err);
+                    showToast('Erro de rede ao salvar aula.', 'error');
                 }
             },
 
             updateClass: async (id, updatedItem) => {
+                const previous = get().classes;
                 set((state) => ({
                     classes: state.classes.map((c) => (c.id === id ? { ...c, ...updatedItem } : c)),
                 }));
@@ -271,33 +386,54 @@ export const useStore = create<AppState>()(
                 const fullClass = get().classes.find(c => c.id === id);
                 if (fullClass) {
                     try {
-                        await fetch('/api/classes', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(fullClass)
-                        });
+                        const res = await apiFetch(
+                            '/api/classes',
+                            { method: 'POST', body: JSON.stringify(fullClass) },
+                            get().authToken,
+                            () => set({ currentUser: null, authToken: null })
+                        );
+                        if (!res.ok) {
+                            set({ classes: previous });
+                            showToast('Erro ao atualizar aula.', 'error');
+                        } else {
+                            showToast('Aula atualizada!', 'success');
+                        }
                     } catch (err) {
+                        set({ classes: previous });
                         console.error('Erro ao atualizar aula:', err);
+                        showToast('Erro de rede ao atualizar aula.', 'error');
                     }
                 }
             },
 
             removeClass: async (id) => {
-                set((state) => ({
-                    classes: state.classes.filter((c) => c.id !== id),
-                }));
+                const previous = get().classes;
+                set((state) => ({ classes: state.classes.filter((c) => c.id !== id) }));
 
                 try {
-                    await fetch(`/api/classes?id=${id}`, { method: 'DELETE' });
+                    const res = await apiFetch(
+                        `/api/classes?id=${id}`,
+                        { method: 'DELETE' },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set({ classes: previous });
+                        showToast('Erro ao remover aula.', 'error');
+                    } else {
+                        showToast('Aula removida.', 'success');
+                    }
                 } catch (err) {
+                    set({ classes: previous });
                     console.error('Erro ao deletar aula:', err);
+                    showToast('Erro de rede ao remover aula.', 'error');
                 }
             },
 
             fetchFeed: async (productId) => {
                 try {
                     const url = productId ? `/api/feed?productId=${productId}` : '/api/feed';
-                    const res = await fetch(url);
+                    const res = await apiFetch(url, { method: 'GET' }, get().authToken);
                     if (res.ok) {
                         const data = await res.json();
                         set({ feedPosts: data });
@@ -308,13 +444,9 @@ export const useStore = create<AppState>()(
             },
 
             fetchComments: async (productId) => {
-                const user = get().currentUser;
                 try {
-                    let url = productId ? `/api/community?productId=${productId}` : '/api/community';
-                    if (user?.email) {
-                        url += (url.includes('?') ? '&' : '?') + `email=${user.email}`;
-                    }
-                    const res = await fetch(url);
+                    const url = productId ? `/api/community?productId=${productId}` : '/api/community';
+                    const res = await apiFetch(url, { method: 'GET' }, get().authToken);
                     if (res.ok) {
                         const data = await res.json();
                         set({ comments: data });
@@ -330,25 +462,44 @@ export const useStore = create<AppState>()(
                 set((state) => ({ feedPosts: [newItem, ...state.feedPosts] }));
 
                 try {
-                    await fetch('/api/feed', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newItem)
-                    });
+                    const res = await apiFetch(
+                        '/api/feed',
+                        { method: 'POST', body: JSON.stringify(newItem) },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set((state) => ({ feedPosts: state.feedPosts.filter(p => p.id !== tempId) }));
+                        showToast('Erro ao publicar post.', 'error');
+                    } else {
+                        showToast('Post publicado!', 'success');
+                    }
                 } catch (err) {
+                    set((state) => ({ feedPosts: state.feedPosts.filter(p => p.id !== tempId) }));
                     console.error('Erro ao salvar post no feed:', err);
+                    showToast('Erro de rede ao publicar post.', 'error');
                 }
             },
 
             removeFeedPost: async (id) => {
-                set((state) => ({
-                    feedPosts: state.feedPosts.filter((p) => p.id !== id),
-                }));
+                const previous = get().feedPosts;
+                set((state) => ({ feedPosts: state.feedPosts.filter((p) => p.id !== id) }));
 
                 try {
-                    await fetch(`/api/feed?id=${id}`, { method: 'DELETE' });
+                    const res = await apiFetch(
+                        `/api/feed?id=${id}`,
+                        { method: 'DELETE' },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set({ feedPosts: previous });
+                        showToast('Erro ao remover post.', 'error');
+                    }
                 } catch (err) {
+                    set({ feedPosts: previous });
                     console.error('Erro ao deletar post do feed:', err);
+                    showToast('Erro de rede ao remover post.', 'error');
                 }
             },
 
@@ -358,26 +509,45 @@ export const useStore = create<AppState>()(
                 set((state) => ({ comments: [newItem, ...state.comments] }));
 
                 try {
-                    await fetch('/api/community', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(newItem)
-                    });
+                    const res = await apiFetch(
+                        '/api/community',
+                        { method: 'POST', body: JSON.stringify(newItem) },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set((state) => ({ comments: state.comments.filter(c => c.id !== tempId) }));
+                        showToast('Erro ao enviar comentário.', 'error');
+                    }
                 } catch (err) {
+                    set((state) => ({ comments: state.comments.filter(c => c.id !== tempId) }));
                     console.error('Erro ao salvar comentário:', err);
+                    showToast('Erro de rede ao enviar comentário.', 'error');
                 }
             },
 
             removeComment: async (id) => {
+                const previous = get().comments;
                 set((state) => ({ comments: state.comments.filter(c => c.id !== id) }));
                 try {
-                    await fetch(`/api/community?id=${id}`, { method: 'DELETE' });
+                    const res = await apiFetch(
+                        `/api/community?id=${id}`,
+                        { method: 'DELETE' },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        set({ comments: previous });
+                        showToast('Erro ao remover comentário.', 'error');
+                    }
                 } catch (err) {
+                    set({ comments: previous });
                     console.error('Erro ao remover comentário:', err);
+                    showToast('Erro de rede ao remover comentário.', 'error');
                 }
             },
 
-            likeComment: async (commentId, userEmail) => {
+            likeComment: async (commentId: string) => {
                 // Optimistic update
                 set((state) => ({
                     comments: state.comments.map(c => {
@@ -394,19 +564,41 @@ export const useStore = create<AppState>()(
                 }));
 
                 try {
-                    await fetch('/api/community?action=like', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ commentId, userEmail })
-                    });
+                    const res = await apiFetch(
+                        '/api/community?action=like',
+                        { method: 'POST', body: JSON.stringify({ commentId }) },
+                        get().authToken,
+                        () => set({ currentUser: null, authToken: null })
+                    );
+                    if (!res.ok) {
+                        // Revert on failure
+                        set((state) => ({
+                            comments: state.comments.map(c => {
+                                if (c.id === commentId) {
+                                    const revertHasLiked = !c.hasLiked;
+                                    return {
+                                        ...c,
+                                        hasLiked: revertHasLiked,
+                                        likesCount: (c.likesCount || 0) + (revertHasLiked ? 1 : -1)
+                                    };
+                                }
+                                return c;
+                            })
+                        }));
+                    }
                 } catch (err) {
                     console.error('Erro ao dar like:', err);
-                    // Revert on error could be added here
                 }
             },
         }),
         {
             name: 'area-membros-storage',
+            // Persist token along with user state
+            partialize: (state) => ({
+                currentUser: state.currentUser,
+                authToken: state.authToken,
+                currentProductId: state.currentProductId,
+            }),
         }
     )
 );

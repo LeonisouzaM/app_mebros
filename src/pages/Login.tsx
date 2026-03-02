@@ -8,9 +8,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-    const login = useStore((state) => state.login);
-    const setCurrentUser = useStore((state) => state.setCurrentUser);
-    const fetchInitialData = useStore((state) => state.fetchInitialData);
+    const loginWithApi = useStore((state) => state.loginWithApi);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -51,40 +49,17 @@ export default function Login() {
             return;
         }
 
-        // Check local users first (like Admin)
-        if (email === 'admin@admin.com' || email === 'aluno@teste.com') {
-            const success = login(email);
-            if (success) navigate('/');
-            setIsLoading(false);
-            return;
-        }
-
         try {
-            // Check Database (Vercel API)
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-
-            const data = await res.json();
-
-            if (res.ok && data.user) {
-                setCurrentUser(data.user);
-                await fetchInitialData();
-                navigate('/');
+            const success = await loginWithApi(email);
+            if (success) {
+                const user = useStore.getState().currentUser;
+                navigate(user?.role === 'admin' ? '/admin' : '/');
             } else {
-                setError(data.error || 'E-mail não autorizado ou não encontrado na lista.');
+                setError('E-mail não autorizado ou compra não aprovada.');
             }
         } catch (err) {
-            console.error('Erro de conexão ao BD:', err);
-            // Fallback for local testing if API isn't present
-            const success = login(email);
-            if (!success) {
-                setError('E-mail não autorizado ou sistema temporariamente indisponível.');
-            } else {
-                navigate('/');
-            }
+            console.error('Erro ao fazer login:', err);
+            setError('Erro de conexão. Verifique sua internet e tente novamente.');
         } finally {
             setIsLoading(false);
         }
@@ -144,14 +119,18 @@ export default function Login() {
                             disabled={isLoading}
                             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-md shadow-blue-500/30 disabled:opacity-50"
                         >
-                            {isLoading ? 'Checando...' : 'Entrar na Área de Membros'}
+                            {isLoading ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                    </svg>
+                                    Verificando...
+                                </span>
+                            ) : 'Entrar na Área de Membros'}
                         </button>
                     </div>
                 </form>
-
-                <div className="mt-4 text-center text-xs text-gray-400">
-                    <p>Dica: Use <span className="font-semibold">admin@admin.com</span> ou <span className="font-semibold">aluno@teste.com</span> para testar.</p>
-                </div>
             </div>
         </div>
     );

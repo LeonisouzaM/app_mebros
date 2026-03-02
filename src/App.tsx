@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from './store/store';
+import ToastContainer from './components/ToastContainer';
 
 // Layouts
 import StudentLayout from './layouts/StudentLayout';
@@ -34,6 +35,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ToastContainer />
       <Routes>
         <Route path="/login" element={!currentUser ? <Login /> : <Navigate to={currentUser.role === 'admin' ? '/admin' : '/'} replace />} />
 

@@ -1,11 +1,15 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
+import { requireAuth, requireAdmin } from '../_lib/authMiddleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         await initDb();
 
         if (req.method === 'GET') {
+            const auth = requireAuth(req, res);
+            if (!auth) return;
+
             const classes = await sql`SELECT * FROM classes ORDER BY created_at DESC`;
             const mappedClasses = classes.map(c => ({
                 id: c.id,
@@ -22,6 +26,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'POST') {
+            const auth = requireAdmin(req, res);
+            if (!auth) return;
+
             const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate } = req.body;
 
             if (!title || !cloudinaryUrl) return res.status(400).json({ error: 'Título e URL são obrigatórios' });
@@ -45,6 +52,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'DELETE') {
+            const auth = requireAdmin(req, res);
+            if (!auth) return;
+
             const { id } = req.query;
             if (!id) return res.status(400).json({ error: 'ID é obrigatório' });
             await sql`DELETE FROM classes WHERE id = ${String(id)}`;

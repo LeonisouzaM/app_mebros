@@ -1,13 +1,17 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
+import { requireAuth, requireAdmin } from '../_lib/authMiddleware.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         await initDb();
 
-        const { productId, action, commentId, email } = req.query;
+        const { productId, action, email } = req.query;
 
         if (req.method === 'GET') {
+            const auth = requireAuth(req, res);
+            if (!auth) return;
+
             let posts;
             if (productId) {
                 posts = await sql`
@@ -35,10 +39,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 `;
             }
 
-            // Fetch likes for the current user if email is provided
+            // Fetch likes for the current user (use email from verified token payload)
             let userLikes = new Set();
-            if (email) {
-                const likedList = await sql`SELECT comment_id FROM comment_likes WHERE user_email = ${String(email)}`;
+            const userEmail = auth.email;
+            if (userEmail) {
+                const likedList = await sql`SELECT comment_id FROM comment_likes WHERE user_email = ${userEmail}`;
                 likedList.forEach(l => userLikes.add(l.comment_id));
             }
 
@@ -68,11 +73,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (req.method === 'POST') {
-            if (action === 'like') {
-                const { commentId, userEmail } = req.body;
-                if (!commentId || !userEmail) return res.status(400).json({ error: 'Dados incompletos' });
+            const auth = requireAuth(req, res);
+            if (!auth) return;
 
-                // Toggle like
+            if (action === 'like') {
+                const { commentId } = req.body;
+                // Use the email from the verified token — never from the client body
+                const userEmail = auth.email;
+                if (!commentId) return res.status(400).json({ error: 'Dados incompletos' });
+
                 const existing = await sql`SELECT id FROM comment_likes WHERE comment_id = ${Number(commentId)} AND user_email = ${userEmail}`;
                 if (existing.length > 0) {
                     await sql`DELETE FROM comment_likes WHERE id = ${existing[0].id}`;
@@ -85,19 +94,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             }
 
-            const { userName, userPhoto, userEmail, text, imageUrl, productId, parentId } = req.body;
-            if (!userName || !text || !productId) return res.status(400).json({ error: 'Dados incompletos' });
+            // Create comment — use userName/userPhoto from body, but userEmail from token
+            const { userName, userPhoto, text, imageUrl, productId: bodyProductId, parentId } = req.body;
+            const userEmail = auth.email;
+            if (!userName || !text || !bodyProductId) return res.status(400).json({ error: 'Dados incompletos' });
 
             await sql`
                 INSERT INTO comments (user_name, user_photo, user_email, text, image_url, product_id, parent_id)
-                VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl || null}, ${productId}, ${parentId ? Number(parentId) : null})
+                VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl || null}, ${bodyProductId}, ${parentId ? Number(parentId) : null})
             `;
             return res.status(200).json({ message: 'Comentário enviado' });
         }
 
         if (req.method === 'DELETE') {
+            const auth = requireAuth(req, res);
+            if (!auth) return;
+
             const { id } = req.query;
             if (!id) return res.status(400).json({ error: 'ID necessário' });
+
+            // Students can only delete their own comments. Admins can delete any.
+            if (auth.role !== 'admin') {
+                const comment = await sql`SELECT user_email FROM comments WHERE id = ${Number(id)}`;
+                if (comment.length === 0) return res.status(404).json({ error: 'Comentário não encontrado' });
+                if (comment[0].user_email !== auth.email) {
+                    return res.status(403).json({ error: 'Você não tem permissão para remover este comentário' });
+                }
+            }
+
             await sql`DELETE FROM comments WHERE id = ${Number(id)}`;
             return res.status(200).json({ message: 'Comentário removido' });
         }
