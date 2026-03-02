@@ -22,6 +22,13 @@ export default function Community() {
     const adminEmails = ['admin@admin.com', 'certificacionsuporte@proton.me', 'aluno@teste.com'];
     const isAdmin = user?.role === 'admin' || (user?.email && adminEmails.includes(user.email));
 
+    // Produtos que o aluno tem acesso; admins veem todos
+    const accessibleProductsList = isAdmin
+        ? products
+        : products.filter(p =>
+            user?.accessibleProducts?.includes(p.id)
+        );
+
     const [newComment, setNewComment] = useState('');
     const [imageUrl, setImageUrl] = useState('');
     const [isUploading, setIsUploading] = useState(false);
@@ -86,8 +93,12 @@ export default function Community() {
         if (currentProductId) {
             fetchComments(currentProductId);
             setTargetProductId(currentProductId);
+        } else if (!isAdmin && accessibleProductsList.length === 1) {
+            // Aluno com apenas 1 curso: seleciona automaticamente
+            setTargetProductId(accessibleProductsList[0].id);
+            fetchComments(accessibleProductsList[0].id);
         }
-    }, [currentProductId, fetchComments]);
+    }, [currentProductId, fetchComments, accessibleProductsList.length]);
 
     const handlePostComment = (e: React.FormEvent) => {
         e.preventDefault();
@@ -160,7 +171,7 @@ export default function Community() {
                                 className="w-12 h-12 rounded-full shadow-sm border border-surface-100"
                             />
                             <div className="flex-1 space-y-4">
-                                {(isAdmin || (user?.accessibleProducts && user.accessibleProducts.length > 1)) && (
+                                {accessibleProductsList.length > 1 && (
                                     <div className="mb-2">
                                         <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Postar para o Produto:</label>
                                         <select
@@ -170,7 +181,7 @@ export default function Community() {
                                             required
                                         >
                                             <option value="">Selecione para onde postar...</option>
-                                            {products.map(p => (
+                                            {accessibleProductsList.map(p => (
                                                 <option key={p.id} value={p.id}>{p.name}</option>
                                             ))}
                                         </select>
