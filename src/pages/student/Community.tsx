@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useStore } from '../../store/store';
-import { MessageCircle, Clock, Send, Smile, Image as ImageIcon, Heart, MessageSquare, Loader2, Trash2 } from 'lucide-react';
+import { MessageCircle, Send, Smile, Image as ImageIcon, Heart, MessageSquare, Loader2, Trash2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -18,7 +18,6 @@ export default function Community() {
     const comments = useStore((state) => state.comments);
     const user = useStore((state) => state.currentUser);
     const products = useStore((state) => state.products);
-    const setCurrentProductId = useStore((state) => state.setCurrentProductId);
 
     const adminEmails = ['admin@admin.com', 'certificacionsuporte@proton.me', 'aluno@teste.com'];
     const isAdmin = user?.role === 'admin' || (user?.email && adminEmails.includes(user.email));
@@ -92,7 +91,7 @@ export default function Community() {
 
     const handlePostComment = (e: React.FormEvent) => {
         e.preventDefault();
-        const pid = isAdmin ? targetProductId : currentProductId;
+        const pid = targetProductId || currentProductId;
         if (!newComment.trim() || !user || !pid) return;
 
         addComment({
@@ -161,7 +160,7 @@ export default function Community() {
                                 className="w-12 h-12 rounded-full shadow-sm border border-surface-100"
                             />
                             <div className="flex-1 space-y-4">
-                                {isAdmin && (
+                                {(isAdmin || (user?.accessibleProducts && user.accessibleProducts.length > 1)) && (
                                     <div className="mb-2">
                                         <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Postar para o Produto:</label>
                                         <select
