@@ -1,6 +1,8 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
-import { signToken } from '../_lib/authMiddleware.js';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
@@ -39,11 +41,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const accessibleProducts = accessResult.map(row => row.product_id);
 
         // Generate signed JWT token
-        const token = signToken({
-            userId: user.id.toString(),
-            email: user.email,
-            role: user.role,
-        });
+        const token = jwt.sign(
+            { userId: user.id.toString(), email: user.email, role: user.role },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
 
         return res.status(200).json({
             token,

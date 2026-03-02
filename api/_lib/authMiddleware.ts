@@ -15,26 +15,20 @@ export interface AuthPayload {
  */
 export function verifyToken(req: VercelRequest): AuthPayload | null {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return null;
-    }
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
     const token = authHeader.slice(7);
     try {
-        const payload = jwt.verify(token, JWT_SECRET) as AuthPayload;
-        return payload;
+        return jwt.verify(token, JWT_SECRET) as AuthPayload;
     } catch {
         return null;
     }
 }
 
 /**
- * Middleware de autenticação — verifica o token e rejeita se inválido.
- * Retorna true se autenticado, false (e já respondeu 401) se não.
+ * Middleware de autenticação — rejeita com 401 se token inválido.
+ * Retorna payload se autenticado, false se não.
  */
-export function requireAuth(
-    req: VercelRequest,
-    res: VercelResponse
-): AuthPayload | false {
+export function requireAuth(req: VercelRequest, res: VercelResponse): AuthPayload | false {
     const payload = verifyToken(req);
     if (!payload) {
         res.status(401).json({ error: 'Não autorizado. Token inválido ou ausente.' });
@@ -44,12 +38,9 @@ export function requireAuth(
 }
 
 /**
- * Middleware de autenticação de ADMIN — rejeita com 403 se não for admin.
+ * Middleware de admin — rejeita com 403 se não for admin.
  */
-export function requireAdmin(
-    req: VercelRequest,
-    res: VercelResponse
-): AuthPayload | false {
+export function requireAdmin(req: VercelRequest, res: VercelResponse): AuthPayload | false {
     const payload = requireAuth(req, res);
     if (!payload) return false;
     if (payload.role !== 'admin') {
@@ -57,11 +48,4 @@ export function requireAdmin(
         return false;
     }
     return payload;
-}
-
-/**
- * Gera um JWT assinado para o usuário.
- */
-export function signToken(payload: AuthPayload): string {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 }

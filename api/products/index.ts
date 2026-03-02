@@ -1,18 +1,45 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
-import { requireAuth, requireAdmin } from '../_lib/authMiddleware.js';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
+
+interface AuthPayload { userId: string; email: string; role: string; }
+
+function requireAuth(req: VercelRequest, res: VercelResponse): AuthPayload | false {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Não autorizado. Token ausente.' });
+        return false;
+    }
+    try {
+        return jwt.verify(authHeader.slice(7), JWT_SECRET) as AuthPayload;
+    } catch {
+        res.status(401).json({ error: 'Não autorizado. Token inválido.' });
+        return false;
+    }
+}
+
+function requireAdmin(req: VercelRequest, res: VercelResponse): AuthPayload | false {
+    const auth = requireAuth(req, res);
+    if (!auth) return false;
+    if (auth.role !== 'admin') {
+        res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
+        return false;
+    }
+    return auth;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         await initDb();
 
         if (req.method === 'GET') {
-            // Qualquer usuário autenticado pode ver produtos
             const auth = requireAuth(req, res);
             if (!auth) return;
 
             const products = await sql`SELECT * FROM products ORDER BY created_at DESC`;
-            const mappedProducts = products.map(p => ({
+            return res.status(200).json(products.map(p => ({
                 id: p.id,
                 name: p.name,
                 description: p.description,
@@ -22,21 +49,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 hotmartId: p.hotmart_id,
                 banners: p.banners,
                 createdAt: p.created_at
-            }));
-            return res.status(200).json(mappedProducts);
+            })));
         }
 
         if (req.method === 'POST') {
-            // Apenas admin pode criar/editar produtos
             const auth = requireAdmin(req, res);
             if (!auth) return;
 
             const { id, name, description, coverUrl, language, supportNumber, hotmartId, banners } = req.body;
-
             if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
             const productId = id || `prod_${Date.now()}`;
-
             await sql`
                 INSERT INTO products (id, name, description, cover_url, language, support_number, hotmart_id, banners)
                 VALUES (${productId}, ${name}, ${description}, ${coverUrl}, ${language}, ${supportNumber}, ${hotmartId}, ${banners || []})
@@ -49,12 +72,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     hotmart_id = EXCLUDED.hotmart_id,
                     banners = EXCLUDED.banners
             `;
-
             return res.status(200).json({ message: 'Produto salvo com sucesso', id: productId });
         }
 
         if (req.method === 'DELETE') {
-            // Apenas admin pode deletar produtos
             const auth = requireAdmin(req, res);
             if (!auth) return;
 

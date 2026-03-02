@@ -1,6 +1,34 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
-import { requireAuth, requireAdmin } from '../_lib/authMiddleware.js';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
+
+interface AuthPayload { userId: string; email: string; role: string; }
+
+function requireAuth(req: VercelRequest, res: VercelResponse): AuthPayload | false {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Não autorizado. Token ausente.' });
+        return false;
+    }
+    try {
+        return jwt.verify(authHeader.slice(7), JWT_SECRET) as AuthPayload;
+    } catch {
+        res.status(401).json({ error: 'Não autorizado. Token inválido.' });
+        return false;
+    }
+}
+
+function requireAdmin(req: VercelRequest, res: VercelResponse): AuthPayload | false {
+    const auth = requireAuth(req, res);
+    if (!auth) return false;
+    if (auth.role !== 'admin') {
+        res.status(403).json({ error: 'Acesso negado. Apenas administradores.' });
+        return false;
+    }
+    return auth;
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
@@ -11,7 +39,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (!auth) return;
 
             const classes = await sql`SELECT * FROM classes ORDER BY created_at DESC`;
-            const mappedClasses = classes.map(c => ({
+            return res.status(200).json(classes.map(c => ({
                 id: c.id,
                 title: c.title,
                 cloudinaryUrl: c.cloudinary_url,
@@ -21,8 +49,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 productId: c.product_id,
                 unlockDate: c.unlock_date,
                 createdAt: c.created_at
-            }));
-            return res.status(200).json(mappedClasses);
+            })));
         }
 
         if (req.method === 'POST') {
@@ -30,11 +57,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (!auth) return;
 
             const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate } = req.body;
-
             if (!title || !cloudinaryUrl) return res.status(400).json({ error: 'Título e URL são obrigatórios' });
 
             const classId = id || `class_${Date.now()}`;
-
             await sql`
                 INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date)
                 VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl}, ${description}, ${buttonText}, ${productId}, ${unlockDate})
@@ -47,7 +72,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     product_id = EXCLUDED.product_id,
                     unlock_date = EXCLUDED.unlock_date
             `;
-
             return res.status(200).json({ message: 'Aula salva', id: classId });
         }
 
