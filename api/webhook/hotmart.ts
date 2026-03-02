@@ -55,9 +55,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log(`Aluno já existe via Webhook: ${email}`);
             }
 
-            // Salva o ID do produto igual vem da Hotmart para facilitar o mapeamento futuro,
-            // Opcionalmente, pode salvar 'default' se você só tem 1 curso no painel hoje.
-            const systemProductId = productIdHotmart ? String(productIdHotmart) : 'default';
+            // Buscar o produto pelo hotmart_id para usar o ID interno correto
+            let systemProductId = 'default';
+            if (productIdHotmart) {
+                const hotmartIdStr = String(productIdHotmart);
+                const matchedProducts = await sql`
+                    SELECT id FROM products WHERE hotmart_id = ${hotmartIdStr}
+                `;
+                if (matchedProducts.length > 0) {
+                    systemProductId = matchedProducts[0].id;
+                    console.log(`Produto encontrado no banco: hotmart_id=${hotmartIdStr} → id=${systemProductId}`);
+                } else {
+                    // Fallback: salvar o hotmart_id bruto e logar para futura correção manual
+                    systemProductId = hotmartIdStr;
+                    console.warn(`ATENÇÃO: Produto com hotmart_id=${hotmartIdStr} não encontrado! Verifique o cadastro do produto no painel.`);
+                }
+            }
 
             await sql`
                 INSERT INTO product_access (user_id, product_id, transaction_id)
@@ -65,7 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ON CONFLICT (user_id, product_id) DO NOTHING
             `;
 
-            console.log(`Acesso liberado para: ${email}`);
+            console.log(`Acesso liberado para: ${email} | produto: ${systemProductId}`);
         } else {
             console.log(`Ignorando evento não-compra ou não-aprovado: eventType=${eventType}, status=${status}`);
         }

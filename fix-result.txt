@@ -1,0 +1,15 @@
+{
+  "usuario": {
+    "email": "certificacionsuporte@proton.me",
+    "role": "student"
+  },
+  "acesso": [
+    {
+      "product_id": "prod_1772413031703"
+    }
+  ],
+  "produto": {
+    "id": "prod_1772413031703",
+    "name": "Mounjaro"
+  }
+}

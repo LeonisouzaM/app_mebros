@@ -19,8 +19,8 @@ export default function Community() {
     const user = useStore((state) => state.currentUser);
     const products = useStore((state) => state.products);
 
-    const adminEmails = ['admin@admin.com', 'certificacionsuporte@proton.me', 'aluno@teste.com'];
-    const isAdmin = user?.role === 'admin' || (user?.email && adminEmails.includes(user.email));
+    // isAdmin é determinado exclusivamente pelo role vindo do banco de dados
+    const isAdmin = user?.role === 'admin';
 
     // Produtos que o aluno tem acesso; admins veem todos
     const accessibleProductsList = isAdmin
