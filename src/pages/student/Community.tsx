@@ -145,33 +145,6 @@ export default function Community() {
                         {t('communityDesc')}
                     </p>
                 </div>
-                {(isAdmin || (user?.accessibleProducts && user.accessibleProducts.length > 1)) && (
-                    <div className="flex flex-col items-end gap-2">
-                        <div className="min-w-[200px]">
-                            <label className="block text-[10px] font-bold text-primary uppercase mb-1">
-                                {isAdmin ? 'Ver Comunidade de:' : 'Mudar Comunidade:'}
-                            </label>
-                            <select
-                                value={currentProductId || ''}
-                                onChange={(e) => setCurrentProductId(e.target.value)}
-                                className="w-full px-3 py-2 border border-surface-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary outline-none"
-                            >
-                                <option value="">Selecione o produto...</option>
-                                {products.filter(p => isAdmin || user?.accessibleProducts?.some(ap => String(ap) === String(p.id))).map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        {isAdmin && (
-                            <button
-                                onClick={() => fetchInitialData()}
-                                className="text-[10px] text-gray-400 hover:text-primary transition-colors flex items-center gap-1 font-bold uppercase"
-                            >
-                                🔄 Recarregar Dados
-                            </button>
-                        )}
-                    </div>
-                )}
             </header>
 
             {!currentProductId && isAdmin ? (
