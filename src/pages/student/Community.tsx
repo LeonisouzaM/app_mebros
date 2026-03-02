@@ -265,36 +265,24 @@ export default function Community() {
                     ) : (
                         <div className="space-y-6 pb-20">
                             {comments.map((comment) => (
-                                <article key={comment.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-surface-200 hover:shadow-md transition-all duration-300 group">
+                                <article key={comment.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-surface-200 hover:shadow-md transition-all duration-300">
                                     <div className="p-6">
-                                        <div className="flex items-start gap-4">
-                                            <img
-                                                src={comment.userPhoto}
-                                                alt={comment.userName}
-                                                className="w-12 h-12 rounded-full border-2 border-surface-100 shadow-sm object-cover"
-                                            />
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex flex-col mb-1">
-                                                    <h3 className="text-sm font-bold text-gray-900 leading-tight truncate">
+                                        {/* Post Header */}
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <img
+                                                    src={comment.userPhoto}
+                                                    alt={comment.userName}
+                                                    className="w-10 h-10 rounded-full border border-surface-100 shadow-sm object-cover"
+                                                />
+                                                <div>
+                                                    <h3 className="text-sm font-bold text-gray-900 leading-tight">
                                                         {comment.userName}
                                                     </h3>
                                                     <span className="text-[11px] text-text-muted font-medium">
                                                         {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: dateLocale })}
                                                     </span>
                                                 </div>
-                                                <div className="text-[15px] text-gray-800 leading-relaxed py-2 whitespace-pre-wrap">
-                                                    {comment.text}
-                                                </div>
-                                                {comment.imageUrl && (
-                                                    <div className="mt-3 rounded-2xl overflow-hidden border border-surface-100 bg-surface-50">
-                                                        <img
-                                                            src={comment.imageUrl}
-                                                            alt="Post content"
-                                                            className="w-full h-auto max-h-[500px] object-contain hover:scale-[1.02] transition-transform duration-500 cursor-zoom-in"
-                                                            onClick={() => window.open(comment.imageUrl, '_blank')}
-                                                        />
-                                                    </div>
-                                                )}
                                             </div>
                                             {(isAdmin || user?.email === comment.userEmail) && (
                                                 <button
@@ -306,7 +294,26 @@ export default function Community() {
                                             )}
                                         </div>
 
-                                        <div className="flex items-center gap-8 mt-4 pt-4 border-t border-surface-100">
+                                        {/* Post Text */}
+                                        <div className="text-[15px] text-gray-800 leading-relaxed mb-4 whitespace-pre-wrap">
+                                            {comment.text}
+                                        </div>
+                                    </div>
+
+                                    {/* Post Image - Full Width within card */}
+                                    {comment.imageUrl && (
+                                        <div className="bg-surface-50 border-y border-surface-100 cursor-zoom-in overflow-hidden" onClick={() => window.open(comment.imageUrl, '_blank')}>
+                                            <img
+                                                src={comment.imageUrl}
+                                                alt="Post content"
+                                                className="w-full h-auto max-h-[600px] object-contain hover:scale-[1.01] transition-transform duration-500"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Actions & Status */}
+                                    <div className="px-6 py-4">
+                                        <div className="flex items-center gap-8">
                                             <button
                                                 onClick={() => user?.email && likeComment(comment.id, user.email)}
                                                 className={`flex items-center gap-2 text-xs font-bold transition-all active:scale-125 ${comment.hasLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
@@ -366,10 +373,10 @@ export default function Community() {
                                     )}
                                 </article>
                             ))}
-                        </div>
+                        </div >
                     )}
                 </>
             )}
-        </div>
+        </div >
     );
 }
