@@ -31,14 +31,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const user = userResult[0];
 
-        // Fetch user's products
+        // Fetch user's products (using hotmart_id from products table for frontend comparison)
         const accessResult = await sql`
-            SELECT product_id 
-            FROM product_access 
-            WHERE user_id = ${user.id}
+            SELECT COALESCE(p.hotmart_id, pa.product_id) as product_id
+            FROM product_access pa
+            LEFT JOIN products p ON pa.product_id = p.id
+            WHERE pa.user_id = ${user.id}
         `;
 
-        const accessibleProducts = accessResult.map(row => row.product_id);
+        const accessibleProducts = accessResult.map(row => String(row.product_id));
 
         // Generate signed JWT token
         const token = jwt.sign(
