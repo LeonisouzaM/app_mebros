@@ -13,11 +13,20 @@ export function useTranslation() {
         if (product && product.language) {
             language = product.language as LanguageCode;
         }
+    } else if (products.length > 0) {
+        // Fallback: se nenhum produto selecionado ainda (ex: na Home), tenta o idioma do primeiro produto disponível
+        // Isso resolve o problema de carregar em PT se o único produto for em EN
+        const firstProd = products[0];
+        if (firstProd.language) {
+            language = firstProd.language as LanguageCode;
+        }
     }
 
     const t = (key: keyof typeof translations['pt']) => {
         return translations[language][key] || translations['pt'][key] || key;
     };
+
+    console.log(`DEBUG LANG: ProductID=${currentProductId} | ChosenLanguage=${language}`);
 
     return { t, language };
 }

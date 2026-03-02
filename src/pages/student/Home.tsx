@@ -16,20 +16,16 @@ export default function Home() {
     const products = useStore((state) => state.products);
     const systemBanners = useStore((state) => state.systemBanners);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-    const [searchParams] = useSearchParams();
     const fetchInitialData = useStore((state) => state.fetchInitialData);
+    const setCurrentProductId = useStore((state) => state.setCurrentProductId);
 
     useEffect(() => {
         fetchInitialData();
     }, []);
 
-    // Filter globally allowed products for this user
     const accessibleProductIds = user?.accessibleProducts || [];
     const isMaster = user?.role === 'admin' || user?.email === 'aluno@teste.com';
-
-    console.log('DEBUG - Usuário:', user?.email);
-    console.log('DEBUG - IDs da Hotmart liberados p/ este aluno:', JSON.stringify(accessibleProductIds));
-    console.log('DEBUG - IDs de Hotmart cadastrados nos Produtos:', JSON.stringify(products.map(p => p.hotmartId)));
+    const [searchParams] = useSearchParams();
 
     const allowedProducts = products.filter(p => {
         if (isMaster) return true;
@@ -45,6 +41,13 @@ export default function Home() {
     const visibleProducts = urlProductId
         ? allowedProducts.filter(p => p.id === urlProductId)
         : allowedProducts;
+
+    useEffect(() => {
+        // Se só tiver 1 produto (cenário comum), define ele como atual para o idioma trocar
+        if (visibleProducts.length === 1) {
+            setCurrentProductId(visibleProducts[0].id);
+        }
+    }, [visibleProducts, setCurrentProductId]);
 
     useEffect(() => {
         if (!systemBanners || systemBanners.length <= 1) return;
