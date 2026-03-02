@@ -51,6 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 id: String(p.id),
                 title: p.title,
                 description: p.description,
+                imageUrl: p.image_url,
                 productId: p.product_id,
                 createdAt: p.created_at
             })));
@@ -60,12 +61,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const auth = requireAdmin(req, res);
             if (!auth) return;
 
-            const { title, description, productId: bodyProductId } = req.body;
+            const { title, description, imageUrl, productId: bodyProductId } = req.body;
             if (!title || !bodyProductId) return res.status(400).json({ error: 'Título e ProductId são obrigatórios' });
 
             await sql`
-                INSERT INTO feed_posts (title, description, product_id)
-                VALUES (${title}, ${description}, ${bodyProductId})
+                INSERT INTO feed_posts (title, description, image_url, product_id)
+                VALUES (${title}, ${description}, ${imageUrl || null}, ${bodyProductId})
             `;
             return res.status(200).json({ message: 'Post criado' });
         }

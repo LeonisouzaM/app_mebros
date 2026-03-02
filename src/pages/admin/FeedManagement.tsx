@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { Rss, Send, Trash2, Calendar, Smile } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Rss, Send, Trash2, Calendar, Smile, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
 
@@ -14,9 +14,39 @@ export default function FeedManagement() {
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
     const [productId, setProductId] = useState('');
     const [showTitleEmojis, setShowTitleEmojis] = useState(false);
     const [showDescEmojis, setShowDescEmojis] = useState(false);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset || '');
+
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            if (data.secure_url) {
+                setImageUrl(data.secure_url);
+            }
+        } catch (err) {
+            console.error('Erro upload:', err);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const onTitleEmojiClick = (emojiData: EmojiClickData) => {
         setTitle(prev => prev + emojiData.emoji);
@@ -36,9 +66,10 @@ export default function FeedManagement() {
         e.preventDefault();
         if (!title || !productId) return;
 
-        addFeedPost({ title, description, productId });
+        addFeedPost({ title, description, imageUrl, productId });
         setTitle('');
         setDescription('');
+        setImageUrl('');
     };
 
     return (
@@ -141,6 +172,35 @@ export default function FeedManagement() {
                         </div>
                     </div>
 
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Anexar Foto (Opcional)
+                        </label>
+                        <div className="flex items-center gap-4">
+                            <label className={`
+                                flex items-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed cursor-pointer transition-all
+                                ${imageUrl ? 'border-success text-success bg-success/5' : 'border-surface-200 text-text-muted hover:border-primary hover:text-primary'}
+                            `}>
+                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                                {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
+                                <span className="text-sm font-medium">{imageUrl ? 'Trocar Foto' : 'Adicionar Foto'}</span>
+                            </label>
+
+                            {imageUrl && (
+                                <div className="relative group">
+                                    <img src={imageUrl} alt="Preview" className="w-12 h-12 rounded-lg object-cover border border-surface-200" />
+                                    <button
+                                        type="button"
+                                        onClick={() => setImageUrl('')}
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
                     <div className="flex justify-end pt-2">
                         <button
                             type="submit"
@@ -167,11 +227,14 @@ export default function FeedManagement() {
                                         </span>
                                         <span className="text-xs text-text-muted flex items-center gap-1">
                                             <Calendar className="w-3 h-3" />
-                                            {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: ptBR })}
+                                            {format(new Date(post.createdAt), "d 'de' MMMM 'às' HH:mm", { locale: ptBR })}
                                         </span>
                                     </div>
                                     <h3 className="font-bold text-gray-900">{post.title}</h3>
                                     <p className="text-sm text-text-muted mt-1 leading-relaxed line-clamp-2">{post.description}</p>
+                                    {post.imageUrl && (
+                                        <img src={post.imageUrl} alt={post.title} className="mt-3 w-40 h-24 object-cover rounded-xl border border-surface-100" />
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => removeFeedPost(post.id)}

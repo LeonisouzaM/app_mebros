@@ -55,10 +55,18 @@ export async function initDb() {
       id SERIAL PRIMARY KEY,
       title VARCHAR(255) NOT NULL,
       description TEXT,
+      image_url TEXT,
       product_id VARCHAR(255) REFERENCES products(id) ON DELETE CASCADE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
+
+  // Migration for existing tables
+  try {
+    await sql`ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS image_url TEXT`;
+  } catch (e) {
+    console.log('image_url column handled');
+  }
 
   await sql`
     CREATE TABLE IF NOT EXISTS comments (

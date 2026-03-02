@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { Rss, Calendar } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
 
@@ -60,12 +60,17 @@ export default function Feed() {
                                     </h3>
                                     <div className="flex items-center text-xs font-medium text-primary bg-blue-50 px-3 py-1 rounded-full whitespace-nowrap">
                                         <Calendar className="w-3 h-3 mr-1" />
-                                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: dateLocale })}
+                                        {format(new Date(post.createdAt), "d 'de' MMMM 'às' HH:mm", { locale: dateLocale })}
                                     </div>
                                 </div>
                                 <div className="text-text-muted text-sm whitespace-pre-wrap leading-relaxed">
                                     {post.description}
                                 </div>
+                                {post.imageUrl && (
+                                    <div className="mt-4 rounded-xl overflow-hidden border border-surface-100 shadow-sm">
+                                        <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[400px] object-cover" />
+                                    </div>
+                                )}
                             </div>
                         </article>
                     ))}
