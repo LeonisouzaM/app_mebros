@@ -1,23 +1,80 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 
 @theme {
-  --color-primary: #3B82F6;
-  --color-primary-hover: #2563EB;
-  --color-background: #FFFFFF;
-  --color-surface-50: #F9FAFB;
-  --color-surface-100: #F3F4F6;
-  --color-surface-200: #E5E7EB;
-  --color-text-main: #111827;
-  --color-text-muted: #6B7280;
+  /* Brand Colors - Indigo/Blue Spectrum */
+  --color-primary: #4F46E5;
+  --color-primary-hover: #4338CA;
+  --color-primary-light: #EEF2FF;
+
+  /* State Colors */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  /* Neutral Spectrum (Slate) */
+  --color-background: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-50: #F1F5F9;
+  --color-surface-100: #E2E8F0;
+  --color-surface-200: #CBD5E1;
+
+  /* Text Colors */
+  --color-text-main: #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-dim: #94A3B8;
+
+  /* Shadow & Blur */
+  --shadow-premium: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
 }
 
 @layer base {
   body {
     @apply bg-background text-text-main font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .card-premium {
+    @apply bg-surface-card rounded-3xl shadow-premium border border-surface-100 transition-all duration-300 hover:shadow-hover;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white font-semibold py-2.5 px-6 rounded-2xl hover:bg-primary-hover transition-all duration-200 active:scale-[0.98] shadow-lg shadow-primary/20;
   }
 }
 
 @keyframes slide-in {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-up {
+  animation: slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toast {
   from {
     transform: translateX(110%);
     opacity: 0;
@@ -29,6 +86,6 @@
   }
 }
 
-.animate-slide-in {
-  animation: slide-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-toast {
+  animation: toast 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

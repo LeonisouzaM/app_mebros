@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { PlayCircle, Download, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { PlayCircle, Download, ChevronLeft, ChevronRight, Lock, Sparkles, BookOpen } from 'lucide-react';
 import { format, isAfter, startOfDay } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -9,7 +9,6 @@ import { useSearchParams } from 'react-router-dom';
 export default function Home() {
     const { t, language } = useTranslation();
 
-    // Select the correct locale for date-fns
     const dateLocale = language === 'en' ? enUS : language === 'es' ? es : ptBR;
     const classes = useStore((state) => state.classes);
     const user = useStore((state) => state.currentUser);
@@ -29,21 +28,17 @@ export default function Home() {
 
     const allowedProducts = products.filter(p => {
         if (isMaster) return true;
-        // Default product fallback se for id 'default'
         if (p.id === 'default' && accessibleProductIds.includes('default')) return true;
-        // Check regular hotmart access (Convert everything to string for safety)
         if (!p.hotmartId) return false;
         return accessibleProductIds.some(id => String(id) === String(p.hotmartId));
     });
 
-    // Check if a specific product was requested via URL (e.g., ?p=123)
     const urlProductId = searchParams.get('p') || searchParams.get('product') || searchParams.get('produto');
     const visibleProducts = urlProductId
         ? allowedProducts.filter(p => p.id === urlProductId)
         : allowedProducts;
 
     useEffect(() => {
-        // Se só tiver 1 produto (cenário comum), define ele como atual para o idioma trocar
         if (visibleProducts.length === 1) {
             setCurrentProductId(visibleProducts[0].id);
         }
@@ -51,11 +46,9 @@ export default function Home() {
 
     useEffect(() => {
         if (!systemBanners || systemBanners.length <= 1) return;
-
         const interval = setInterval(() => {
             setCurrentBannerIndex(prev => (prev + 1) % systemBanners.length);
-        }, 5000);
-
+        }, 8000);
         return () => clearInterval(interval);
     }, [systemBanners]);
 
@@ -70,186 +63,187 @@ export default function Home() {
     };
 
     return (
-        <div className="space-y-6 pt-6 px-4 md:px-0">
-            <header className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-surface-200">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">{t('welcome')}, {user?.name}!</h1>
-                    <p className="text-sm text-text-muted">Acesse seus conteúdos abaixo</p>
-                </div>
-                <img
-                    src={user?.photo}
-                    alt={user?.name}
-                    className="w-12 h-12 rounded-full border-2 border-primary shadow-sm hidden md:block"
-                />
-            </header>
-
-            {systemBanners && systemBanners.length > 0 && (
-                <section className="relative w-full h-48 md:h-64 lg:h-80 bg-surface-100 rounded-3xl overflow-hidden shadow-sm border border-surface-200 group">
-                    {systemBanners.map((banner, idx) => (
-                        <div
-                            key={idx}
-                            className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${idx === currentBannerIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-                        >
-                            <img src={banner} alt={`Banner ${idx + 1}`} className="w-full h-full object-cover" />
-                        </div>
-                    ))}
-
-                    {systemBanners.length > 1 && (
-                        <>
-                            <button
-                                onClick={prevBanner}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur-sm transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                                <ChevronLeft className="w-6 h-6" />
-                            </button>
-                            <button
-                                onClick={nextBanner}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full backdrop-blur-sm transition-colors opacity-0 group-hover:opacity-100"
-                            >
-                                <ChevronRight className="w-6 h-6" />
-                            </button>
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-                                {systemBanners.map((_, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => setCurrentBannerIndex(idx)}
-                                        className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentBannerIndex ? 'bg-white scale-125' : 'bg-white/50 hover:bg-white/80'}`}
-                                    />
-                                ))}
+        <div className="space-y-10 pb-20 animate-fade-up px-4 md:px-0">
+            {/* Welcome Section */}
+            <section className="relative overflow-hidden pt-8">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                                <Sparkles className="w-3 h-3" />
+                                {t('welcome')}
                             </div>
-                        </>
-                    )}
+                        </div>
+                        <h1 className="text-3xl md:text-4xl font-display font-extrabold text-text-main">
+                            Olá, <span className="text-primary">{user?.name?.split(' ')[0]}</span>!
+                        </h1>
+                        <p className="text-text-muted mt-2 max-w-lg font-medium">
+                            Continue sua jornada de aprendizado. Você tem <span className="text-text-main font-bold">{visibleProducts.length}</span> {visibleProducts.length === 1 ? 'produto disponível' : 'produtos disponíveis'}.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Premium Carousel */}
+            {systemBanners && systemBanners.length > 0 && (
+                <section className="relative w-full group">
+                    <div className="relative h-56 md:h-80 w-full overflow-hidden rounded-[2.5rem] shadow-premium border border-white/20">
+                        {systemBanners.map((banner, idx) => (
+                            <div
+                                key={idx}
+                                className={`absolute inset-0 transition-all duration-1000 ease-in-out ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                                    }`}
+                            >
+                                <img src={banner} alt={`Banner ${idx + 1}`} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                            </div>
+                        ))}
+
+                        {systemBanners.length > 1 && (
+                            <>
+                                <button
+                                    onClick={prevBanner}
+                                    className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 text-white p-3 rounded-2xl backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 active:scale-90"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </button>
+                                <button
+                                    onClick={nextBanner}
+                                    className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 hover:bg-white/20 text-white p-3 rounded-2xl backdrop-blur-md border border-white/10 transition-all opacity-0 group-hover:opacity-100 active:scale-90"
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </button>
+                                <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2.5">
+                                    {systemBanners.map((_, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => setCurrentBannerIndex(idx)}
+                                            className={`h-1.5 rounded-full transition-all duration-500 ${idx === currentBannerIndex ? 'bg-white w-8' : 'bg-white/40 w-2 hover:bg-white/60'
+                                                }`}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </section>
             )}
 
             {visibleProducts.length === 0 ? (
-                <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
-                    <p className="text-text-muted">Você ainda não tem acesso aos produtos ou nenhuma aula foi disponibilizada.</p>
+                <div className="card-premium p-12 text-center bg-white/50 border-dashed">
+                    <div className="bg-surface-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <BookOpen className="text-text-dim w-10 h-10" />
+                    </div>
+                    <p className="text-text-muted text-lg font-medium">Nenhum conteúdo disponível no momento.</p>
                 </div>
             ) : (
-                <div className="space-y-8">
+                <div className="space-y-16">
                     {visibleProducts.map(product => {
                         const productClasses = classes
                             .filter(c => c.productId === product.id || (!c.productId && product.id === 'default'))
                             .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-                        if (productClasses.length === 0 && visibleProducts.length > 1) return null; // Skip empty products if there are many
+                        if (productClasses.length === 0 && visibleProducts.length > 1) return null;
 
                         return (
-                            <section key={product.id}>
-                                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                    <PlayCircle className="text-primary h-6 w-6" />
-                                    {visibleProducts.length > 1 ? product.name : t('recentClasses')}
-                                </h2>
+                            <section key={product.id} className="relative">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10">
+                                            <PlayCircle className="text-primary h-6 w-6" />
+                                        </div>
+                                        <h2 className="text-2xl font-display font-bold text-text-main tracking-tight">
+                                            {visibleProducts.length > 1 ? product.name : t('recentClasses')}
+                                        </h2>
+                                    </div>
+                                    <div className="h-[1px] flex-1 bg-surface-100 mx-6 hidden sm:block"></div>
+                                    <span className="text-xs font-bold text-text-dim uppercase tracking-widest">
+                                        {productClasses.length} {productClasses.length === 1 ? 'Aula' : 'Aulas'}
+                                    </span>
+                                </div>
 
                                 {productClasses.length === 0 ? (
-                                    <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
-                                        <p className="text-text-muted">{t('noClasses')}</p>
-                                        <p className="text-sm text-gray-400 mt-2">{t('adminNotPosted')}</p>
+                                    <div className="card-premium p-10 text-center">
+                                        <p className="text-text-muted font-medium">{t('noClasses')}</p>
                                     </div>
                                 ) : (
-                                    <div className="grid gap-3 sm:gap-6 grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+                                    <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                                         {productClasses.map((item) => {
                                             const isLocked = item.unlockDate ? isAfter(startOfDay(new Date(item.unlockDate)), startOfDay(new Date())) : false;
 
                                             return (
                                                 <article
                                                     key={item.id}
-                                                    className="bg-white rounded-3xl overflow-hidden shadow-sm border border-surface-200 hover:shadow-md transition-shadow group relative"
+                                                    className="card-premium group flex flex-col h-full bg-white overflow-hidden"
                                                 >
-                                                    <div className="aspect-video bg-surface-100 relative flex items-center justify-center border-b border-surface-200">
+                                                    {/* Media Container */}
+                                                    <div className="relative aspect-video overflow-hidden bg-surface-50">
                                                         {isLocked ? (
                                                             <>
-                                                                {item.coverUrl || item.cloudinaryUrl ? (
+                                                                {(item.coverUrl || item.cloudinaryUrl) && (
                                                                     <img
-                                                                        className="w-full h-full object-cover opacity-90"
+                                                                        className="w-full h-full object-cover blur-[2px] opacity-40"
                                                                         src={item.coverUrl || (item.cloudinaryUrl.includes('image') || (!item.cloudinaryUrl.includes('.pdf') && !item.cloudinaryUrl.includes('video')) ? item.cloudinaryUrl : '')}
                                                                         alt={item.title}
-                                                                        onError={(e) => {
-                                                                            // Se erro na preview, põe um fundo neutro
-                                                                            e.currentTarget.style.display = 'none';
-                                                                        }}
                                                                     />
-                                                                ) : null}
-                                                                <div className="absolute inset-0 flex items-center justify-center z-40 bg-gray-900/30">
-                                                                    <div className="bg-black/50 text-white rounded-full p-4 shadow-lg backdrop-blur-md flex flex-col items-center">
-                                                                        <Lock className="w-8 h-8 fill-current text-white mb-1" />
-                                                                        <span className="text-[10px] font-bold tracking-widest uppercase">Trancado</span>
+                                                                )}
+                                                                <div className="absolute inset-0 flex flex-col items-center justify-center z-40 bg-slate-900/10">
+                                                                    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col items-center border border-white/50">
+                                                                        <Lock className="w-6 h-6 text-text-main mb-2" />
+                                                                        <span className="text-[10px] font-bold tracking-widest uppercase text-text-main">Acesso Bloqueado</span>
                                                                     </div>
                                                                 </div>
                                                             </>
-                                                        ) : item.coverUrl ? (
-                                                            <>
-                                                                <img
-                                                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                                    src={item.coverUrl}
-                                                                    alt={item.title}
-                                                                />
-                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <div className="bg-primary/90 text-white rounded-full p-4 shadow-lg backdrop-blur-sm">
-                                                                        <PlayCircle className="w-8 h-8 fill-current text-blue-100" />
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        ) : (item.cloudinaryUrl.toLowerCase().includes('.pdf') || item.cloudinaryUrl.includes('/raw/') || item.cloudinaryUrl.includes('drive.google.com/file/d/')) ? (
-                                                            <iframe
-                                                                src={item.cloudinaryUrl.includes('drive.google.com')
-                                                                    ? item.cloudinaryUrl.replace(/\/view.*$/, '/preview')
-                                                                    : item.cloudinaryUrl}
-                                                                title={`PDF: ${item.title}`}
-                                                                className="w-full h-full border-0 bg-white"
-                                                            />
-                                                        ) : item.cloudinaryUrl.includes('video') || item.cloudinaryUrl.endsWith('.mp4') || item.cloudinaryUrl.endsWith('.webm') ? (
-                                                            <video
-                                                                controls
-                                                                className="w-full h-full object-contain bg-black"
-                                                                src={item.cloudinaryUrl}
-                                                            />
                                                         ) : (
                                                             <>
                                                                 <img
-                                                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                                                                    src={item.cloudinaryUrl}
+                                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                                    src={item.coverUrl || item.cloudinaryUrl}
                                                                     alt={item.title}
+                                                                    onError={(e) => {
+                                                                        e.currentTarget.src = "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop";
+                                                                    }}
                                                                 />
-                                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <div className="bg-primary/90 text-white rounded-full p-4 shadow-lg backdrop-blur-sm">
-                                                                        <PlayCircle className="w-8 h-8 fill-current text-blue-100" />
+                                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                                                    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                                                        <PlayCircle className="w-8 h-8 text-primary fill-current" />
                                                                     </div>
                                                                 </div>
                                                             </>
                                                         )}
                                                     </div>
 
-                                                    <div className="p-3 sm:p-5">
-                                                        <div className="flex justify-between items-start mb-1 sm:mb-2">
-                                                            <h3 className="text-sm sm:text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
+                                                    {/* Content */}
+                                                    <div className="p-6 flex flex-col flex-1">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-3">
+                                                                <span className="bg-surface-50 text-[10px] font-bold text-text-dim px-2 py-1 rounded-md uppercase tracking-wider">
+                                                                    {format(new Date(item.createdAt), "dd MMM yyyy", { locale: dateLocale })}
+                                                                </span>
+                                                            </div>
+                                                            <h3 className="text-lg font-display font-bold text-text-main leading-tight mb-2 group-hover:text-primary transition-colors">
                                                                 {item.title}
                                                             </h3>
+                                                            <p className="text-sm text-text-muted line-clamp-2 font-medium">
+                                                                {item.description}
+                                                            </p>
                                                         </div>
-                                                        <p className="text-[10px] sm:text-sm text-text-muted mb-2 sm:mb-4 line-clamp-2 sm:line-clamp-3">
-                                                            {item.description}
-                                                        </p>
 
-                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-surface-100 gap-2">
-                                                            <span className="text-[9px] sm:text-xs text-gray-400 font-medium">
-                                                                {format(new Date(item.createdAt), "dd/MM/yy", { locale: dateLocale })}
-                                                            </span>
-
+                                                        <div className="mt-6 pt-5 border-t border-surface-50">
                                                             {isLocked ? (
-                                                                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-400 cursor-not-allowed">
-                                                                    <Lock className="w-4 h-4" />
-                                                                    Disponível em {format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
+                                                                <div className="flex items-center gap-2 text-xs font-bold text-text-dim">
+                                                                    <Lock className="w-3.5 h-3.5" />
+                                                                    Vence em {format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
                                                                 </div>
                                                             ) : (
                                                                 <a
                                                                     href={item.cloudinaryUrl}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
-                                                                    className="flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-hover transition-colors z-20 relative"
+                                                                    className="flex items-center justify-center gap-2 w-full py-3 bg-primary-light text-primary rounded-xl font-bold text-xs hover:bg-primary hover:text-white transition-all duration-300 active:scale-95"
                                                                 >
                                                                     <Download className="w-4 h-4" />
-                                                                    {item.buttonText ? item.buttonText : ((item.cloudinaryUrl.toLowerCase().includes('.pdf') || item.cloudinaryUrl.includes('drive.google.com')) ? t('fullScreen') : t('accessMaterial'))}
+                                                                    {item.buttonText ? item.buttonText : t('accessMaterial')}
                                                                 </a>
                                                             )}
                                                         </div>

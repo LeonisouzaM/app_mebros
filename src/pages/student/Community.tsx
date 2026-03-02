@@ -276,21 +276,21 @@ export default function Community() {
                     ) : (
                         <div className="space-y-6 pb-20">
                             {comments.map((comment) => (
-                                <article key={comment.id} className="bg-white rounded-3xl overflow-hidden shadow-sm border border-surface-200 hover:shadow-md transition-all duration-300">
+                                <article key={comment.id} className="card-premium group overflow-hidden bg-white">
                                     <div className="p-6">
                                         {/* Post Header */}
-                                        <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center justify-between mb-5">
                                             <div className="flex items-center gap-3">
                                                 <img
                                                     src={comment.userPhoto}
                                                     alt={comment.userName}
-                                                    className="w-10 h-10 rounded-full border border-surface-100 shadow-sm object-cover"
+                                                    className="w-10 h-10 rounded-2xl border border-surface-100 shadow-sm object-cover"
                                                 />
                                                 <div>
-                                                    <h3 className="text-sm font-bold text-gray-900 leading-tight">
+                                                    <h3 className="text-sm font-display font-bold text-text-main leading-tight">
                                                         {comment.userName}
                                                     </h3>
-                                                    <span className="text-[11px] text-text-muted font-medium">
+                                                    <span className="text-[10px] text-text-dim font-bold uppercase tracking-wider">
                                                         {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: dateLocale })}
                                                     </span>
                                                 </div>
@@ -298,7 +298,7 @@ export default function Community() {
                                             {(isAdmin || user?.email === comment.userEmail) && (
                                                 <button
                                                     onClick={() => removeComment(comment.id)}
-                                                    className="text-gray-200 hover:text-red-500 transition-colors p-2 rounded-xl hover:bg-red-50"
+                                                    className="text-text-dim hover:text-error transition-colors p-2 rounded-xl hover:bg-error/5"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
@@ -306,35 +306,35 @@ export default function Community() {
                                         </div>
 
                                         {/* Post Text */}
-                                        <div className="text-[15px] text-gray-800 leading-relaxed mb-4 whitespace-pre-wrap">
+                                        <div className="text-[15px] text-text-main leading-relaxed font-medium mb-4 whitespace-pre-wrap">
                                             {comment.text}
                                         </div>
                                     </div>
 
-                                    {/* Post Image - Full Width within card */}
+                                    {/* Post Image */}
                                     {comment.imageUrl && (
                                         <div className="bg-surface-50 border-y border-surface-100 cursor-zoom-in overflow-hidden" onClick={() => window.open(comment.imageUrl, '_blank')}>
                                             <img
                                                 src={comment.imageUrl}
                                                 alt="Post content"
-                                                className="w-full h-auto max-h-[600px] object-contain hover:scale-[1.01] transition-transform duration-500"
+                                                className="w-full h-auto max-h-[600px] object-contain transition-transform duration-700 hover:scale-[1.02]"
                                             />
                                         </div>
                                     )}
 
-                                    {/* Actions & Status */}
+                                    {/* Actions */}
                                     <div className="px-6 py-4">
                                         <div className="flex items-center gap-8">
                                             <button
                                                 onClick={() => likeComment(comment.id)}
-                                                className={`flex items-center gap-2 text-xs font-bold transition-all active:scale-125 ${comment.hasLiked ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+                                                className={`flex items-center gap-2 text-xs font-bold transition-all active:scale-125 ${comment.hasLiked ? 'text-error' : 'text-text-dim hover:text-error'}`}
                                             >
                                                 <Heart className={`w-4 h-4 ${comment.hasLiked ? 'fill-current' : ''}`} />
                                                 {comment.likesCount || 0}
                                             </button>
                                             <button
                                                 onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                                className={`flex items-center gap-2 text-xs font-bold transition-colors ${replyingTo === comment.id ? 'text-primary' : 'text-gray-500 hover:text-primary'}`}
+                                                className={`flex items-center gap-2 text-xs font-bold transition-colors ${replyingTo === comment.id ? 'text-primary' : 'text-text-dim hover:text-primary'}`}
                                             >
                                                 <MessageSquare className="w-4 h-4" />
                                                 {comment.replies?.length || 0}
