@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useStore } from '../../store/store';
-import { MessageCircle, Clock } from 'lucide-react';
+import { MessageCircle, Clock, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -8,7 +9,31 @@ export default function Community() {
     const { t, language } = useTranslation();
     const dateLocale = language === 'en' ? enUS : language === 'es' ? es : ptBR;
     const currentProductId = useStore((state) => state.currentProductId);
-    const comments = useStore((state) => state.comments).filter(c => c.productId === currentProductId || (!c.productId && currentProductId === 'default'));
+    const fetchComments = useStore((state) => state.fetchComments);
+    const addComment = useStore((state) => state.addComment);
+    const comments = useStore((state) => state.comments);
+    const user = useStore((state) => state.currentUser);
+
+    const [newComment, setNewComment] = useState('');
+
+    useEffect(() => {
+        if (currentProductId) {
+            fetchComments(currentProductId);
+        }
+    }, [currentProductId, fetchComments]);
+
+    const handlePostComment = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newComment.trim() || !user || !currentProductId) return;
+
+        addComment({
+            userName: user.name || user.email,
+            userPhoto: user.photo || `https://ui-avatars.com/api/?name=${user.name || 'User'}&background=random`,
+            text: newComment,
+            productId: currentProductId
+        });
+        setNewComment('');
+    };
 
     if (!currentProductId) {
         return (
@@ -33,6 +58,35 @@ export default function Community() {
                     </p>
                 </div>
             </header>
+
+            <form onSubmit={handlePostComment} className="mb-8 bg-white p-6 rounded-2xl shadow-sm border border-surface-200">
+                <div className="flex gap-4">
+                    <img
+                        src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`}
+                        alt="Me"
+                        className="w-10 h-10 rounded-full"
+                    />
+                    <div className="flex-1 space-y-3">
+                        <textarea
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            placeholder="Partilhe algo com a comunidade..."
+                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-none text-sm"
+                            rows={3}
+                        />
+                        <div className="flex justify-end">
+                            <button
+                                type="submit"
+                                disabled={!newComment.trim()}
+                                className="flex items-center gap-2 py-2 px-6 bg-primary text-white rounded-xl font-semibold hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/20"
+                            >
+                                <Send className="w-4 h-4" />
+                                Publicar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
 
             {comments.length === 0 ? (
                 <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">

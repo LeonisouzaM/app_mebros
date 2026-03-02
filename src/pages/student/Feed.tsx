@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { Rss, Calendar } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -8,7 +9,14 @@ export default function Feed() {
     const { t, language } = useTranslation();
     const dateLocale = language === 'en' ? enUS : language === 'es' ? es : ptBR;
     const currentProductId = useStore((state) => state.currentProductId);
-    const feedPosts = useStore((state) => state.feedPosts).filter(p => p.productId === currentProductId || (!p.productId && currentProductId === 'default'));
+    const fetchFeed = useStore((state) => state.fetchFeed);
+    const feedPosts = useStore((state) => state.feedPosts);
+
+    useEffect(() => {
+        if (currentProductId) {
+            fetchFeed(currentProductId);
+        }
+    }, [currentProductId, fetchFeed]);
 
     if (!currentProductId) {
         return (

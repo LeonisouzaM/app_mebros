@@ -68,6 +68,8 @@ interface AppState {
     fetchProducts: () => Promise<void>;
     fetchClasses: () => Promise<void>;
     fetchBanners: () => Promise<void>;
+    fetchFeed: (productId?: string) => Promise<void>;
+    fetchComments: (productId?: string) => Promise<void>;
     login: (email: string) => boolean;
     setCurrentUser: (user: User) => void;
     logout: () => void;
@@ -83,6 +85,7 @@ interface AppState {
     updateClass: (id: string, item: Partial<Omit<ClassItem, 'id' | 'createdAt'>>) => void;
     removeClass: (id: string) => void;
     addFeedPost: (item: Omit<FeedPost, 'id' | 'createdAt'>) => void;
+    removeFeedPost: (id: string) => void;
     addComment: (item: Omit<Comment, 'id' | 'createdAt'>) => void;
 }
 
@@ -143,7 +146,9 @@ export const useStore = create<AppState>()(
                 await Promise.all([
                     get().fetchProducts(),
                     get().fetchClasses(),
-                    get().fetchBanners()
+                    get().fetchBanners(),
+                    get().fetchFeed(),
+                    get().fetchComments()
                 ]);
             },
 
@@ -280,20 +285,76 @@ export const useStore = create<AppState>()(
                     console.error('Erro ao deletar aula:', err);
                 }
             },
-            addFeedPost: (item) =>
+
+            fetchFeed: async (productId) => {
+                try {
+                    const url = productId ? `/api/feed?productId=${productId}` : '/api/feed';
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const data = await res.json();
+                        set({ feedPosts: data });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar feed:', err);
+                }
+            },
+
+            fetchComments: async (productId) => {
+                try {
+                    const url = productId ? `/api/community?productId=${productId}` : '/api/community';
+                    const res = await fetch(url);
+                    if (res.ok) {
+                        const data = await res.json();
+                        set({ comments: data });
+                    }
+                } catch (err) {
+                    console.error('Erro ao buscar comunidade:', err);
+                }
+            },
+
+            addFeedPost: async (item) => {
+                const tempId = `post_${Date.now()}`;
+                const newItem = { ...item, id: tempId, createdAt: new Date().toISOString() };
+                set((state) => ({ feedPosts: [newItem, ...state.feedPosts] }));
+
+                try {
+                    await fetch('/api/feed', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newItem)
+                    });
+                } catch (err) {
+                    console.error('Erro ao salvar post no feed:', err);
+                }
+            },
+
+            removeFeedPost: async (id) => {
                 set((state) => ({
-                    feedPosts: [
-                        { ...item, id: Date.now().toString(), createdAt: new Date().toISOString() },
-                        ...state.feedPosts,
-                    ],
-                })),
-            addComment: (item) =>
-                set((state) => ({
-                    comments: [
-                        { ...item, id: Date.now().toString(), createdAt: new Date().toISOString() },
-                        ...state.comments,
-                    ],
-                })),
+                    feedPosts: state.feedPosts.filter((p) => p.id !== id),
+                }));
+
+                try {
+                    await fetch(`/api/feed?id=${id}`, { method: 'DELETE' });
+                } catch (err) {
+                    console.error('Erro ao deletar post do feed:', err);
+                }
+            },
+
+            addComment: async (item) => {
+                const tempId = `comm_${Date.now()}`;
+                const newItem = { ...item, id: tempId, createdAt: new Date().toISOString() };
+                set((state) => ({ comments: [newItem, ...state.comments] }));
+
+                try {
+                    await fetch('/api/community', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newItem)
+                    });
+                } catch (err) {
+                    console.error('Erro ao salvar comentário:', err);
+                }
+            },
         }),
         {
             name: 'area-membros-storage',

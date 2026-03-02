@@ -51,6 +51,27 @@ export async function initDb() {
   `;
 
   await sql`
+    CREATE TABLE IF NOT EXISTS feed_posts (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      product_id VARCHAR(255) REFERENCES products(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS comments (
+      id SERIAL PRIMARY KEY,
+      user_name VARCHAR(255) NOT NULL,
+      user_photo TEXT,
+      text TEXT NOT NULL,
+      product_id VARCHAR(255) REFERENCES products(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  await sql`
     CREATE TABLE IF NOT EXISTS system_banners (
       id SERIAL PRIMARY KEY,
       url TEXT NOT NULL,
