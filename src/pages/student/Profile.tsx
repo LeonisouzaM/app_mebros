@@ -1,11 +1,52 @@
+import { useRef, useState } from 'react';
 import { useStore } from '../../store/store';
-import { LogOut, Mail, HelpCircle, Shield } from 'lucide-react';
+import { LogOut, Mail, HelpCircle, Shield, Camera, Loader2 } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export default function Profile() {
     const { t } = useTranslation();
     const user = useStore((state) => state.currentUser);
     const logout = useStore((state) => state.logout);
+    const updateProfile = useStore((state) => state.updateProfile);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+        if (!cloudName || !uploadPreset || cloudName === 'seu_cloud_name') {
+            alert('Cloudinary não configurado.');
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset);
+
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            if (data.secure_url) {
+                await updateProfile({ photo: data.secure_url });
+            } else {
+                alert('Erro no upload da imagem.');
+            }
+        } catch (err) {
+            console.error('Erro upload:', err);
+            alert('Falha na conexão com o servidor de imagens.');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
 
     return (
         <div className="pt-8 px-4 md:px-0 animate-fade-up">
@@ -24,12 +65,35 @@ export default function Profile() {
 
             <div className="card-premium p-10 md:p-12 text-center bg-white">
                 <div className="relative inline-block mb-6">
-                    <img
-                        src={user?.photo}
-                        alt={user?.name}
-                        className="w-32 h-32 rounded-[2rem] border-4 border-primary/20 shadow-xl object-cover"
+                    <div className="relative group">
+                        <img
+                            src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`}
+                            alt={user?.name}
+                            className="w-32 h-32 rounded-[2.5rem] border-4 border-primary/20 shadow-xl object-cover"
+                        />
+
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                        >
+                            {isUploading ? (
+                                <Loader2 className="w-8 h-8 text-white animate-spin" />
+                            ) : (
+                                <Camera className="w-8 h-8 text-white" />
+                            )}
+                        </button>
+                    </div>
+
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
                     />
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-success rounded-full border-4 border-white shadow-lg flex items-center justify-center">
+
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-success rounded-full border-4 border-white shadow-lg flex items-center justify-center">
                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                     </div>
                 </div>

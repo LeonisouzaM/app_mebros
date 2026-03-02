@@ -98,6 +98,7 @@ interface AppState {
     addComment: (item: Omit<Comment, 'id' | 'createdAt'>) => Promise<void>;
     removeComment: (id: string) => Promise<void>;
     likeComment: (commentId: string) => Promise<void>;
+    updateProfile: (data: { name?: string; photo?: string }) => Promise<void>;
 }
 
 /** Helper: constrói headers com JWT quando disponível */
@@ -636,6 +637,23 @@ export const useStore = create<AppState>()(
                     }
                 } catch (err) {
                     console.error('Erro ao dar like:', err);
+                }
+            },
+
+            updateProfile: async (data: { name?: string; photo?: string }) => {
+                const token = get().authToken;
+                const res = await apiFetch('/api/auth/profile', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                }, token, () => set({ currentUser: null, authToken: null }));
+
+                if (res.ok) {
+                    const result = await res.json();
+                    set({ currentUser: result.user });
+                    showToast('Perfil atualizado com sucesso!', 'success');
+                } else {
+                    const error = await res.json();
+                    showToast(error.error || 'Erro ao atualizar perfil', 'error');
                 }
             },
         }),
