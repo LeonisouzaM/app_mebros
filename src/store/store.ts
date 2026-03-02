@@ -543,8 +543,29 @@ export const useStore = create<AppState>()(
                         () => set({ currentUser: null, authToken: null })
                     );
                     if (!res.ok) {
+                        const errData = await res.json().catch(() => ({}));
+                        console.error('Erro ao enviar comentário — resposta do servidor:', res.status, errData);
                         revert();
                         showToast('Erro ao enviar comentário.', 'error');
+                    } else {
+                        // Substituir o ID temporário pelo ID real do banco
+                        const data = await res.json().catch(() => ({}));
+                        if (data.id) {
+                            const realId = String(data.id);
+                            if (item.parentId) {
+                                set((state) => ({
+                                    comments: state.comments.map(c =>
+                                        c.id === item.parentId
+                                            ? { ...c, replies: (c.replies || []).map(r => r.id === tempId ? { ...r, id: realId } : r) }
+                                            : c
+                                    )
+                                }));
+                            } else {
+                                set((state) => ({
+                                    comments: state.comments.map(c => c.id === tempId ? { ...c, id: realId } : c)
+                                }));
+                            }
+                        }
                     }
                 } catch (err) {
                     revert();

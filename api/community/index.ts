@@ -46,12 +46,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 `;
             }
 
-            const postIds = posts.map(p => p.id);
+            const postIds = posts.map(p => Number(p.id));
             let allReplies: any[] = [];
             if (postIds.length > 0) {
                 allReplies = await sql`
                     SELECT * FROM comments 
-                    WHERE parent_id IN (${postIds.join(',')})
+                    WHERE parent_id = ANY(${postIds})
                     ORDER BY created_at ASC
                 `;
             }
@@ -110,11 +110,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const userEmail = auth.email; // email do token, não do body
             if (!userName || !text || !bodyProductId) return res.status(400).json({ error: 'Dados incompletos' });
 
-            await sql`
+            // parentId deve ser um número inteiro válido (ID real do banco)
+            const parentIdNum = parentId ? parseInt(String(parentId), 10) : null;
+            if (parentId && (isNaN(parentIdNum!) || parentIdNum! <= 0)) {
+                return res.status(400).json({ error: 'parentId inválido' });
+            }
+
+            const result = await sql`
                 INSERT INTO comments (user_name, user_photo, user_email, text, image_url, product_id, parent_id)
-                VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl || null}, ${bodyProductId}, ${parentId ? Number(parentId) : null})
+                VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl || null}, ${bodyProductId}, ${parentIdNum})
+                RETURNING id, created_at
             `;
-            return res.status(200).json({ message: 'Comentário enviado' });
+            return res.status(200).json({ message: 'Comentário enviado', id: result[0].id, createdAt: result[0].created_at });
         }
 
         if (req.method === 'DELETE') {
