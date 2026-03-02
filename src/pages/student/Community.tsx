@@ -19,6 +19,14 @@ export default function Community() {
 
     const isAdmin = user?.role === 'admin' || user?.email === 'admin@admin.com';
     const [newComment, setNewComment] = useState('');
+    const [targetProductId, setTargetProductId] = useState<string>('');
+
+    // Update targetProductId when currentProductId changes (for ease of use)
+    useEffect(() => {
+        if (currentProductId) {
+            setTargetProductId(currentProductId);
+        }
+    }, [currentProductId]);
 
     console.log('DEBUG COMMUNITY:', {
         userEmail: user?.email,
@@ -40,13 +48,14 @@ export default function Community() {
 
     const handlePostComment = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newComment.trim() || !user || !currentProductId) return;
+        const pid = isAdmin ? targetProductId : currentProductId;
+        if (!newComment.trim() || !user || !pid) return;
 
         addComment({
             userName: user.name || user.email,
             userPhoto: user.photo || `https://ui-avatars.com/api/?name=${user.name || 'User'}&background=random`,
             text: newComment,
-            productId: currentProductId
+            productId: pid
         });
         setNewComment('');
     };
@@ -73,16 +82,18 @@ export default function Community() {
                         {t('communityDesc')}
                     </p>
                 </div>
-                {isAdmin && (
+                {(isAdmin || (user?.accessibleProducts && user.accessibleProducts.length > 1)) && (
                     <div className="min-w-[200px]">
-                        <label className="block text-[10px] font-bold text-primary uppercase mb-1">Ver Comunidade de:</label>
+                        <label className="block text-[10px] font-bold text-primary uppercase mb-1">
+                            {isAdmin ? 'Ver Comunidade de:' : 'Mudar Comunidade:'}
+                        </label>
                         <select
                             value={currentProductId || ''}
                             onChange={(e) => setCurrentProductId(e.target.value)}
                             className="w-full px-3 py-2 border border-surface-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary outline-none"
                         >
-                            <option value="">Selecione...</option>
-                            {products.map(p => (
+                            <option value="">Selecione o produto...</option>
+                            {products.filter(p => isAdmin || user?.accessibleProducts?.some(ap => String(ap) === String(p.hotmartId))).map(p => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
                             ))}
                         </select>
@@ -104,10 +115,26 @@ export default function Community() {
                                 className="w-10 h-10 rounded-full"
                             />
                             <div className="flex-1 space-y-3">
+                                {isAdmin && (
+                                    <div className="mb-2">
+                                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Postar para o Produto:</label>
+                                        <select
+                                            value={targetProductId}
+                                            onChange={(e) => setTargetProductId(e.target.value)}
+                                            className="w-full px-3 py-2 border border-surface-200 rounded-lg text-xs bg-surface-50 focus:ring-2 focus:ring-primary outline-none"
+                                            required
+                                        >
+                                            <option value="">Selecione para onde postar...</option>
+                                            {products.map(p => (
+                                                <option key={p.id} value={p.id}>{p.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
                                 <textarea
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
-                                    placeholder="Partilhe algo com a comunidade..."
+                                    placeholder={isAdmin ? "Escreva algo como administrador..." : "Partilhe algo com a comunidade..."}
                                     className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-none text-sm"
                                     rows={3}
                                 />
@@ -118,7 +145,7 @@ export default function Community() {
                                         className="flex items-center gap-2 py-2 px-6 bg-primary text-white rounded-xl font-semibold hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/20"
                                     >
                                         <Send className="w-4 h-4" />
-                                        Publicar
+                                        {isAdmin ? 'Publicar como Admin' : 'Publicar'}
                                     </button>
                                 </div>
                             </div>
