@@ -1,23 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { MessageSquare, UserPlus } from 'lucide-react';
+import { MessageSquare, UserPlus, Trash2 } from 'lucide-react';
 
 export default function CommunityManagement() {
     const addComment = useStore((state) => state.addComment);
+    const removeComment = useStore((state) => state.removeComment);
+    const products = useStore((state) => state.products);
+    const fetchInitialData = useStore((state) => state.fetchInitialData);
+    const fetchComments = useStore((state) => state.fetchComments);
+    const comments = useStore((state) => state.comments);
+
     const [userName, setUserName] = useState('');
     const [userPhoto, setUserPhoto] = useState('');
     const [text, setText] = useState('');
+    const [productId, setProductId] = useState('');
+
+    useEffect(() => {
+        fetchInitialData();
+    }, []);
+
+    useEffect(() => {
+        if (productId) {
+            fetchComments(productId);
+        }
+    }, [productId, fetchComments]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userName || !text) return;
+        if (!userName || !text || !productId) return;
 
         const photoUrl = userPhoto || `https://ui-avatars.com/api/?name=${userName.replace(' ', '+')}&background=3B82F6&color=fff`;
 
-        addComment({ userName, userPhoto: photoUrl, text });
+        addComment({
+            userName,
+            userPhoto: photoUrl,
+            text,
+            productId
+        });
+
         setUserName('');
         setUserPhoto('');
         setText('');
+        // We keep productId selected for multiple posts
     };
 
     return (
@@ -34,6 +58,24 @@ export default function CommunityManagement() {
 
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-sm border border-surface-200">
                 <div className="space-y-6">
+                    <div>
+                        <label htmlFor="productId" className="block text-sm font-semibold text-gray-700 mb-1">
+                            Para qual Curso/Produto?
+                        </label>
+                        <select
+                            id="productId"
+                            required
+                            value={productId}
+                            onChange={(e) => setProductId(e.target.value)}
+                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary transition-all bg-surface-50"
+                        >
+                            <option value="">Selecione o produto...</option>
+                            {products.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="grid md:grid-cols-2 gap-6">
                         <div>
                             <label htmlFor="userName" className="block text-sm font-semibold text-gray-700 mb-1">
@@ -110,6 +152,45 @@ export default function CommunityManagement() {
                     <p className="text-sm text-gray-400">Digite um nome para visualizar o avatar gerado.</p>
                 )}
             </div>
+
+            {/* Comment List Section */}
+            {productId && (
+                <div className="mt-12 space-y-4">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <MessageSquare className="text-primary h-5 w-5" />
+                        Comentários Existentes ({comments.length})
+                    </h3>
+
+                    {comments.length === 0 ? (
+                        <div className="bg-white p-6 rounded-2xl text-center border border-dashed border-gray-300">
+                            <p className="text-sm text-gray-400">Nenhum comentário para este produto ainda.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {comments.map((comment) => (
+                                <div key={comment.id} className="bg-white p-4 rounded-2xl border border-surface-200 flex items-start gap-4">
+                                    <img src={comment.userPhoto} alt={comment.userName} className="w-10 h-10 rounded-full" />
+                                    <div className="flex-1">
+                                        <div className="flex justify-between items-start">
+                                            <p className="font-bold text-sm">{comment.userName}</p>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] text-gray-400">{new Date(comment.createdAt).toLocaleString()}</span>
+                                                <button
+                                                    onClick={() => removeComment(comment.id)}
+                                                    className="text-red-400 hover:text-red-600 transition-colors"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <p className="text-sm text-gray-700 mt-1">{comment.text}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

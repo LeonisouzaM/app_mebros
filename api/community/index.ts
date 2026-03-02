@@ -37,6 +37,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ message: 'Comentário enviado' });
         }
 
+        if (req.method === 'DELETE') {
+            const { id } = req.query;
+            if (!id) return res.status(400).json({ error: 'ID necessário' });
+            await sql`DELETE FROM comments WHERE id = ${Number(id)}`;
+            return res.status(200).json({ message: 'Comentário removido' });
+        }
+
         return res.status(405).json({ error: 'Method Not Allowed' });
     } catch (error: any) {
         return res.status(500).json({ error: 'Erro na comunidade', details: error.message });

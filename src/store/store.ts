@@ -87,6 +87,7 @@ interface AppState {
     addFeedPost: (item: Omit<FeedPost, 'id' | 'createdAt'>) => void;
     removeFeedPost: (id: string) => void;
     addComment: (item: Omit<Comment, 'id' | 'createdAt'>) => void;
+    removeComment: (id: string) => void;
 }
 
 export const useStore = create<AppState>()(
@@ -353,6 +354,15 @@ export const useStore = create<AppState>()(
                     });
                 } catch (err) {
                     console.error('Erro ao salvar comentário:', err);
+                }
+            },
+
+            removeComment: async (id) => {
+                set((state) => ({ comments: state.comments.filter(c => c.id !== id) }));
+                try {
+                    await fetch(`/api/community?id=${id}`, { method: 'DELETE' });
+                } catch (err) {
+                    console.error('Erro ao remover comentário:', err);
                 }
             },
         }),
