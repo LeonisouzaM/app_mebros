@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useStore } from '../../store/store';
 import { MessageCircle, Send, Smile, Image as ImageIcon, Heart, MessageSquare, Loader2, Trash2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
 import EmojiPicker, { Theme, type EmojiClickData } from 'emoji-picker-react';
@@ -291,7 +291,7 @@ export default function Community() {
                                                         {comment.userName}
                                                     </h3>
                                                     <span className="text-[10px] text-text-dim font-bold uppercase tracking-wider">
-                                                        {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: dateLocale })}
+                                                        {format(new Date(comment.createdAt), 'dd/MM/yyyy HH:mm', { locale: dateLocale })}
                                                     </span>
                                                 </div>
                                             </div>
@@ -351,7 +351,7 @@ export default function Community() {
                                                     <div className="flex-1 bg-white p-4 rounded-2xl border border-surface-200 shadow-sm relative group-hover/reply:border-primary/20 transition-colors">
                                                         <div className="flex justify-between items-baseline mb-1">
                                                             <span className="text-xs font-bold text-gray-900">{reply.userName}</span>
-                                                            <span className="text-[10px] text-gray-400 font-medium">{formatDistanceToNow(new Date(reply.createdAt), { addSuffix: true, locale: dateLocale })}</span>
+                                                            <span className="text-[10px] text-gray-400 font-medium">{format(new Date(reply.createdAt), 'dd/MM/yyyy HH:mm', { locale: dateLocale })}</span>
                                                         </div>
                                                         <p className="text-xs text-gray-700 leading-relaxed">{reply.text}</p>
                                                     </div>
