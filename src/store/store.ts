@@ -99,6 +99,7 @@ interface AppState {
     removeComment: (id: string) => Promise<void>;
     likeComment: (commentId: string) => Promise<void>;
     updateProfile: (data: { name?: string; photo?: string }) => Promise<void>;
+    isLoading: boolean;
 }
 
 /** Helper: constrói headers com JWT quando disponível */
@@ -147,6 +148,7 @@ export const useStore = create<AppState>()(
             currentProductId: null,
             systemBanners: [],
             authToken: null,
+            isLoading: false,
 
             // Legacy local-only login (disabled — use loginWithApi)
             login: (_email: string) => {
@@ -222,13 +224,18 @@ export const useStore = create<AppState>()(
             },
 
             fetchInitialData: async () => {
-                await Promise.all([
-                    get().fetchProducts(),
-                    get().fetchClasses(),
-                    get().fetchBanners(),
-                    get().fetchFeed(),
-                    get().fetchComments(),
-                ]);
+                set({ isLoading: true });
+                try {
+                    await Promise.all([
+                        get().fetchProducts(),
+                        get().fetchClasses(),
+                        get().fetchBanners(),
+                        get().fetchFeed(),
+                        get().fetchComments(),
+                    ]);
+                } finally {
+                    set({ isLoading: false });
+                }
             },
 
             fetchProducts: async () => {

@@ -15,6 +15,7 @@ export default function Home() {
     const products = useStore((state) => state.products);
     const systemBanners = useStore((state) => state.systemBanners);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+    const isLoading = useStore((state) => state.isLoading);
     const fetchInitialData = useStore((state) => state.fetchInitialData);
     const setCurrentProductId = useStore((state) => state.setCurrentProductId);
 
@@ -28,9 +29,11 @@ export default function Home() {
 
     const allowedProducts = products.filter(p => {
         if (isMaster) return true;
-        if (p.id === 'default' && accessibleProductIds.includes('default')) return true;
-        if (!p.hotmartId) return false;
-        return accessibleProductIds.some(id => String(id) === String(p.hotmartId));
+        // Permite o produto se o ID dele OU o hotmartId dele estiver na lista de acessos do aluno
+        return accessibleProductIds.some(accessId =>
+            String(accessId) === String(p.id) ||
+            (p.hotmartId && String(accessId) === String(p.hotmartId))
+        );
     });
 
     const urlProductId = searchParams.get('p') || searchParams.get('product') || searchParams.get('produto');
@@ -43,6 +46,15 @@ export default function Home() {
             setCurrentProductId(visibleProducts[0].id);
         }
     }, [visibleProducts, setCurrentProductId]);
+
+    if (isLoading && products.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">Carregando seus conteúdos...</p>
+            </div>
+        );
+    }
 
     useEffect(() => {
         if (!systemBanners || systemBanners.length <= 1) return;
