@@ -131,7 +131,7 @@ export default function ProductManagement() {
                 </h2>
                 <div className="space-y-4">
                     <p className="text-sm text-text-muted">
-                        Estas imagens aparecerão no carrossel da tela inicial. (Resolução ideal: 1920x600)
+                        Estas imagens aparecerão no carrossel da tela inicial. (Resolução ideal: 1080x650 para Mobile ou 1920x720 para Desktop)
                     </p>
                     <div className="space-y-3">
                         {editingBanners.map((banner, index) => (
@@ -260,7 +260,7 @@ export default function ProductManagement() {
                     </div>
                     <div className="pt-4 border-t border-surface-100">
                         <label className="block text-sm font-bold text-gray-900 mb-2">Banners Exclusivos deste Produto (Opcional)</label>
-                        <p className="text-xs text-text-muted mb-4 italic">Se você adicionar banners aqui, eles substituirão os banners da tela inicial quando o aluno selecionar este produto.</p>
+                        <p className="text-xs text-text-muted mb-4 italic">Se você adicionar banners aqui, eles substituirão os banners da tela inicial quando o aluno selecionar este produto. (Resolução ideal: 1080x650 Mobile / 1920x720 Desktop)</p>
 
                         <div className="space-y-3">
                             {banners.map((b, i) => (
