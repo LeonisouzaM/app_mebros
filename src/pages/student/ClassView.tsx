@@ -56,10 +56,16 @@ export default function ClassView() {
                         {lesson.type === 'video' ? (
                             <video
                                 src={lesson.cloudinaryUrl}
-                                className="w-full h-full"
+                                className="w-full h-full bg-black"
                                 controls
                                 autoPlay
+                                playsInline
+                                preload="auto"
                                 poster={lesson.coverUrl}
+                                onError={(e) => {
+                                    console.error("Video loading error:", e);
+                                    alert("Erro ao carregar o vídeo. Verifique sua conexão ou o formato do arquivo.");
+                                }}
                             />
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-surface-900">

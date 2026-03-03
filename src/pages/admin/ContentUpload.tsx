@@ -50,7 +50,15 @@ export default function ContentUpload() {
         formData.append('upload_preset', uploadPreset);
 
         try {
-            const resourceType = file.type === 'application/pdf' || file.name.endsWith('.pdf') ? 'raw' : 'auto';
+            // Detecção robusta do resource_type do Cloudinary
+            let resourceType = 'auto';
+            if (file.type.startsWith('video/')) {
+                resourceType = 'video';
+            } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+                resourceType = 'raw';
+            } else if (file.type.startsWith('image/')) {
+                resourceType = 'image';
+            }
 
             const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
                 method: 'POST',

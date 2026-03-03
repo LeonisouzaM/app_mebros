@@ -55,16 +55,21 @@ export default function VideoPlayer({ url, title, onClose }: VideoPlayerProps) {
                     </button>
                 </div>
 
-                {/* Video Element */}
                 <video
                     ref={videoRef}
                     src={url}
-                    className="w-full h-full cursor-pointer"
+                    className="w-full h-full cursor-pointer bg-black"
                     onTimeUpdate={handleTimeUpdate}
                     onClick={togglePlay}
                     autoPlay
+                    playsInline
+                    preload="auto"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
+                    onError={(e) => {
+                        console.error("Video player error:", e);
+                        alert("Não foi possível carregar o vídeo. Tente novamente mais tarde.");
+                    }}
                 />
 
                 {/* Custom Controls (Simplified for Premium Look) */}
