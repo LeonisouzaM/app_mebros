@@ -2,10 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
 
 @theme {
-  /* Brand Colors - Indigo/Blue Spectrum */
-  --color-primary: #4F46E5;
-  --color-primary-hover: #4338CA;
-  --color-primary-light: #EEF2FF;
+  /* Brand Colors - Purple/Violet Spectrum */
+  --color-primary: #9333EA;
+  /* Purple 600 */
+  --color-primary-hover: #7E22CE;
+  /* Purple 700 */
+  --color-primary-light: #FAF5FF;
+  /* Purple 50 */
 
   /* State Colors */
   --color-success: #10B981;
