@@ -48,6 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 buttonText: c.button_text,
                 productId: c.product_id,
                 unlockDate: c.unlock_date,
+                type: c.type,
                 createdAt: c.created_at
             })));
         }
@@ -56,13 +57,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const auth = requireAdmin(req, res);
             if (!auth) return;
 
-            const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate } = req.body;
+            const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate, type } = req.body;
             if (!title || !cloudinaryUrl) return res.status(400).json({ error: 'Título e URL são obrigatórios' });
 
             const classId = id || `class_${Date.now()}`;
             await sql`
-                INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date)
-                VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl}, ${description}, ${buttonText}, ${productId}, ${unlockDate})
+                INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date, type)
+                VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl}, ${description}, ${buttonText}, ${productId}, ${unlockDate}, ${type})
                 ON CONFLICT (id) DO UPDATE SET
                     title = EXCLUDED.title,
                     cloudinary_url = EXCLUDED.cloudinary_url,
@@ -70,7 +71,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     description = EXCLUDED.description,
                     button_text = EXCLUDED.button_text,
                     product_id = EXCLUDED.product_id,
-                    unlock_date = EXCLUDED.unlock_date
+                    unlock_date = EXCLUDED.unlock_date,
+                    type = EXCLUDED.type
             `;
             return res.status(200).json({ message: 'Aula salva', id: classId });
         }

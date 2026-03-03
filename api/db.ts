@@ -61,11 +61,11 @@ export async function initDb() {
     );
   `;
 
-  // Migration for existing tables
   try {
     await sql`ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS image_url TEXT`;
+    await sql`ALTER TABLE classes ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'link'`;
   } catch (e) {
-    console.log('image_url column handled');
+    console.log('Columns handled');
   }
 
   await sql`

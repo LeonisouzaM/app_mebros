@@ -1,0 +1,16 @@
+﻿
+========== DIAGN├ôSTICO ==========
+
+Ô£à Usu├írio encontrado: certificacionsuporte@proton.me [role: student] [id: 3]
+
+­ƒôª Produtos que o usu├írio tem acesso:
+   - product_id: "prod_1772413031703"
+
+­ƒôï Produtos cadastrados no sistema:
+   - id: "prod_1772413031703" | nome: "Mounjaro" | hotmart_id: "7305069"
+
+­ƒöì Produto com hotmart_id = "7305069":
+   Ô£à Encontrado: id="prod_1772413031703" | nome="Mounjaro"
+
+=================================
+

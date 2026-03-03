@@ -21,6 +21,7 @@ export default function ContentUpload() {
     const [productId, setProductId] = useState<string>('');
     const [buttonText, setButtonText] = useState('');
     const [unlockDate, setUnlockDate] = useState('');
+    const [type, setType] = useState<'video' | 'pdf' | 'link' | 'image'>('video');
     const [success, setSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState('Conteúdo publicado com sucesso!');
     const [isUploading, setIsUploading] = useState(false);
@@ -60,6 +61,10 @@ export default function ContentUpload() {
 
             if (data.secure_url) {
                 setUrl(data.secure_url);
+                // Detectar tipo pelo arquivo
+                if (file.type.startsWith('video/')) setType('video');
+                else if (file.type === 'application/pdf') setType('pdf');
+                else if (file.type.startsWith('image/')) setType('image');
             } else {
                 setUploadError(data.error?.message || 'Erro do Cloudinary ao salvar o arquivo.');
             }
@@ -76,12 +81,12 @@ export default function ContentUpload() {
         if (!title || !url) return;
 
         if (editingId) {
-            updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined });
+            updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined, type });
             setSuccessMessage('Conteúdo atualizado com sucesso!');
         } else {
             // Default to 'default' product if none selected and products exist
             const finalProductId = productId || (products.length > 0 ? products[0].id : undefined);
-            addClass({ title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: finalProductId, unlockDate: unlockDate || undefined });
+            addClass({ title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: finalProductId, unlockDate: unlockDate || undefined, type });
             setSuccessMessage('Conteúdo publicado e agora disponível para os alunos!');
         }
 
@@ -99,6 +104,7 @@ export default function ContentUpload() {
         setProductId(item.productId || '');
         setButtonText(item.buttonText || '');
         setUnlockDate(item.unlockDate || '');
+        setType(item.type || 'video');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -111,6 +117,7 @@ export default function ContentUpload() {
         setProductId('');
         setButtonText('');
         setUnlockDate('');
+        setType('video');
     };
 
     return (
@@ -172,20 +179,38 @@ export default function ContentUpload() {
 
                     {/* Campos Originais */}
                     {products.length > 0 && (
-                        <div>
-                            <label htmlFor="product" className="block text-sm font-semibold text-gray-700 mb-1">
-                                Para qual Produto?
-                            </label>
-                            <select
-                                id="product"
-                                value={productId || products[0].id}
-                                onChange={(e) => setProductId(e.target.value)}
-                                className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
-                            >
-                                {products.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                ))}
-                            </select>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label htmlFor="product" className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Para qual Produto?
+                                </label>
+                                <select
+                                    id="product"
+                                    value={productId || products[0].id}
+                                    onChange={(e) => setProductId(e.target.value)}
+                                    className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
+                                >
+                                    {products.map(p => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label htmlFor="type" className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Tipo de Conteúdo / Aula
+                                </label>
+                                <select
+                                    id="type"
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value as any)}
+                                    className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 font-bold text-primary"
+                                >
+                                    <option value="video">🎥 Vídeo Aula (Cloudinary Player)</option>
+                                    <option value="pdf">📄 Material PDF / Download</option>
+                                    <option value="link">🔗 Link Externo / Site</option>
+                                    <option value="image">🖼️ Imagem / Infográfico</option>
+                                </select>
+                            </div>
                         </div>
                     )}
 
@@ -326,6 +351,9 @@ export default function ContentUpload() {
                                             <h3 className="font-bold text-gray-900 text-sm truncate">{item.title}</h3>
                                             <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
                                                 {productAssigned ? productAssigned.name : 'Sem Produto'}
+                                            </span>
+                                            <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold uppercase">
+                                                {item.type || 'link'}
                                             </span>
                                         </div>
                                         <p className="text-xs text-text-muted mt-1 truncate">{item.cloudinaryUrl}</p>
