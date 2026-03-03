@@ -30,10 +30,8 @@ export default function StudentLayout() {
             <header className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl z-[60] hidden md:block">
                 <nav className="glass-effect rounded-2xl px-6 py-4 flex items-center justify-between shadow-premium border-white/40">
                     <div className="flex items-center gap-10">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                                <span className="text-white font-bold text-xs">M</span>
-                            </div>
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="Logo" className="w-9 h-9 rounded-xl shadow-lg shadow-primary/20 object-cover border border-white/50" />
                             <span className="font-display font-bold text-lg tracking-tight text-text-main">Membros PRO</span>
                         </div>
 

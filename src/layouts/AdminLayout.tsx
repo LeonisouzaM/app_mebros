@@ -18,9 +18,12 @@ export default function AdminLayout() {
         <div className="flex bg-surface-50 h-screen w-full overflow-hidden">
             {/* Sidebar for Admin */}
             <aside className="w-64 bg-white border-r border-surface-200 flex flex-col shadow-sm">
-                <div className="p-6 border-b border-surface-200">
-                    <h1 className="text-xl font-bold text-primary">Painel Admin</h1>
-                    <p className="text-sm text-text-muted mt-1">{user?.name}</p>
+                <div className="p-6 border-b border-surface-200 flex items-center gap-3">
+                    <img src="/logo.png" alt="Logo" className="w-8 h-8 rounded-lg shadow-sm" />
+                    <div>
+                        <h1 className="text-lg font-bold text-primary leading-tight">Painel Admin</h1>
+                        <p className="text-[10px] text-text-muted mt-0.5 uppercase tracking-widest font-bold tracking-tight">{user?.name}</p>
+                    </div>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
