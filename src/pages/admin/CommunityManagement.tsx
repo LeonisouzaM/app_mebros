@@ -167,7 +167,7 @@ export default function CommunityManagement() {
                         <img
                             src={userPhoto || `https://ui-avatars.com/api/?name=${userName.replace(' ', '+')}&background=3B82F6&color=fff`}
                             alt="Preview"
-                            className="w-12 h-12 rounded-full shadow-sm"
+                            className="w-12 h-12 rounded-full shadow-sm object-cover flex-shrink-0"
                         />
                         <div>
                             <p className="font-semibold text-gray-900">{userName}</p>
@@ -195,7 +195,7 @@ export default function CommunityManagement() {
                         <div className="space-y-4">
                             {comments.map((comment) => (
                                 <div key={comment.id} className="bg-white p-4 rounded-2xl border border-surface-200 flex items-start gap-4">
-                                    <img src={comment.userPhoto} alt={comment.userName} className="w-10 h-10 rounded-full" />
+                                    <img src={comment.userPhoto} alt={comment.userName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start">
                                             <p className="font-bold text-sm">{comment.userName}</p>

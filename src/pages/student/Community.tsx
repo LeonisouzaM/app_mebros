@@ -168,7 +168,7 @@ export default function Community() {
                             <img
                                 src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`}
                                 alt="Me"
-                                className="w-12 h-12 rounded-full shadow-sm border border-surface-100"
+                                className="w-12 h-12 rounded-full shadow-sm border border-surface-100 object-cover flex-shrink-0"
                             />
                             <div className="flex-1 space-y-4">
                                 {accessibleProductsList.length > 1 && (
@@ -284,7 +284,7 @@ export default function Community() {
                                                 <img
                                                     src={comment.userPhoto}
                                                     alt={comment.userName}
-                                                    className="w-10 h-10 rounded-2xl border border-surface-100 shadow-sm object-cover"
+                                                    className="w-10 h-10 rounded-full border border-surface-100 shadow-sm object-cover flex-shrink-0"
                                                 />
                                                 <div>
                                                     <h3 className="text-sm font-display font-bold text-text-main leading-tight">
@@ -347,7 +347,7 @@ export default function Community() {
                                         <div className="bg-surface-50 p-6 border-t border-surface-100 space-y-5">
                                             {comment.replies?.map((reply: any) => (
                                                 <div key={reply.id} className="flex gap-4 group/reply">
-                                                    <img src={reply.userPhoto} className="w-8 h-8 rounded-full border border-surface-200 object-cover" />
+                                                    <img src={reply.userPhoto} className="w-8 h-8 rounded-full border border-surface-200 object-cover flex-shrink-0" />
                                                     <div className="flex-1 bg-white p-4 rounded-2xl border border-surface-200 shadow-sm relative group-hover/reply:border-primary/20 transition-colors">
                                                         <div className="flex justify-between items-baseline mb-1">
                                                             <span className="text-xs font-bold text-gray-900">{reply.userName}</span>
@@ -360,7 +360,7 @@ export default function Community() {
 
                                             {replyingTo === comment.id && (
                                                 <div className="flex gap-4 pt-2">
-                                                    <img src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`} className="w-9 h-9 rounded-full border border-surface-200 object-cover" />
+                                                    <img src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`} className="w-9 h-9 rounded-full border border-surface-200 object-cover flex-shrink-0" />
                                                     <div className="flex-1 flex gap-2">
                                                         <input
                                                             autoFocus

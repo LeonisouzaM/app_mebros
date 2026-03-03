@@ -63,7 +63,7 @@ export default function StudentLayout() {
                         <img
                             src={user.photo}
                             alt={user.name}
-                            className="w-10 h-10 rounded-full border-2 border-primary/20 shadow-sm"
+                            className="w-10 h-10 rounded-full border-2 border-primary/20 shadow-sm object-cover flex-shrink-0"
                         />
                         <button
                             onClick={() => logout()}
