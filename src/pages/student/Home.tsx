@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../../store/store';
 import { PlayCircle, Download, ChevronLeft, ChevronRight, Lock, Sparkles, BookOpen } from 'lucide-react';
 import { format, isAfter, startOfDay } from 'date-fns';
@@ -27,19 +27,23 @@ export default function Home() {
     const isMaster = user?.role === 'admin' || user?.email === 'aluno@teste.com';
     const [searchParams] = useSearchParams();
 
-    const allowedProducts = products.filter(p => {
-        if (isMaster) return true;
-        // Permite o produto se o ID dele OU o hotmartId dele estiver na lista de acessos do aluno
-        return accessibleProductIds.some(accessId =>
-            String(accessId) === String(p.id) ||
-            (p.hotmartId && String(accessId) === String(p.hotmartId))
-        );
-    });
+    const allowedProducts = useMemo(() => {
+        return products.filter(p => {
+            if (isMaster) return true;
+            return accessibleProductIds.some(accessId =>
+                String(accessId) === String(p.id) ||
+                (p.hotmartId && String(accessId) === String(p.hotmartId))
+            );
+        });
+    }, [products, isMaster, accessibleProductIds]);
 
     const urlProductId = searchParams.get('p') || searchParams.get('product') || searchParams.get('produto');
-    const visibleProducts = urlProductId
-        ? allowedProducts.filter(p => p.id === urlProductId)
-        : allowedProducts;
+
+    const visibleProducts = useMemo(() => {
+        return urlProductId
+            ? allowedProducts.filter(p => p.id === urlProductId)
+            : allowedProducts;
+    }, [urlProductId, allowedProducts]);
 
     useEffect(() => {
         if (visibleProducts.length === 1) {
@@ -47,18 +51,11 @@ export default function Home() {
         }
     }, [visibleProducts, setCurrentProductId]);
 
-    if (isLoading && products.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
-                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">Carregando seus conteúdos...</p>
-            </div>
-        );
-    }
-
-    const activeBanners = (visibleProducts.length === 1 && visibleProducts[0].banners && visibleProducts[0].banners.length > 0)
-        ? visibleProducts[0].banners
-        : systemBanners.filter(b => b && b.trim() !== '');
+    const activeBanners = useMemo(() => {
+        return (visibleProducts.length === 1 && visibleProducts[0].banners && visibleProducts[0].banners.length > 0)
+            ? visibleProducts[0].banners
+            : systemBanners.filter(b => b && b.trim() !== '');
+    }, [visibleProducts, systemBanners]);
 
     useEffect(() => {
         setCurrentBannerIndex(0);
@@ -78,6 +75,15 @@ export default function Home() {
         if (!activeBanners.length) return;
         setCurrentBannerIndex(prev => (prev - 1 + activeBanners.length) % activeBanners.length);
     };
+
+    if (isLoading && products.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                <p className="text-text-muted font-bold uppercase tracking-widest text-[10px]">Carregando seus conteúdos...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-10 pb-20 animate-fade-up px-4 md:px-0">
