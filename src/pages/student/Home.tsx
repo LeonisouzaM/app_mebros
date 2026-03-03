@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../../store/store';
-import { PlayCircle, Download, ChevronLeft, ChevronRight, Lock, Sparkles, BookOpen } from 'lucide-react';
+import { PlayCircle, ChevronLeft, ChevronRight, Lock, Sparkles, BookOpen } from 'lucide-react';
 import { format, isAfter, startOfDay } from 'date-fns';
 import { ptBR, enUS, es } from 'date-fns/locale';
 import { useTranslation } from '../../hooks/useTranslation';
-import { useSearchParams } from 'react-router-dom';
-import VideoPlayer from '../../components/VideoPlayer';
+import { useSearchParams, Link } from 'react-router-dom';
 
 export default function Home() {
     const { t, language } = useTranslation();
@@ -19,7 +18,6 @@ export default function Home() {
     const isLoading = useStore((state) => state.isLoading);
     const fetchInitialData = useStore((state) => state.fetchInitialData);
     const setCurrentProductId = useStore((state) => state.setCurrentProductId);
-    const [activeVideo, setActiveVideo] = useState<{ url: string; title: string } | null>(null);
 
     useEffect(() => {
         fetchInitialData();
@@ -260,24 +258,14 @@ export default function Home() {
                                                                     <Lock className="w-3.5 h-3.5" />
                                                                     Vence em {format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
                                                                 </div>
-                                                            ) : item.type === 'video' ? (
-                                                                <button
-                                                                    onClick={() => setActiveVideo({ url: item.cloudinaryUrl, title: item.title })}
+                                                            ) : (
+                                                                <Link
+                                                                    to={`/class/${item.id}`}
                                                                     className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-xs hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all duration-300 active:scale-95"
                                                                 >
                                                                     <PlayCircle className="w-4 h-4" />
-                                                                    Assistir Aula
-                                                                </button>
-                                                            ) : (
-                                                                <a
-                                                                    href={item.cloudinaryUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="flex items-center justify-center gap-2 w-full py-3 bg-primary-light text-primary rounded-xl font-bold text-xs hover:bg-primary hover:text-white transition-all duration-300 active:scale-95"
-                                                                >
-                                                                    <Download className="w-4 h-4" />
-                                                                    {item.buttonText ? item.buttonText : t('accessMaterial')}
-                                                                </a>
+                                                                    Acessar Aula
+                                                                </Link>
                                                             )}
                                                         </div>
                                                     </div>
@@ -290,13 +278,6 @@ export default function Home() {
                         )
                     })}
                 </div>
-            )}
-            {activeVideo && (
-                <VideoPlayer
-                    url={activeVideo.url}
-                    title={activeVideo.title}
-                    onClose={() => setActiveVideo(null)}
-                />
             )}
         </div>
     );

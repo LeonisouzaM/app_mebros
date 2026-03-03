@@ -34,6 +34,7 @@ export interface ClassItem {
     buttonText?: string;
     productId?: string;
     unlockDate?: string;
+    attachmentUrl?: string;
     type?: 'video' | 'pdf' | 'link' | 'image';
     createdAt: string;
 }

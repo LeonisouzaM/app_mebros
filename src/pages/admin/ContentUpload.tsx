@@ -21,6 +21,7 @@ export default function ContentUpload() {
     const [productId, setProductId] = useState<string>('');
     const [buttonText, setButtonText] = useState('');
     const [unlockDate, setUnlockDate] = useState('');
+    const [attachmentUrl, setAttachmentUrl] = useState('');
     const [type, setType] = useState<'video' | 'pdf' | 'link' | 'image'>('video');
     const [success, setSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState('Conteúdo publicado com sucesso!');
@@ -29,7 +30,7 @@ export default function ContentUpload() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'primary' | 'attachment' = 'primary') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -49,7 +50,6 @@ export default function ContentUpload() {
         formData.append('upload_preset', uploadPreset);
 
         try {
-            // Forçamos "raw" para PDFs para burlar as restrições brutais de leitura de imagem da conta free do Cloudinary.
             const resourceType = file.type === 'application/pdf' || file.name.endsWith('.pdf') ? 'raw' : 'auto';
 
             const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
@@ -60,11 +60,14 @@ export default function ContentUpload() {
             const data = await response.json();
 
             if (data.secure_url) {
-                setUrl(data.secure_url);
-                // Detectar tipo pelo arquivo
-                if (file.type.startsWith('video/')) setType('video');
-                else if (file.type === 'application/pdf') setType('pdf');
-                else if (file.type.startsWith('image/')) setType('image');
+                if (field === 'primary') {
+                    setUrl(data.secure_url);
+                    if (file.type.startsWith('video/')) setType('video');
+                    else if (file.type === 'application/pdf') setType('pdf');
+                    else if (file.type.startsWith('image/')) setType('image');
+                } else {
+                    setAttachmentUrl(data.secure_url);
+                }
             } else {
                 setUploadError(data.error?.message || 'Erro do Cloudinary ao salvar o arquivo.');
             }
@@ -72,7 +75,7 @@ export default function ContentUpload() {
             setUploadError('Tivemos um problema de conexão durante o upload.');
         } finally {
             setIsUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = ''; // Limpa o seletor para permitir enviar o mesmo de novo se precisar
+            if (fileInputRef.current) fileInputRef.current.value = '';
         }
     };
 
@@ -81,12 +84,12 @@ export default function ContentUpload() {
         if (!title || !url) return;
 
         if (editingId) {
-            updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined, type });
+            updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined });
             setSuccessMessage('Conteúdo atualizado com sucesso!');
         } else {
             // Default to 'default' product if none selected and products exist
             const finalProductId = productId || (products.length > 0 ? products[0].id : undefined);
-            addClass({ title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: finalProductId, unlockDate: unlockDate || undefined, type });
+            addClass({ title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: finalProductId, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined });
             setSuccessMessage('Conteúdo publicado e agora disponível para os alunos!');
         }
 
@@ -104,6 +107,7 @@ export default function ContentUpload() {
         setProductId(item.productId || '');
         setButtonText(item.buttonText || '');
         setUnlockDate(item.unlockDate || '');
+        setAttachmentUrl(item.attachmentUrl || '');
         setType(item.type || 'video');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -117,6 +121,7 @@ export default function ContentUpload() {
         setProductId('');
         setButtonText('');
         setUnlockDate('');
+        setAttachmentUrl('');
         setType('video');
     };
 
@@ -146,7 +151,7 @@ export default function ContentUpload() {
                             type="file"
                             className="hidden"
                             ref={fileInputRef}
-                            onChange={handleFileUpload}
+                            onChange={(e) => handleFileUpload(e, 'primary')}
                         />
 
                         <button
@@ -216,7 +221,7 @@ export default function ContentUpload() {
 
                     <div>
                         <label htmlFor="url" className="block text-sm font-semibold text-gray-700 mb-1">
-                            URL do Cloudinary (Preenchido pelo botão acima ou cole manual)
+                            URL do Arquivo Principal (Vídeo/PDF principal)
                         </label>
                         <input
                             id="url"
@@ -226,6 +231,34 @@ export default function ContentUpload() {
                             onChange={(e) => setUrl(e.target.value)}
                             className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
                             placeholder="https://res.cloudinary.com/..."
+                        />
+                    </div>
+
+                    <div>
+                        <div className="flex items-center justify-between mb-1">
+                            <label htmlFor="attachmentUrl" className="block text-sm font-semibold text-gray-700">
+                                Material de Apoio / PDF Extra (Opcional)
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (fileInputRef.current) {
+                                        fileInputRef.current.onchange = (e: any) => handleFileUpload(e, 'attachment');
+                                        fileInputRef.current.click();
+                                    }
+                                }}
+                                className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase hover:bg-primary/20 transition-colors"
+                            >
+                                Carregar PDF Agora
+                            </button>
+                        </div>
+                        <input
+                            id="attachmentUrl"
+                            type="url"
+                            value={attachmentUrl}
+                            onChange={(e) => setAttachmentUrl(e.target.value)}
+                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
+                            placeholder="Link do material complementar..."
                         />
                     </div>
 
@@ -355,6 +388,11 @@ export default function ContentUpload() {
                                             <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold uppercase">
                                                 {item.type || 'link'}
                                             </span>
+                                            {item.attachmentUrl && (
+                                                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold uppercase">
+                                                    📎 Com Anexo
+                                                </span>
+                                            )}
                                         </div>
                                         <p className="text-xs text-text-muted mt-1 truncate">{item.cloudinaryUrl}</p>
                                     </div>

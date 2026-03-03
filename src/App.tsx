@@ -12,6 +12,7 @@ import Home from './pages/student/Home';
 import Feed from './pages/student/Feed';
 import Community from './pages/student/Community';
 import Profile from './pages/student/Profile';
+import ClassView from './pages/student/ClassView';
 
 import ContentUpload from './pages/admin/ContentUpload';
 import FeedManagement from './pages/admin/FeedManagement';
@@ -45,6 +46,7 @@ function App() {
           <Route path="feed" element={<Feed />} />
           <Route path="community" element={<Community />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="class/:id" element={<ClassView />} />
         </Route>
 
         {/* Admin Routes */}
