@@ -15,6 +15,9 @@ export default function Home() {
     const products = useStore((state) => state.products);
     const systemBanners = useStore((state) => state.systemBanners);
     const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+    const [pullDistance, setPullDistance] = useState(0);
+    const [startY, setStartY] = useState(0);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const isLoading = useStore((state) => state.isLoading);
     const fetchInitialData = useStore((state) => state.fetchInitialData);
     const setCurrentProductId = useStore((state) => state.setCurrentProductId);
@@ -76,6 +79,39 @@ export default function Home() {
         setCurrentBannerIndex(prev => (prev - 1 + activeBanners.length) % activeBanners.length);
     };
 
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (window.scrollY === 0) {
+            setStartY(e.touches[0].clientY);
+        }
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (startY > 0 && window.scrollY === 0) {
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+            if (diff > 0) {
+                // Logarithmic pull feel for a more premium effect
+                const pull = Math.min(diff * 0.4, 120);
+                setPullDistance(pull);
+            }
+        }
+    };
+
+    const handleTouchEnd = async () => {
+        if (pullDistance > 60) {
+            setIsRefreshing(true);
+            setPullDistance(80); // Snap to a fixed loading position
+            await fetchInitialData();
+            setTimeout(() => {
+                setIsRefreshing(false);
+                setPullDistance(0);
+            }, 600);
+        } else {
+            setPullDistance(0);
+        }
+        setStartY(0);
+    };
+
     if (isLoading && products.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
@@ -86,7 +122,28 @@ export default function Home() {
     }
 
     return (
-        <div className="space-y-10 pb-20 animate-fade-up px-4 md:px-0">
+        <div
+            className="space-y-10 pb-20 animate-fade-up px-4 md:px-0 relative"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
+            {/* Pull to Refresh Indicator */}
+            <div
+                className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center justify-center transition-all duration-200 pointer-events-none z-[100]"
+                style={{
+                    top: `${pullDistance - 40}px`,
+                    opacity: pullDistance / 40,
+                    transform: `translateX(-50%) rotate(${pullDistance * 2}deg)`
+                }}
+            >
+                <div className="w-10 h-10 bg-white shadow-xl rounded-2xl flex items-center justify-center border border-surface-200">
+                    <Sparkles className={`w-5 h-5 text-primary ${isRefreshing ? 'animate-spin' : ''}`} />
+                </div>
+                {pullDistance > 55 && !isRefreshing && (
+                    <span className="text-[10px] font-bold text-primary mt-2 uppercase tracking-tighter animate-bounce">Solte para atualizar</span>
+                )}
+            </div>
             {/* Welcome Section */}
             <section className="relative overflow-hidden pt-8">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
