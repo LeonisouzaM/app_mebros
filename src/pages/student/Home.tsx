@@ -56,22 +56,27 @@ export default function Home() {
         );
     }
 
+    const activeBanners = (visibleProducts.length === 1 && visibleProducts[0].banners && visibleProducts[0].banners.length > 0)
+        ? visibleProducts[0].banners
+        : systemBanners.filter(b => b && b.trim() !== '');
+
     useEffect(() => {
-        if (!systemBanners || systemBanners.length <= 1) return;
+        setCurrentBannerIndex(0);
+        if (!activeBanners || activeBanners.length <= 1) return;
         const interval = setInterval(() => {
-            setCurrentBannerIndex(prev => (prev + 1) % systemBanners.length);
+            setCurrentBannerIndex(prev => (prev + 1) % activeBanners.length);
         }, 8000);
         return () => clearInterval(interval);
-    }, [systemBanners]);
+    }, [activeBanners]);
 
     const nextBanner = () => {
-        if (!systemBanners) return;
-        setCurrentBannerIndex(prev => (prev + 1) % systemBanners.length);
+        if (!activeBanners.length) return;
+        setCurrentBannerIndex(prev => (prev + 1) % activeBanners.length);
     };
 
     const prevBanner = () => {
-        if (!systemBanners) return;
-        setCurrentBannerIndex(prev => (prev - 1 + systemBanners.length) % systemBanners.length);
+        if (!activeBanners.length) return;
+        setCurrentBannerIndex(prev => (prev - 1 + activeBanners.length) % activeBanners.length);
     };
 
     return (
@@ -97,10 +102,10 @@ export default function Home() {
             </section>
 
             {/* Premium Carousel */}
-            {systemBanners && systemBanners.length > 0 && (
+            {activeBanners.length > 0 && (
                 <section className="relative w-full group">
                     <div className="relative h-56 md:h-80 w-full overflow-hidden rounded-[2.5rem] shadow-premium border border-white/20">
-                        {systemBanners.map((banner, idx) => (
+                        {activeBanners.map((banner, idx) => (
                             <div
                                 key={idx}
                                 className={`absolute inset-0 transition-all duration-1000 ease-in-out ${idx === currentBannerIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
@@ -111,7 +116,7 @@ export default function Home() {
                             </div>
                         ))}
 
-                        {systemBanners.length > 1 && (
+                        {activeBanners.length > 1 && (
                             <>
                                 <button
                                     onClick={prevBanner}
@@ -126,7 +131,7 @@ export default function Home() {
                                     <ChevronRight className="w-6 h-6" />
                                 </button>
                                 <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2.5">
-                                    {systemBanners.map((_, idx) => (
+                                    {activeBanners.map((_, idx) => (
                                         <button
                                             key={idx}
                                             onClick={() => setCurrentBannerIndex(idx)}

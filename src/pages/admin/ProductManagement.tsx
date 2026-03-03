@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { Package, Plus, Trash2, Edit2, CheckCircle2 } from 'lucide-react';
+import { Package, Plus, Trash2, Edit2, CheckCircle2, Image as ImageIcon, Loader2, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -12,10 +12,22 @@ export default function ProductManagement() {
     const systemBanners = useStore((state) => state.systemBanners);
     const updateSystemBanners = useStore((state) => state.updateSystemBanners);
     const fetchProducts = useStore((state) => state.fetchProducts);
+    const fetchBanners = useStore((state) => state.fetchBanners);
 
     useEffect(() => {
         fetchProducts();
+        fetchBanners();
     }, []);
+
+    // Local state for system banners to avoid frequent API calls
+    const [editingBanners, setEditingBanners] = useState<string[]>([]);
+    const [isUploadingBanner, setIsUploadingBanner] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (systemBanners) {
+            setEditingBanners(systemBanners);
+        }
+    }, [systemBanners]);
 
     const [isEditing, setIsEditing] = useState<string | null>(null);
     const [name, setName] = useState('');
@@ -25,6 +37,7 @@ export default function ProductManagement() {
     const [supportNumber, setSupportNumber] = useState('');
     const [hotmartId, setHotmartId] = useState('');
     const [banners, setBanners] = useState<string[]>([]);
+    const [isUploadingCover, setIsUploadingCover] = useState(false);
     const [success, setSuccess] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -53,6 +66,40 @@ export default function ProductManagement() {
         setHotmartId(product.hotmartId || '');
         setBanners(product.banners || []);
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleBannerUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+        setIsUploadingBanner(index);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', uploadPreset || '');
+
+        try {
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+            if (data.secure_url) {
+                const newBanners = [...editingBanners];
+                newBanners[index] = data.secure_url;
+                setEditingBanners(newBanners);
+            }
+        } catch (err) {
+            console.error('Erro upload banner:', err);
+        } finally {
+            setIsUploadingBanner(null);
+        }
+    };
+
+    const saveSystemBanners = () => {
+        updateSystemBanners(editingBanners.filter(b => b.trim() !== ''));
     };
 
     const cancelEdit = () => {
@@ -84,39 +131,70 @@ export default function ProductManagement() {
                 </h2>
                 <div className="space-y-4">
                     <p className="text-sm text-text-muted">
-                        Estas imagens aparecerão no carrossel logo abaixo de "Olá, Aluno Teste!" antes do aluno escolher um produto. (Resolução ideal: 1920x400)
+                        Estas imagens aparecerão no carrossel da tela inicial. (Resolução ideal: 1920x600)
                     </p>
-                    <div className="space-y-2">
-                        {systemBanners.map((banner, index) => (
-                            <div key={index} className="flex gap-2">
-                                <input
-                                    type="url"
-                                    value={banner}
-                                    onChange={(e) => {
-                                        const newBanners = [...systemBanners];
-                                        newBanners[index] = e.target.value;
-                                        updateSystemBanners(newBanners);
-                                    }}
-                                    className="flex-1 px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary transition-all bg-surface-50"
-                                    placeholder="Link da imagem do banner..."
-                                />
+                    <div className="space-y-3">
+                        {editingBanners.map((banner, index) => (
+                            <div key={index} className="flex flex-col sm:flex-row gap-3 p-4 bg-surface-50 rounded-2xl border border-surface-200">
+                                <div className="flex-1 space-y-2">
+                                    <input
+                                        type="url"
+                                        value={banner}
+                                        onChange={(e) => {
+                                            const newBanners = [...editingBanners];
+                                            newBanners[index] = e.target.value;
+                                            setEditingBanners(newBanners);
+                                        }}
+                                        className="w-full px-4 py-2 border border-surface-200 rounded-lg focus:ring-2 focus:ring-primary transition-all bg-white text-sm"
+                                        placeholder="Link da imagem ou faça upload..."
+                                    />
+                                    <div className="flex items-center gap-2">
+                                        <label className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-xs font-bold text-text-muted hover:text-primary hover:border-primary cursor-pointer transition-all">
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => handleBannerUpload(index, e)}
+                                                disabled={isUploadingBanner !== null}
+                                            />
+                                            {isUploadingBanner === index ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
+                                            {banner ? 'Trocar Imagem' : 'Fazer Upload'}
+                                        </label>
+                                        {banner && (
+                                            <a href={banner} target="_blank" rel="noreferrer" className="text-[10px] text-primary font-bold hover:underline">Ver Imagem</a>
+                                        )}
+                                    </div>
+                                </div>
                                 <button
                                     type="button"
-                                    onClick={() => updateSystemBanners(systemBanners.filter((_, i) => i !== index))}
-                                    className="p-3 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                                    onClick={() => setEditingBanners(editingBanners.filter((_, i) => i !== index))}
+                                    className="p-2 sm:p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors self-start sm:self-center"
                                 >
                                     <Trash2 className="w-5 h-5" />
                                 </button>
                             </div>
                         ))}
-                        <button
-                            type="button"
-                            onClick={() => updateSystemBanners([...systemBanners, ''])}
-                            className="text-sm font-semibold flex items-center gap-1 text-primary hover:text-primary-hover transition-colors"
-                        >
-                            <Plus className="w-4 h-4" />
-                            Adicionar Banner Frontal
-                        </button>
+
+                        <div className="flex items-center justify-between pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setEditingBanners([...editingBanners, ''])}
+                                className="text-sm font-bold flex items-center gap-1.5 text-primary hover:text-primary-hover transition-colors bg-primary/5 px-4 py-2 rounded-xl"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Adicionar Novo Banner
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={saveSystemBanners}
+                                disabled={JSON.stringify(editingBanners) === JSON.stringify(systemBanners)}
+                                className="flex items-center gap-2 py-2 px-6 bg-success text-white rounded-xl font-bold shadow-sm hover:bg-success-hover disabled:opacity-50 disabled:grayscale transition-all"
+                            >
+                                <Save className="w-4 h-4" />
+                                Salvar Banners
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -135,17 +213,117 @@ export default function ProductManagement() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">URL da Imagem de Capa (Opcional)</label>
-                        <input
-                            type="url"
-                            value={coverUrl}
-                            onChange={(e) => setCoverUrl(e.target.value)}
-                            className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
-                            placeholder="Link de uma imagem bonita (estilo Netflix)"
-                        />
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Imagem de Capa (Estilo Netflix)</label>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-1 space-y-2">
+                                <input
+                                    type="url"
+                                    value={coverUrl}
+                                    onChange={(e) => setCoverUrl(e.target.value)}
+                                    className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 text-sm"
+                                    placeholder="Link da imagem ou faça upload..."
+                                />
+                                <div className="flex items-center gap-3">
+                                    <label className="flex items-center gap-2 px-4 py-2 bg-white border border-surface-200 rounded-xl text-xs font-bold text-text-muted hover:text-primary hover:border-primary cursor-pointer transition-all shadow-sm">
+                                        <input
+                                            type="file"
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (!file) return;
+                                                setIsUploadingCover(true);
+                                                const formData = new FormData();
+                                                formData.append('file', file);
+                                                formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '');
+                                                try {
+                                                    const res = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+                                                    const data = await res.json();
+                                                    if (data.secure_url) setCoverUrl(data.secure_url);
+                                                } finally {
+                                                    setIsUploadingCover(false);
+                                                }
+                                            }}
+                                            disabled={isUploadingCover}
+                                        />
+                                        {isUploadingCover ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                                        {coverUrl ? 'Trocar Capa' : 'Fazer Upload da Capa'}
+                                    </label>
+                                    {coverUrl && (
+                                        <div className="h-10 w-16 rounded-lg overflow-hidden border border-surface-200 shadow-sm">
+                                            <img src={coverUrl} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <div className="pt-4 border-t border-surface-100">
+                        <label className="block text-sm font-bold text-gray-900 mb-2">Banners Exclusivos deste Produto (Opcional)</label>
+                        <p className="text-xs text-text-muted mb-4 italic">Se você adicionar banners aqui, eles substituirão os banners da tela inicial quando o aluno selecionar este produto.</p>
+
+                        <div className="space-y-3">
+                            {banners.map((b, i) => (
+                                <div key={i} className="flex gap-3 items-start bg-surface-50 p-3 rounded-2xl border border-surface-200">
+                                    <div className="flex-1 space-y-2">
+                                        <input
+                                            type="url"
+                                            value={b}
+                                            onChange={(e) => {
+                                                const nb = [...banners];
+                                                nb[i] = e.target.value;
+                                                setBanners(nb);
+                                            }}
+                                            className="w-full px-4 py-2 border border-surface-200 rounded-lg focus:ring-2 focus:ring-primary bg-white text-sm"
+                                            placeholder="Link da imagem..."
+                                        />
+                                        <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-xs font-bold text-text-muted hover:text-primary hover:border-primary cursor-pointer transition-all">
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    const formData = new FormData();
+                                                    formData.append('file', file);
+                                                    formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || '');
+                                                    try {
+                                                        const res = await fetch(`https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
+                                                        const data = await res.json();
+                                                        if (data.secure_url) {
+                                                            const nb = [...banners];
+                                                            nb[i] = data.secure_url;
+                                                            setBanners(nb);
+                                                        }
+                                                    } catch (err) { console.error(err); }
+                                                }}
+                                            />
+                                            <ImageIcon className="w-3.5 h-3.5" />
+                                            {b ? 'Trocar Imagem' : 'Fazer Upload'}
+                                        </label>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setBanners(banners.filter((_, idx) => idx !== i))}
+                                        className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            ))}
+                            <button
+                                type="button"
+                                onClick={() => setBanners([...banners, ''])}
+                                className="text-xs font-bold flex items-center gap-1.5 text-primary hover:text-primary-hover transition-colors bg-primary/5 px-3 py-2 rounded-xl"
+                            >
+                                <Plus className="w-3.5 h-3.5" />
+                                Adicionar Banner ao Produto
+                            </button>
+                        </div>
+                    </div>
+
                     <div>
-                        {/* Banners do produto foram movidos para a tela inicial, mas se quiser manter no produto, descomente aqui */}
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Idioma da Interface do Produto</label>
                         <select
                             value={language}
