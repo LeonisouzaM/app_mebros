@@ -60,8 +60,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { id, name, description, coverUrl, language, supportNumber, hotmartId, banners } = req.body;
             if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
-            const isNewProduct = !id;
             const productId = id || `prod_${Date.now()}`;
+            const existing = await sql`SELECT id FROM products WHERE id = ${productId}`;
+            const isNewProduct = existing.length === 0;
             await sql`
                 INSERT INTO products (id, name, description, cover_url, language, support_number, hotmart_id, banners)
                 VALUES (${productId}, ${name}, ${description}, ${coverUrl}, ${language}, ${supportNumber}, ${hotmartId}, ${banners || []})

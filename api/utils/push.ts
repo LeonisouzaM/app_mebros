@@ -13,11 +13,19 @@ webpush.setVapidDetails(
 
 export async function sendPushNotification(title: string, body: string, url: string, excludeEmail?: string) {
     try {
-        const subscriptionsResult = await sql`
-            SELECT id, user_email, endpoint, p256dh, auth
-            FROM push_subscriptions
-            ${excludeEmail ? sql`WHERE user_email != ${excludeEmail}` : sql``}
-        `;
+        let subscriptionsResult;
+        if (excludeEmail) {
+            subscriptionsResult = await sql`
+                SELECT id, user_email, endpoint, p256dh, auth
+                FROM push_subscriptions
+                WHERE user_email != ${excludeEmail}
+            `;
+        } else {
+            subscriptionsResult = await sql`
+                SELECT id, user_email, endpoint, p256dh, auth
+                FROM push_subscriptions
+            `;
+        }
 
         if (subscriptionsResult.length === 0) return;
 

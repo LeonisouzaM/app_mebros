@@ -62,8 +62,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate, type, attachmentUrl } = req.body;
             if (!title || !cloudinaryUrl) return res.status(400).json({ error: 'Título e URL são obrigatórios' });
 
-            const isNewClass = !id;
             const classId = id || `class_${Date.now()}`;
+            const existing = await sql`SELECT id FROM classes WHERE id = ${classId}`;
+            const isNewClass = existing.length === 0;
             await sql`
                 INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date, type, attachment_url)
                 VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl}, ${description}, ${buttonText}, ${productId}, ${unlockDate}, ${type}, ${attachmentUrl})
