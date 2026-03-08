@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
 import jwt from 'jsonwebtoken';
+import { sendPushNotification } from '../utils/push.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
 
@@ -61,6 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate, type, attachmentUrl } = req.body;
             if (!title || !cloudinaryUrl) return res.status(400).json({ error: 'Título e URL são obrigatórios' });
 
+            const isNewClass = !id;
             const classId = id || `class_${Date.now()}`;
             await sql`
                 INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date, type, attachment_url)
@@ -76,6 +78,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     type = EXCLUDED.type,
                     attachment_url = EXCLUDED.attachment_url
             `;
+
+            if (isNewClass) {
+                sendPushNotification(
+                    'Novo conteúdo disponível!',
+                    `A aula "${title}" acabou de ser adicionada.`,
+                    `/class/${classId}`
+                ).catch(err => console.error('Push error:', err));
+            }
+
             return res.status(200).json({ message: 'Aula salva', id: classId });
         }
 

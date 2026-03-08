@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
 import jwt from 'jsonwebtoken';
+import { sendPushNotification } from '../utils/push.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
 
@@ -121,6 +122,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl || null}, ${bodyProductId}, ${parentIdNum})
                 RETURNING id, created_at
             `;
+
+            sendPushNotification(
+                `Nova mensagem de ${userName}`,
+                text.length > 50 ? text.substring(0, 50) + '...' : text,
+                '/community',
+                userEmail
+            ).catch(err => console.error('Push error:', err));
+
             return res.status(200).json({ message: 'Comentário enviado', id: result[0].id, createdAt: result[0].created_at });
         }
 

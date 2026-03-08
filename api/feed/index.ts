@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
 import jwt from 'jsonwebtoken';
+import { sendPushNotification } from '../utils/push.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
 
@@ -68,6 +69,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 INSERT INTO feed_posts (title, description, image_url, product_id)
                 VALUES (${title}, ${description}, ${imageUrl || null}, ${bodyProductId})
             `;
+
+            sendPushNotification('Novo Post no Feed', title, '/feed').catch(err => console.error('Push error:', err));
+
             return res.status(200).json({ message: 'Post criado' });
         }
 

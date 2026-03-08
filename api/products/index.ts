@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
 import jwt from 'jsonwebtoken';
+import { sendPushNotification } from '../utils/push.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
 
@@ -59,6 +60,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { id, name, description, coverUrl, language, supportNumber, hotmartId, banners } = req.body;
             if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
 
+            const isNewProduct = !id;
             const productId = id || `prod_${Date.now()}`;
             await sql`
                 INSERT INTO products (id, name, description, cover_url, language, support_number, hotmart_id, banners)
@@ -72,6 +74,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     hotmart_id = EXCLUDED.hotmart_id,
                     banners = EXCLUDED.banners
             `;
+
+            if (isNewProduct) {
+                sendPushNotification(
+                    'Novo produto disponível!',
+                    `O curso/produto "${name}" acaba de ser adicionado à plataforma.`,
+                    `/`
+                ).catch(err => console.error('Push error:', err));
+            }
+
             return res.status(200).json({ message: 'Produto salvo com sucesso', id: productId });
         }
 

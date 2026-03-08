@@ -2,8 +2,10 @@ import { Outlet, NavLink, Navigate } from 'react-router-dom';
 import { Home as HomeIcon, Rss, MessageSquare, User, MessageCircle, LogOut } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../store/store';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 export default function StudentLayout() {
+    usePushNotifications();
     const { t } = useTranslation();
     const logout = useStore((state) => state.logout);
     const user = useStore((state) => state.currentUser);

@@ -12,6 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      workbox: {
+        importScripts: ['/push-sw.js']
+      },
       manifest: {
         name: 'Área de Membros',
         short_name: 'Membros',
