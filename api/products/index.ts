@@ -65,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const isNewProduct = existing.length === 0;
             await sql`
                 INSERT INTO products (id, name, description, cover_url, language, support_number, hotmart_id, banners)
-                VALUES (${productId}, ${name}, ${description}, ${coverUrl}, ${language}, ${supportNumber}, ${hotmartId}, ${banners || []})
+                VALUES (${productId}, ${name}, ${description ?? null}, ${coverUrl ?? null}, ${language ?? 'pt'}, ${supportNumber ?? null}, ${hotmartId ?? null}, ${banners || []})
                 ON CONFLICT (id) DO UPDATE SET
                     name = EXCLUDED.name,
                     description = EXCLUDED.description,
@@ -77,11 +77,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             `;
 
             if (isNewProduct) {
-                sendPushNotification(
-                    'Novo produto disponível!',
-                    `O curso/produto "${name}" acaba de ser adicionado à plataforma.`,
-                    `/`
-                ).catch(err => console.error('Push error:', err));
+                try {
+                    await sendPushNotification(
+                        'Novo produto disponível!',
+                        `O curso/produto "${name}" acaba de ser adicionado à plataforma.`,
+                        `/`
+                    );
+                } catch (err) {
+                    console.error('Push error:', err);
+                }
             }
 
             return res.status(200).json({ message: 'Produto salvo com sucesso', id: productId });

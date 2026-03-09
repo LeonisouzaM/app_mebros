@@ -119,16 +119,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             const result = await sql`
                 INSERT INTO comments (user_name, user_photo, user_email, text, image_url, product_id, parent_id)
-                VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl || null}, ${bodyProductId}, ${parentIdNum})
+                VALUES (${userName}, ${userPhoto}, ${userEmail}, ${text}, ${imageUrl ?? null}, ${bodyProductId}, ${parentIdNum})
                 RETURNING id, created_at
             `;
 
-            sendPushNotification(
-                `Nova mensagem de ${userName}`,
-                text.length > 50 ? text.substring(0, 50) + '...' : text,
-                '/community',
-                userEmail
-            ).catch(err => console.error('Push error:', err));
+            try {
+                await sendPushNotification(
+                    `Nova mensagem de ${userName}`,
+                    text.length > 50 ? text.substring(0, 50) + '...' : text,
+                    '/community',
+                    userEmail
+                );
+            } catch (err) {
+                console.error('Push error:', err);
+            }
 
             return res.status(200).json({ message: 'Comentário enviado', id: result[0].id, createdAt: result[0].created_at });
         }

@@ -67,10 +67,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             await sql`
                 INSERT INTO feed_posts (title, description, image_url, product_id)
-                VALUES (${title}, ${description}, ${imageUrl || null}, ${bodyProductId})
+                VALUES (${title}, ${description}, ${imageUrl ?? null}, ${bodyProductId})
             `;
 
-            sendPushNotification('Novo Post no Feed', title, '/feed').catch(err => console.error('Push error:', err));
+            try {
+                await sendPushNotification('Novo Post no Feed', title, '/feed');
+            } catch (err) {
+                console.error('Push error:', err);
+            }
 
             return res.status(200).json({ message: 'Post criado' });
         }

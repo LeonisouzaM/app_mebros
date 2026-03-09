@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const isNewClass = existing.length === 0;
             await sql`
                 INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date, type, attachment_url)
-                VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl}, ${description}, ${buttonText}, ${productId}, ${unlockDate}, ${type}, ${attachmentUrl})
+                VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl ?? null}, ${description ?? null}, ${buttonText ?? null}, ${productId ?? null}, ${unlockDate ?? null}, ${type ?? null}, ${attachmentUrl ?? null})
                 ON CONFLICT (id) DO UPDATE SET
                     title = EXCLUDED.title,
                     cloudinary_url = EXCLUDED.cloudinary_url,
@@ -81,11 +81,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             `;
 
             if (isNewClass) {
-                sendPushNotification(
-                    'Novo conteúdo disponível!',
-                    `A aula "${title}" acabou de ser adicionada.`,
-                    `/class/${classId}`
-                ).catch(err => console.error('Push error:', err));
+                try {
+                    await sendPushNotification(
+                        'Novo conteúdo disponível!',
+                        `A aula "${title}" acabou de ser adicionada.`,
+                        `/class/${classId}`
+                    );
+                } catch (err) {
+                    console.error('Push error:', err);
+                }
             }
 
             return res.status(200).json({ message: 'Aula salva', id: classId });
