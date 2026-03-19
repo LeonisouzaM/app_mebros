@@ -1,15 +1,23 @@
 import webpush from 'web-push';
 import { sql } from '../db.js';
 
-const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || 'BHLrZfkeLqHRN13-ffnSucHtJYFqNf5oxOduH6HQzRUsgjC39KCGGGXOAkuu6qFtpchHmi3nPZvjfYFz46WAI-fo';
-const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '2lu9tI-jVP9s7WumyJixGeOz1Lt_EqD6YPOdCDAMyt8';
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY;
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY;
 const VAPID_SUBJECT = process.env.VAPID_SUBJECT || 'mailto:suporte@areamembros.com';
 
-webpush.setVapidDetails(
-    VAPID_SUBJECT,
-    VAPID_PUBLIC_KEY,
-    VAPID_PRIVATE_KEY
-);
+if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+    try {
+        webpush.setVapidDetails(
+            VAPID_SUBJECT,
+            VAPID_PUBLIC_KEY,
+            VAPID_PRIVATE_KEY
+        );
+    } catch (e: any) {
+        console.warn('Erro ao configurar chaves VAPID (Push):', e?.message);
+    }
+} else {
+    console.warn('Chaves VAPID ausentes ou inválidas. Push Notifications desabilitadas.');
+}
 
 export async function sendPushNotification(title: string, body: string, url: string, excludeEmail?: string) {
     try {
