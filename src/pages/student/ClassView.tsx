@@ -4,12 +4,14 @@ import { ChevronLeft, Download, FileText, PlayCircle, Info, Calendar } from 'luc
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEffect } from 'react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export default function ClassView() {
     const { id } = useParams();
     const navigate = useNavigate();
     const classes = useStore((state) => state.classes);
     const fetchInitialData = useStore((state) => state.fetchInitialData);
+    const { t } = useTranslation();
 
     const lesson = classes.find(c => c.id === id);
 
@@ -25,12 +27,12 @@ export default function ClassView() {
                 <div className="w-16 h-16 bg-surface-100 rounded-full flex items-center justify-center mb-4">
                     <Info className="text-text-dim w-8 h-8" />
                 </div>
-                <h2 className="text-xl font-bold text-text-main">Aula não encontrada</h2>
+                <h2 className="text-xl font-bold text-text-main">{t('classNotFound')}</h2>
                 <button
                     onClick={() => navigate('/')}
                     className="mt-4 text-primary font-bold hover:underline"
                 >
-                    Voltar para o Início
+                    {t('backToHome')}
                 </button>
             </div>
         );
@@ -46,7 +48,7 @@ export default function ClassView() {
                 <div className="w-8 h-8 rounded-xl bg-white shadow-sm border border-surface-200 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <ChevronLeft className="w-5 h-5" />
                 </div>
-                Voltar
+                {t('back')}
             </button>
 
             <div className="grid lg:grid-cols-3 gap-10">
@@ -67,6 +69,12 @@ export default function ClassView() {
                                     alert("Erro ao carregar o vídeo. Verifique sua conexão ou o formato do arquivo.");
                                 }}
                             />
+                        ) : lesson.type === 'pdf' ? (
+                            <iframe 
+                                src={`${lesson.cloudinaryUrl}#toolbar=0`} 
+                                className="w-full h-full min-h-[60vh] bg-white rounded-[2.5rem]"
+                                title={lesson.title}
+                            />
                         ) : (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-surface-900">
                                 {lesson.coverUrl ? (
@@ -75,7 +83,7 @@ export default function ClassView() {
                                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20" />
                                 )}
                                 <div className="relative z-10 flex flex-col items-center">
-                                    {lesson.type === 'pdf' ? <FileText className="w-20 h-20 text-white mb-4" /> : <PlayCircle className="w-20 h-20 text-white mb-4" />}
+                                    <PlayCircle className="w-20 h-20 text-white mb-4" />
                                     <h3 className="text-white text-xl font-bold">{lesson.title}</h3>
                                     <a
                                         href={lesson.cloudinaryUrl}
@@ -83,7 +91,7 @@ export default function ClassView() {
                                         rel="noopener noreferrer"
                                         className="mt-6 px-8 py-3 bg-white text-primary rounded-2xl font-bold shadow-lg hover:scale-105 transition-transform"
                                     >
-                                        Baixar Arquivo
+                                        {t('downloadFile')}
                                     </a>
                                 </div>
                             </div>
@@ -98,7 +106,7 @@ export default function ClassView() {
                             </span>
                             {lesson.type === 'video' && (
                                 <span className="bg-purple-50 text-purple-600 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                                    Vídeo Aula-HD
+                                    {t('videoClass')}
                                 </span>
                             )}
                         </div>
@@ -123,10 +131,10 @@ export default function ClassView() {
                         <div className="card-premium p-8 bg-primary/5 border-primary/20">
                             <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
                                 <FileText className="text-primary w-5 h-5" />
-                                Material de Apoio
+                                {t('supportMaterial')}
                             </h3>
                             <p className="text-sm text-text-muted mb-6 font-medium">
-                                Baixe o material complementar para estudar junto com esta aula.
+                                {t('downloadSupportMaterial')}
                             </p>
                             <a
                                 href={lesson.attachmentUrl}
@@ -135,7 +143,7 @@ export default function ClassView() {
                                 className="flex items-center justify-center gap-2 w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-lg shadow-primary/30 hover:bg-primary-hover hover:scale-[1.02] transition-all"
                             >
                                 <Download className="w-5 h-5" />
-                                Baixar PDF / Arquivo
+                                {t('downloadPdf')}
                             </a>
                         </div>
                     )}
@@ -143,18 +151,18 @@ export default function ClassView() {
                     <div className="card-premium p-8 bg-white border-surface-200">
                         <h3 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2">
                             <Info className="text-primary w-5 h-5" />
-                            Sobre a Aula
+                            {t('aboutClass')}
                         </h3>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center py-2 border-b border-surface-100">
-                                <span className="text-text-muted text-sm font-medium">Formato</span>
+                                <span className="text-text-muted text-sm font-medium">{t('format')}</span>
                                 <span className="text-text-main text-sm font-bold uppercase">{lesson.type || 'link'}</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-surface-100">
-                                <span className="text-text-muted text-sm font-medium">Status</span>
+                                <span className="text-text-muted text-sm font-medium">{t('status')}</span>
                                 <span className="text-success text-sm font-bold flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                                    Concluída
+                                    {t('completed')}
                                 </span>
                             </div>
                         </div>

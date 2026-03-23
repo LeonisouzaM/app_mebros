@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const userResult = await sql`
             SELECT id, email, name, role, photo 
             FROM users 
-            WHERE email = ${email}
+            WHERE LOWER(email) = LOWER(TRIM(${email}))
         `;
 
         if (userResult.length === 0) {

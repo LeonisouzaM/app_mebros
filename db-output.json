@@ -1,0 +1,70 @@
+{
+  "users": [
+    {
+      "id": 5,
+      "email": "teste@aluno.com",
+      "role": "student",
+      "name": "Aluno de Teste",
+      "photo": null,
+      "created_at": "2026-03-02T23:42:42.921Z"
+    },
+    {
+      "id": 4,
+      "email": "admin@admin.com",
+      "role": "admin",
+      "name": "Administrador",
+      "photo": null,
+      "created_at": "2026-03-02T23:26:41.989Z"
+    },
+    {
+      "id": 3,
+      "email": "certificacionsuporte@proton.me",
+      "role": "student",
+      "name": "leoni medeiros",
+      "photo": "https://res.cloudinary.com/duie23dpv/image/upload/v1772494877/nhjnvjjtjm7edttzu3jj.png",
+      "created_at": "2026-03-02T02:38:45.472Z"
+    },
+    {
+      "id": 2,
+      "email": "testeComprador271101postman15@example.com",
+      "role": "student",
+      "name": "Teste Comprador",
+      "photo": "https://ui-avatars.com/api/?name=Teste%20Comprador&background=3B82F6&color=fff",
+      "created_at": "2026-03-02T02:25:07.024Z"
+    },
+    {
+      "id": 1,
+      "email": "teste2@hotmail.com",
+      "role": "student",
+      "name": "Leoni",
+      "photo": "https://ui-avatars.com/api/?name=Leoni&background=3B82F6&color=fff",
+      "created_at": "2026-03-02T01:58:15.518Z"
+    }
+  ],
+  "access": [
+    {
+      "user_id": 3,
+      "product_id": "prod_1772413031703",
+      "transaction_id": null,
+      "granted_at": "2026-03-03T00:58:16.279Z"
+    },
+    {
+      "user_id": 5,
+      "product_id": "prod_1772413031703",
+      "transaction_id": null,
+      "granted_at": "2026-03-02T23:42:43.540Z"
+    },
+    {
+      "user_id": 2,
+      "product_id": "default",
+      "transaction_id": "HP16015479281022",
+      "granted_at": "2026-03-02T02:25:07.039Z"
+    },
+    {
+      "user_id": 1,
+      "product_id": "default",
+      "transaction_id": "T1234",
+      "granted_at": "2026-03-02T01:58:15.682Z"
+    }
+  ]
+}

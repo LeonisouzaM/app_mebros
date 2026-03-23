@@ -27,7 +27,26 @@ export const translations = {
         name: 'Nome',
         email: 'E-mail',
 
-        selectProductFirst: 'Por favor, acesse a tela Inicial para selecionar uma área de membros primeiro.'
+        selectProductFirst: 'Por favor, acesse a tela Inicial para selecionar uma área de membros primeiro.',
+
+        back: 'Voltar',
+        downloadFile: 'Baixar Arquivo',
+        supportMaterial: 'Material de Apoio',
+        downloadSupportMaterial: 'Baixe o material complementar para estudar junto com esta aula.',
+        downloadPdf: 'Baixar PDF / Arquivo',
+        aboutClass: 'Sobre a Aula',
+        format: 'Formato',
+        status: 'Status',
+        completed: 'Concluída',
+        classNotFound: 'Aula não encontrada',
+        backToHome: 'Voltar para o Início',
+        videoClass: 'Vídeo Aula-HD',
+        accessLocked: 'Acesso Bloqueado',
+        expiresOn: 'Vence em ',
+        accessClass: 'Acessar Aula',
+        whatAreYouThinking: 'O que você está pensando?',
+        publish: 'Publicar',
+        writeReply: 'Escreva sua resposta...'
     },
     en: {
         dashboard: 'Dashboard',
@@ -57,7 +76,26 @@ export const translations = {
         name: 'Name',
         email: 'E-mail',
 
-        selectProductFirst: 'Please go to the Home screen to select a member area first.'
+        selectProductFirst: 'Please go to the Home screen to select a member area first.',
+
+        back: 'Back',
+        downloadFile: 'Download File',
+        supportMaterial: 'Support Material',
+        downloadSupportMaterial: 'Download the complementary material to study along with this class.',
+        downloadPdf: 'Download PDF / File',
+        aboutClass: 'About the Class',
+        format: 'Format',
+        status: 'Status',
+        completed: 'Completed',
+        classNotFound: 'Class not found',
+        backToHome: 'Back to Home',
+        videoClass: 'Video Class-HD',
+        accessLocked: 'Access Locked',
+        expiresOn: 'Expires on ',
+        accessClass: 'Access Class',
+        whatAreYouThinking: 'What are you thinking?',
+        publish: 'Publish',
+        writeReply: 'Write your reply...'
     },
     es: {
         dashboard: 'Panel',
@@ -87,7 +125,26 @@ export const translations = {
         name: 'Nombre',
         email: 'Correo Electrónico',
 
-        selectProductFirst: 'Por favor, ve a la pantalla de Inicio para seleccionar un área de miembros primero.'
+        selectProductFirst: 'Por favor, ve a la pantalla de Inicio para seleccionar un área de miembros primero.',
+
+        back: 'Volver',
+        downloadFile: 'Descargar Archivo',
+        supportMaterial: 'Material de Apoyo',
+        downloadSupportMaterial: 'Descarga el material complementario para estudiar junto con esta clase.',
+        downloadPdf: 'Descargar PDF / Archivo',
+        aboutClass: 'Sobre la Clase',
+        format: 'Formato',
+        status: 'Estado',
+        completed: 'Completada',
+        classNotFound: 'Clase no encontrada',
+        backToHome: 'Volver al Inicio',
+        videoClass: 'Video Clase-HD',
+        accessLocked: 'Acceso Bloqueado',
+        expiresOn: 'Vence el ',
+        accessClass: 'Acceder a la Clase',
+        whatAreYouThinking: '¿Qué estás pensando?',
+        publish: 'Publicar',
+        writeReply: 'Escribe tu respuesta...'
     }
 };
 

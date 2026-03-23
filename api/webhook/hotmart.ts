@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Email não fornecido no payload.' });
             }
 
-            const dbUsers = await sql`SELECT id FROM users WHERE email = ${email}`;
+            const dbUsers = await sql`SELECT id FROM users WHERE LOWER(email) = LOWER(TRIM(${email}))`;
             let userId;
 
             if (dbUsers.length === 0) {

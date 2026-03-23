@@ -190,7 +190,7 @@ export default function Community() {
                                 <textarea
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
-                                    placeholder={isAdmin ? "Escreva algo como administrador..." : "O que você está pensando?"}
+                                    placeholder={isAdmin ? "Escreva algo como administrador..." : t('whatAreYouThinking')}
                                     className="w-full px-4 py-3 border border-surface-200 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-none text-sm min-h-[100px]"
                                 />
 
@@ -259,7 +259,7 @@ export default function Community() {
                                         className="flex-1 md:flex-none flex items-center justify-center gap-2 py-3 px-8 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 active:scale-[0.98]"
                                     >
                                         <Send className="w-4 h-4" />
-                                        {isAdmin ? 'Publicar Comunicado' : 'Publicar'}
+                                        {isAdmin ? 'Publicar Comunicado' : t('publish')}
                                     </button>
                                 </div>
                             </div>
@@ -367,7 +367,7 @@ export default function Community() {
                                                             value={replyText}
                                                             onChange={(e) => setReplyText(e.target.value)}
                                                             onKeyDown={(e) => e.key === 'Enter' && handlePostReply(comment.id)}
-                                                            placeholder="Escreva sua resposta..."
+                                                            placeholder={t('writeReply')}
                                                             className="flex-1 bg-white border border-surface-200 rounded-2xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all focus:border-transparent"
                                                         />
                                                         <button

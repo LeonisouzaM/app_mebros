@@ -270,7 +270,7 @@ export default function Home() {
                                                                 <div className="absolute inset-0 flex flex-col items-center justify-center z-40 bg-slate-900/10">
                                                                     <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col items-center border border-white/50">
                                                                         <Lock className="w-6 h-6 text-text-main mb-2" />
-                                                                        <span className="text-[10px] font-bold tracking-widest uppercase text-text-main">Acesso Bloqueado</span>
+                                                                        <span className="text-[10px] font-bold tracking-widest uppercase text-text-main">{t('accessLocked')}</span>
                                                                     </div>
                                                                 </div>
                                                             </>
@@ -313,7 +313,7 @@ export default function Home() {
                                                             {isLocked ? (
                                                                 <div className="flex items-center gap-2 text-xs font-bold text-text-dim">
                                                                     <Lock className="w-3.5 h-3.5" />
-                                                                    Vence em {format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
+                                                                    {t('expiresOn')}{format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
                                                                 </div>
                                                             ) : (
                                                                 <Link
@@ -321,7 +321,7 @@ export default function Home() {
                                                                     className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-xs hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all duration-300 active:scale-95"
                                                                 >
                                                                     <PlayCircle className="w-4 h-4" />
-                                                                    Acessar Aula
+                                                                    {t('accessClass')}
                                                                 </Link>
                                                             )}
                                                         </div>
