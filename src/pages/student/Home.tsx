@@ -195,7 +195,7 @@ export default function Home() {
                             Olá, <span className="text-primary">{user?.name?.split(' ')[0]}</span>!
                         </h1>
                         <p className="text-text-muted mt-2 max-w-lg font-medium">
-                            Continue sua jornada de aprendizado. Você tem <span className="text-text-main font-bold">{visibleProducts.length}</span> {visibleProducts.length === 1 ? 'produto disponível' : 'produtos disponíveis'}.
+                            Continue sua jornada de aprendizado. Você tem <span className="text-text-main font-bold">{allowedProducts.length}</span> {allowedProducts.length === 1 ? 'produto disponível' : 'produtos disponíveis'}.
                         </p>
                     </div>
                 </div>
@@ -255,36 +255,82 @@ export default function Home() {
                 </div>
             ) : (
                 <div className="space-y-16">
-                    {visibleProducts.map(product => {
-                        const productClasses = classes
-                            .filter(c => c.productId === product.id || (!c.productId && product.id === 'default'))
-                            .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-                        if (productClasses.length === 0 && visibleProducts.length > 1) return null;
-
-                        return (
-                            <section key={product.id} className="relative">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 w-full">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 flex-shrink-0">
-                                            <PlayCircle className="text-primary h-6 w-6" />
+                    {!urlProductId ? (
+                        <>
+                            <div className="flex items-center justify-between mb-6 gap-4 w-full">
+                                <h2 className="text-2xl font-display font-bold text-text-main tracking-tight truncate">
+                                    Seus Produtos
+                                </h2>
+                            </div>
+                            <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                                {visibleProducts.map(product => (
+                                    <Link key={product.id} to={`/?p=${product.id}`} className="card-premium group flex flex-col h-full bg-white overflow-hidden hover:-translate-y-1 transition-all duration-300">
+                                        <div className="relative aspect-video overflow-hidden bg-surface-50">
+                                            {product.coverUrl ? (
+                                                <img 
+                                                    src={product.coverUrl}
+                                                    alt={product.name} 
+                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full bg-blue-100/50 flex flex-col items-center justify-center text-primary/40">
+                                                    <BookOpen className="w-10 h-10 mb-2" />
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                                <div className="px-6 py-2 bg-white rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 font-bold text-primary">
+                                                    Acessar Produto
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col min-w-0 flex-1">
-                                            <h2 className="text-xl sm:text-2xl font-display font-bold text-text-main tracking-tight truncate">
-                                                {visibleProducts.length > 1 ? product.name : t('recentClasses')}
-                                            </h2>
+                                        <div className="p-6 flex flex-col flex-1">
+                                            <h3 className="text-xl font-display font-bold text-text-main leading-tight group-hover:text-primary transition-colors">
+                                                {product.name}
+                                            </h3>
                                             {product.description && (
-                                                <div className="text-sm text-text-muted mt-1 font-medium break-words max-w-2xl whitespace-pre-line">
+                                                <div className="text-sm text-text-muted mt-2 font-medium break-words line-clamp-2">
                                                     {renderDescription(product.description)}
                                                 </div>
                                             )}
                                         </div>
+                                    </Link>
+                                ))}
+                            </div>
+                        </>
+                    ) : (
+                        visibleProducts.map(product => {
+                            const productClasses = classes
+                                .filter(c => c.productId === product.id || (!c.productId && product.id === 'default'))
+                                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+                            return (
+                                <section key={product.id} className="relative animate-fade-in">
+                                    <div className="mb-6">
+                                        <Link to="/" className="inline-flex items-center gap-2 text-sm font-bold text-text-muted hover:text-primary transition-colors bg-white px-4 py-2 rounded-xl shadow-sm border border-surface-200">
+                                           <ChevronLeft className="w-4 h-4" /> Voltar aos produtos
+                                        </Link>
                                     </div>
-                                    <div className="h-[1px] flex-1 bg-surface-100 mx-6 hidden sm:block"></div>
-                                    <span className="text-xs font-bold text-text-dim uppercase tracking-widest flex-shrink-0">
-                                        {productClasses.length} {productClasses.length === 1 ? 'Aula' : 'Aulas'}
-                                    </span>
-                                </div>
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 w-full">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 flex-shrink-0">
+                                                <PlayCircle className="text-primary h-6 w-6" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <h2 className="text-xl sm:text-2xl font-display font-bold text-text-main tracking-tight truncate">
+                                                    {product.name}
+                                                </h2>
+                                                {product.description && (
+                                                    <div className="text-sm text-text-muted mt-1 font-medium break-words max-w-2xl whitespace-pre-line">
+                                                        {renderDescription(product.description)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="h-[1px] flex-1 bg-surface-100 mx-6 hidden sm:block"></div>
+                                        <span className="text-xs font-bold text-text-dim uppercase tracking-widest flex-shrink-0">
+                                            {productClasses.length} {productClasses.length === 1 ? 'Aula' : 'Aulas'}
+                                        </span>
+                                    </div>
 
                                 {productClasses.length === 0 ? (
                                     <div className="card-premium p-10 text-center">
@@ -375,9 +421,10 @@ export default function Home() {
                                         })}
                                     </div>
                                 )}
-                            </section>
-                        )
-                    })}
+                                </section>
+                            )
+                        })
+                    )}
                 </div>
             )}
         </div>
