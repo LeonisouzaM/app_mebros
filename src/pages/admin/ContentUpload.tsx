@@ -89,7 +89,7 @@ export default function ContentUpload() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title || !url) return;
+        if (!title) return;
 
         if (editingId) {
             updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined });
@@ -229,12 +229,11 @@ export default function ContentUpload() {
 
                     <div>
                         <label htmlFor="url" className="block text-sm font-semibold text-gray-700 mb-1">
-                            URL do Arquivo Principal (Vídeo/PDF principal)
+                            URL do Arquivo Principal (Opcional - Deixe em branco se for só texto)
                         </label>
                         <input
                             id="url"
                             type="url"
-                            required
                             value={url}
                             onChange={(e) => setUrl(e.target.value)}
                             className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"

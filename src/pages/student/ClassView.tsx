@@ -3,7 +3,7 @@ import { useStore } from '../../store/store';
 import { ChevronLeft, Download, FileText, PlayCircle, Info, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export default function ClassView() {
@@ -12,6 +12,7 @@ export default function ClassView() {
     const classes = useStore((state) => state.classes);
     const fetchInitialData = useStore((state) => state.fetchInitialData);
     const { t } = useTranslation();
+    const [videoError, setVideoError] = useState(false);
 
     const lesson = classes.find(c => c.id === id);
 
@@ -93,11 +94,11 @@ export default function ClassView() {
             <div className="grid lg:grid-cols-3 gap-10">
                 {/* Main Content Area (Video/Player) */}
                 <div className="lg:col-span-2 space-y-8">
-                    <section className="relative aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group">
-                        {lesson.type === 'video' ? (
+                    <section className="relative aspect-video bg-black rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/10 group flex items-center justify-center">
+                        {lesson.type === 'video' && lesson.cloudinaryUrl && !videoError ? (
                             <video
                                 src={lesson.cloudinaryUrl}
-                                className="w-full h-full bg-black"
+                                className="w-full h-full bg-black object-contain"
                                 controls
                                 autoPlay
                                 playsInline
@@ -105,33 +106,37 @@ export default function ClassView() {
                                 poster={lesson.coverUrl}
                                 onError={(e) => {
                                     console.error("Video loading error:", e);
-                                    alert("Erro ao carregar o vídeo. Verifique sua conexão ou o formato do arquivo.");
+                                    setVideoError(true);
                                 }}
                             />
-                        ) : lesson.type === 'pdf' ? (
+                        ) : lesson.type === 'pdf' && lesson.cloudinaryUrl ? (
                             <iframe 
                                 src={`${lesson.cloudinaryUrl}#toolbar=0`} 
                                 className="w-full h-full min-h-[60vh] bg-white rounded-[2.5rem]"
                                 title={lesson.title}
                             />
                         ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-surface-900">
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-surface-900 relative">
                                 {lesson.coverUrl ? (
-                                    <img src={lesson.coverUrl} className="absolute inset-0 w-full h-full object-cover opacity-40 blur-sm" />
+                                    <img src={lesson.coverUrl} className="absolute inset-0 w-full h-full object-cover opacity-30" />
                                 ) : (
                                     <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-purple-500/20" />
                                 )}
-                                <div className="relative z-10 flex flex-col items-center">
-                                    <PlayCircle className="w-20 h-20 text-white mb-4" />
-                                    <h3 className="text-white text-xl font-bold">{lesson.title}</h3>
-                                    <a
-                                        href={lesson.cloudinaryUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="mt-6 px-8 py-3 bg-white text-primary rounded-2xl font-bold shadow-lg hover:scale-105 transition-transform"
-                                    >
-                                        {t('downloadFile')}
-                                    </a>
+                                <div className="relative z-10 flex flex-col items-center p-6 text-center">
+                                    <PlayCircle className="w-16 h-16 md:w-20 md:h-20 text-white mb-4 drop-shadow-lg" />
+                                    <h3 className="text-white text-xl md:text-2xl font-bold drop-shadow-md">{lesson.title}</h3>
+                                    {lesson.cloudinaryUrl ? (
+                                        <a
+                                            href={lesson.cloudinaryUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-6 px-8 py-3 bg-white text-primary rounded-2xl font-bold shadow-lg hover:scale-105 transition-transform"
+                                        >
+                                            {t('downloadFile') || 'Acessar Conteúdo'}
+                                        </a>
+                                    ) : (
+                                        <p className="text-white/80 mt-2 font-medium">Conteúdo em texto abaixo</p>
+                                    )}
                                 </div>
                             </div>
                         )}
