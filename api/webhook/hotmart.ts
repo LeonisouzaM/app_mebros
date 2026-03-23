@@ -55,21 +55,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.log(`Aluno já existe via Webhook: ${email}`);
             }
 
-            // Buscar o produto pelo hotmart_id para usar o ID interno correto
-            let systemProductId = 'default';
+            const systemProductId = String(productIdHotmart || 'default');
+            
             if (productIdHotmart) {
-                const hotmartIdStr = String(productIdHotmart);
-                const matchedProducts = await sql`
-                    SELECT id FROM products WHERE hotmart_id = ${hotmartIdStr}
-                `;
-                if (matchedProducts.length > 0) {
-                    systemProductId = matchedProducts[0].id;
-                    console.log(`Produto encontrado no banco: hotmart_id=${hotmartIdStr} → id=${systemProductId}`);
-                } else {
-                    // Fallback: salvar o hotmart_id bruto e logar para futura correção manual
-                    systemProductId = hotmartIdStr;
-                    console.warn(`ATENÇÃO: Produto com hotmart_id=${hotmartIdStr} não encontrado! Verifique o cadastro do produto no painel.`);
-                }
+                console.log(`Produto recebido da Hotmart: ${systemProductId}`);
+                // Não precisamos mais vincular ao UUID interno aqui.
+                // Ao salvar o hotmart_id puro em product_access, o frontend 
+                // sempre vai cruzar essa chave com o hotmart_id do produto atual.
             }
 
             await sql`
