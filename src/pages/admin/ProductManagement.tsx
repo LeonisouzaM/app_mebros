@@ -23,6 +23,43 @@ export default function ProductManagement() {
     const [editingBanners, setEditingBanners] = useState<string[]>([]);
     const [isUploadingBanner, setIsUploadingBanner] = useState<number | null>(null);
 
+    const renderDescription = (text?: string) => {
+        if (!text) return null;
+        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+        
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+
+            if (match[1] && match[2]) {
+                parts.push(
+                    <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[1]}
+                    </a>
+                );
+            } else if (match[3]) {
+                parts.push(
+                    <a key={match.index} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[3]}
+                    </a>
+                );
+            }
+
+            lastIndex = linkRegex.lastIndex;
+        }
+
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+
+        return parts;
+    };
+
     useEffect(() => {
         if (systemBanners) {
             setEditingBanners(systemBanners);
@@ -148,7 +185,7 @@ export default function ProductManagement() {
                                         className="w-full px-4 py-2 border border-surface-200 rounded-lg focus:ring-2 focus:ring-primary transition-all bg-white text-sm"
                                         placeholder="Link da imagem ou faça upload..."
                                     />
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
                                         <label className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-xs font-bold text-text-muted hover:text-primary hover:border-primary cursor-pointer transition-all">
                                             <input
                                                 type="file"
@@ -160,9 +197,7 @@ export default function ProductManagement() {
                                             {isUploadingBanner === index ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageIcon className="w-3.5 h-3.5" />}
                                             {banner ? 'Trocar Imagem' : 'Fazer Upload'}
                                         </label>
-                                        {banner && (
-                                            <a href={banner} target="_blank" rel="noreferrer" className="text-[10px] text-primary font-bold hover:underline">Ver Imagem</a>
-                                        )}
+                                    <a href={banner} target="_blank" rel="noreferrer" className="text-[10px] text-primary font-bold hover:underline truncate max-w-[150px]">Ver Imagem</a>
                                     </div>
                                 </div>
                                 <button
@@ -223,7 +258,7 @@ export default function ProductManagement() {
                                     className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 text-sm"
                                     placeholder="Link da imagem ou faça upload..."
                                 />
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-wrap items-center gap-3">
                                     <label className="flex items-center gap-2 px-4 py-2 bg-white border border-surface-200 rounded-xl text-xs font-bold text-text-muted hover:text-primary hover:border-primary cursor-pointer transition-all shadow-sm">
                                         <input
                                             type="file"
@@ -339,7 +374,22 @@ export default function ProductManagement() {
                         </p>
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Descrição</label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label className="block text-sm font-semibold text-gray-700">Descrição</label>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const url = window.prompt('1. Cole o endereço do link (URL):');
+                                    if (!url) return;
+                                    const text = window.prompt('2. Qual texto deve aparecer clicável? (Ex: Saiba Mais)');
+                                    if (!text) return;
+                                    setDescription(prev => prev + ` [${text}](${url})`);
+                                }}
+                                className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase hover:bg-primary/20 transition-colors flex items-center gap-1"
+                            >
+                                🔗 Inserir Link
+                            </button>
+                        </div>
                         <textarea
                             rows={3}
                             value={description}
@@ -414,13 +464,13 @@ export default function ProductManagement() {
                             <div className="p-4 flex-1 flex flex-col justify-between">
                                 <div>
                                     <h3 className="font-bold text-gray-900 group-hover:text-primary transition-colors">{product.name}</h3>
-                                    <p className="text-xs text-text-muted mt-1 line-clamp-2">{product.description || 'Sem descrição.'}</p>
+                                    <div className="text-xs text-text-muted mt-1 line-clamp-2">{product.description ? renderDescription(product.description) : 'Sem descrição.'}</div>
                                     <span className="inline-block mt-2 px-2 py-1 bg-surface-200 text-gray-600 text-[10px] font-bold rounded-md">
                                         Idioma: {product.language === 'en' ? 'Inglês' : product.language === 'es' ? 'Espanhol' : 'Português'}
                                     </span>
                                 </div>
-                                <div className="mt-4 pt-3 border-t border-surface-200 flex items-center justify-between gap-2">
-                                    <span className="text-[10px] text-gray-400 font-medium">
+                                <div className="mt-4 pt-3 border-t border-surface-200 flex flex-wrap items-center justify-between gap-2">
+                                    <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">
                                         Cadastrado em {format(new Date(product.createdAt), 'dd/MM/yy', { locale: ptBR })}
                                     </span>
                                     <div className="flex gap-2">

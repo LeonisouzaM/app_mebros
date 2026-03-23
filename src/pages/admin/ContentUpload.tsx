@@ -303,9 +303,24 @@ export default function ContentUpload() {
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-semibold text-gray-700 mb-1">
-                            Descrição (Opcional)
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label htmlFor="description" className="block text-sm font-semibold text-gray-700">
+                                Descrição (Opcional)
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const url = window.prompt('1. Cole o endereço do link (URL):');
+                                    if (!url) return;
+                                    const text = window.prompt('2. Qual texto deve aparecer clicável? (Ex: Acessar Aula)');
+                                    if (!text) return;
+                                    setDescription(prev => prev + ` [${text}](${url})`);
+                                }}
+                                className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase hover:bg-primary/20 transition-colors flex items-center gap-1"
+                            >
+                                🔗 Inserir Link
+                            </button>
+                        </div>
                         <textarea
                             id="description"
                             rows={4}
@@ -314,6 +329,9 @@ export default function ContentUpload() {
                             className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-none"
                             placeholder="Detalhes sobre este material..."
                         />
+                        <p className="text-[11px] text-text-muted mt-1">
+                            Dica: Para esconder um link longo com um texto curto, digite assim: <strong>[Seu Texto Aqui](https://seulink.com)</strong> ou use o botão acima.
+                        </p>
                     </div>
 
                     <div>

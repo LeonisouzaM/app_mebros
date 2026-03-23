@@ -15,6 +15,45 @@ export default function ClassView() {
 
     const lesson = classes.find(c => c.id === id);
 
+    const renderDescription = (text: string) => {
+        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+        
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(text)) !== null) {
+            // Add text before match
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+
+            if (match[1] && match[2]) {
+                // It's a markdown link: [match[1]](match[2])
+                parts.push(
+                    <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all">
+                        {match[1]}
+                    </a>
+                );
+            } else if (match[3]) {
+                // It's a raw URL
+                parts.push(
+                    <a key={match.index} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all">
+                        {match[3]}
+                    </a>
+                );
+            }
+
+            lastIndex = linkRegex.lastIndex;
+        }
+
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+
+        return parts;
+    };
+
     useEffect(() => {
         if (classes.length === 0) {
             fetchInitialData();
@@ -116,9 +155,9 @@ export default function ClassView() {
                         </h1>
 
                         {lesson.description && (
-                            <div className="prose prose-slate max-w-none">
-                                <p className="text-text-muted text-lg leading-relaxed whitespace-pre-line font-medium">
-                                    {lesson.description}
+                            <div className="prose prose-slate max-w-none w-full overflow-hidden break-words">
+                                <p className="text-text-muted text-lg leading-relaxed whitespace-pre-line font-medium break-words">
+                                    {renderDescription(lesson.description)}
                                 </p>
                             </div>
                         )}

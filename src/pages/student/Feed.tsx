@@ -12,6 +12,43 @@ export default function Feed() {
     const fetchFeed = useStore((state) => state.fetchFeed);
     const feedPosts = useStore((state) => state.feedPosts);
 
+    const renderDescription = (text?: string) => {
+        if (!text) return null;
+        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+        
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+
+            if (match[1] && match[2]) {
+                parts.push(
+                    <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[1]}
+                    </a>
+                );
+            } else if (match[3]) {
+                parts.push(
+                    <a key={match.index} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[3]}
+                    </a>
+                );
+            }
+
+            lastIndex = linkRegex.lastIndex;
+        }
+
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+
+        return parts;
+    };
+
     useEffect(() => {
         if (currentProductId) {
             fetchFeed(currentProductId);
@@ -64,7 +101,7 @@ export default function Feed() {
                                     </div>
                                 </div>
                                 <div className="text-text-muted text-sm whitespace-pre-wrap leading-relaxed">
-                                    {post.description}
+                                    {renderDescription(post.description)}
                                 </div>
                                 {post.imageUrl && (
                                     <div className="mt-4 rounded-xl overflow-hidden border border-surface-100 shadow-sm">

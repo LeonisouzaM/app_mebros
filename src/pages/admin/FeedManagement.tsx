@@ -20,6 +20,43 @@ export default function FeedManagement() {
     const [showTitleEmojis, setShowTitleEmojis] = useState(false);
     const [showDescEmojis, setShowDescEmojis] = useState(false);
 
+    const renderDescription = (text?: string) => {
+        if (!text) return null;
+        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+        
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+
+            if (match[1] && match[2]) {
+                parts.push(
+                    <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[1]}
+                    </a>
+                );
+            } else if (match[3]) {
+                parts.push(
+                    <a key={match.index} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[3]}
+                    </a>
+                );
+            }
+
+            lastIndex = linkRegex.lastIndex;
+        }
+
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+
+        return parts;
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -231,7 +268,7 @@ export default function FeedManagement() {
                                         </span>
                                     </div>
                                     <h3 className="font-bold text-gray-900">{post.title}</h3>
-                                    <p className="text-sm text-text-muted mt-1 leading-relaxed line-clamp-2">{post.description}</p>
+                                    <div className="text-sm text-text-muted mt-1 leading-relaxed line-clamp-2">{renderDescription(post.description)}</div>
                                     {post.imageUrl && (
                                         <img src={post.imageUrl} alt={post.title} className="mt-3 w-40 h-24 object-cover rounded-xl border border-surface-100" />
                                     )}

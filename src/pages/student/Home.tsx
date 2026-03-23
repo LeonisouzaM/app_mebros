@@ -112,6 +112,43 @@ export default function Home() {
         setStartY(0);
     };
 
+    const renderDescription = (text?: string) => {
+        if (!text) return null;
+        const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+        
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = linkRegex.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(text.substring(lastIndex, match.index));
+            }
+
+            if (match[1] && match[2]) {
+                parts.push(
+                    <a key={match.index} href={match[2]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[1]}
+                    </a>
+                );
+            } else if (match[3]) {
+                parts.push(
+                    <a key={match.index} href={match[3]} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-bold break-all" onClick={(e) => e.stopPropagation()}>
+                        {match[3]}
+                    </a>
+                );
+            }
+
+            lastIndex = linkRegex.lastIndex;
+        }
+
+        if (lastIndex < text.length) {
+            parts.push(text.substring(lastIndex));
+        }
+
+        return parts;
+    };
+
     if (isLoading && products.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
@@ -227,17 +264,24 @@ export default function Home() {
 
                         return (
                             <section key={product.id} className="relative">
-                                <div className="flex items-center justify-between mb-8">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4 w-full">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center border border-primary/10 flex-shrink-0">
                                             <PlayCircle className="text-primary h-6 w-6" />
                                         </div>
-                                        <h2 className="text-2xl font-display font-bold text-text-main tracking-tight">
-                                            {visibleProducts.length > 1 ? product.name : t('recentClasses')}
-                                        </h2>
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                            <h2 className="text-xl sm:text-2xl font-display font-bold text-text-main tracking-tight truncate">
+                                                {visibleProducts.length > 1 ? product.name : t('recentClasses')}
+                                            </h2>
+                                            {product.description && (
+                                                <div className="text-sm text-text-muted mt-1 font-medium break-words max-w-2xl whitespace-pre-line">
+                                                    {renderDescription(product.description)}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="h-[1px] flex-1 bg-surface-100 mx-6 hidden sm:block"></div>
-                                    <span className="text-xs font-bold text-text-dim uppercase tracking-widest">
+                                    <span className="text-xs font-bold text-text-dim uppercase tracking-widest flex-shrink-0">
                                         {productClasses.length} {productClasses.length === 1 ? 'Aula' : 'Aulas'}
                                     </span>
                                 </div>
@@ -305,7 +349,7 @@ export default function Home() {
                                                                 {item.title}
                                                             </h3>
                                                             <p className="text-sm text-text-muted line-clamp-2 font-medium">
-                                                                {item.description}
+                                                                {renderDescription(item.description)}
                                                             </p>
                                                         </div>
 
