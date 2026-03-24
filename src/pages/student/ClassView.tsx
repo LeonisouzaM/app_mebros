@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/store';
-import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, Maximize2, X } from 'lucide-react';
+import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, Maximize2, X, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -235,41 +235,66 @@ export default function ClassView() {
                 </div>
             </div>
 
-            {/* Fullscreen PDF Modal (Hotmart/Kiwify Style) */}
+            {/* Fullscreen PDF Modal (Optimized for Mobile) */}
             {showPdfModal && lesson?.cloudinaryUrl && (
-                <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
-                    {/* Header/Controls */}
-                    <div className="w-full max-w-6xl flex justify-between items-center mb-4 text-white">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
+                    {/* Header/Controls (Safe Area Aware) */}
+                    <div className="w-full h-16 md:h-20 bg-slate-900 flex justify-between items-center px-4 md:px-8 border-b border-white/10 shrink-0">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center shrink-0">
                                 <FileText className="w-5 h-5 text-primary" />
                             </div>
-                            <div>
-                                <h3 className="font-bold text-lg leading-tight">{lesson.title}</h3>
-                                <p className="text-xs text-white/50 font-bold uppercase tracking-widest">Visualizador Seguro</p>
+                            <div className="truncate">
+                                <h3 className="font-bold text-white text-sm md:text-base truncate leading-tight">{lesson.title}</h3>
+                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Modo Leitura</p>
                             </div>
                         </div>
-                        <button
-                            onClick={() => setShowPdfModal(false)}
-                            className="w-12 h-12 bg-white/10 hover:bg-red-500 text-white rounded-2xl flex items-center justify-center transition-all hover:rotate-90 group active:scale-90"
-                            title="Fechar (Esc)"
-                        >
-                            <X className="w-6 h-6" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                             <a
+                                href={lesson.cloudinaryUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-10 h-10 bg-white/5 text-white/70 rounded-xl flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all"
+                                title="Abrir original"
+                            >
+                                <ExternalLink className="w-4 h-4" />
+                            </a>
+                            <button
+                                onClick={() => setShowPdfModal(false)}
+                                className="w-10 h-10 bg-red-500/10 hover:bg-red-500 text-red-500 rounded-xl flex items-center justify-center transition-all active:scale-90"
+                                title="Fechar"
+                            >
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Viewer Wrapper */}
-                    <div className="w-full max-w-6xl flex-1 bg-white rounded-3xl overflow-hidden shadow-2xl relative border border-white/10">
+                    {/* Viewer Wrapper (Google Docs Viewer used as Proxy to fix white screen on mobile) */}
+                    <div className="w-full flex-1 bg-white relative">
+                        {/* 
+                            We use Google Docs Viewer because it's the most compatible way to render PDFs
+                            in iframes on both iOS/Android and Desktop, bypassing most cross-origin/iframe blocks.
+                        */}
                         <iframe
-                            src={`${lesson.cloudinaryUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(lesson.cloudinaryUrl)}&embedded=true`}
                             className="w-full h-full border-none"
                             title="PDF Viewer"
                         />
+                        
+                        {/* Loading Indicator for slow connections */}
+                        <div className="absolute inset-0 flex items-center justify-center -z-10 bg-slate-50">
+                             <div className="flex flex-col items-center gap-4">
+                                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                <span className="text-xs font-bold text-text-muted uppercase tracking-widest">Carregando Material...</span>
+                             </div>
+                        </div>
                     </div>
 
-                    {/* Footer / Hint */}
-                    <div className="mt-6 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
-                        Use o scroll ou as setas do teclado para navegar
+                    {/* Mobile Navigation Hint (Bottom) */}
+                    <div className="w-full py-4 bg-slate-900 border-t border-white/10 text-center shrink-0">
+                         <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.25em]">
+                             Deslize para ler as páginas
+                         </span>
                     </div>
                 </div>
             )}
