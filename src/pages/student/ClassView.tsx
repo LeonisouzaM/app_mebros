@@ -57,16 +57,23 @@ export default function ClassView() {
 
     const getPdfPreviewUrl = (url: string) => {
         if (!url || !url.includes('cloudinary.com')) return null;
-        // If it's a Cloudinary URL, we can get the first page as an image
-        // Works for 'image' resource_type PDFs. 
-        // Example: .../image/upload/v1234/file.pdf -> .../image/upload/pg_1,c_fill,w_800/v1234/file.jpg
         try {
-            const parts = url.split('/upload/');
+            // Fix for PDFs that were uploaded as 'raw'. We try to access them as 'image' to get the preview.
+            const cleanUrl = url.replace('/raw/upload/', '/image/upload/');
+            const parts = cleanUrl.split('/upload/');
             if (parts.length !== 2) return null;
-            return `${parts[0]}/upload/pg_1,c_fill,h_800,w_600,f_auto/${parts[1].replace('.pdf', '.jpg')}`;
+            
+            // Generate a high-quality preview of the first page (pg_1)
+            return `${parts[0]}/upload/pg_1,c_fill,h_1000,w_750,f_auto,q_auto/${parts[1].replace('.pdf', '.jpg')}`;
         } catch (e) {
             return null;
         }
+    };
+
+    const getCleanPdfUrl = (url: string) => {
+        if (!url) return '';
+        // Ensure PDFs are accessed via 'image' resource type for better browser compatibility
+        return url.replace('/raw/upload/', '/image/upload/');
     };
 
     useEffect(() => {
@@ -246,7 +253,7 @@ export default function ClassView() {
                 </div>
             </div>
 
-            {/* Fullscreen PDF Modal (Optimized for Mobile) */}
+            {/* Robust Fullscreen PDF Modal (Optimized for Mobile) */}
             {showPdfModal && lesson?.cloudinaryUrl && (
                 <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
                     {/* Header/Controls (Safe Area Aware) */}
@@ -257,75 +264,61 @@ export default function ClassView() {
                             </div>
                             <div className="truncate">
                                 <h3 className="font-bold text-white text-sm md:text-base truncate leading-tight">{lesson.title}</h3>
-                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Modo Leitura</p>
+                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Acesso Seguro</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                             <a
-                                href={lesson.cloudinaryUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-10 h-10 bg-white/5 text-white/70 rounded-xl flex items-center justify-center hover:bg-white/10 active:scale-95 transition-all"
-                                title="Abrir original"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                            </a>
-                            <button
-                                onClick={() => setShowPdfModal(false)}
-                                className="w-10 h-10 bg-red-500/10 hover:bg-red-500 text-red-500 rounded-xl flex items-center justify-center transition-all active:scale-90"
-                                title="Fechar"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => setShowPdfModal(false)}
+                            className="w-10 h-10 bg-white/10 hover:bg-red-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
+                            title="Fechar"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
                     </div>
 
-                    {/* Viewer Wrapper (Direct Embed + Native Mobile Fallback) */}
+                    {/* Viewer Wrapper (Native Embed + Fail-Safe Access) */}
                     <div className="w-full flex-1 bg-white relative flex flex-col items-center justify-center">
                         {/* 
-                            We now use a direct iframe but provide a clear fallback if the device 
-                            (like iOS or some Android browsers) doesn't natively render PDFs in iframes.
+                            We use <object> which is often more reliable than <iframe> for PDFs.
+                            If it fails, the fallback buttons below take over.
                         */}
-                        <iframe
-                            src={lesson.cloudinaryUrl}
-                            className="w-full h-full border-none z-10"
-                            title="PDF Viewer"
-                        />
-                        
-                        {/* 
-                          Native Fallback: If the iframe is blank/white (often on iPhones), 
-                          the buttons below allow the student to open the PDF directly.
-                        */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 gap-6 p-8">
-                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
-                                <FileText className="w-8 h-8" />
-                             </div>
-                             <div className="text-center max-w-xs">
-                                <h4 className="text-text-main font-bold mb-2">Seu celular está pronto?</h4>
-                                <p className="text-xs text-text-muted font-medium mb-8">
-                                    Em alguns aparelhos, é necessário clicar no botão abaixo para ativar a visualização do material.
-                                </p>
-                             </div>
+                        <object
+                            data={getCleanPdfUrl(lesson.cloudinaryUrl)}
+                            type="application/pdf"
+                            className="w-full h-full z-10"
+                        >
+                            {/* Native Fallback inside Object */}
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 gap-6 p-8 text-center">
+                                <FileText className="w-16 h-16 text-primary/30 mb-2" />
+                                <h4 className="text-text-main font-bold">Quase lá!</h4>
+                                <p className="text-sm text-text-muted">Seu material está pronto para ser visualizado.</p>
+                                <a
+                                    href={getCleanPdfUrl(lesson.cloudinaryUrl)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center gap-2"
+                                >
+                                    <ExternalLink className="w-5 h-5" />
+                                    Ver PDF Completo
+                                </a>
+                            </div>
+                        </object>
+
+                        {/* Forced UI Button for Mobile (Shows above object if needed) */}
+                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 md:hidden bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-primary/20 flex flex-col items-center gap-3">
+                             <p className="text-[10px] font-bold text-text-main uppercase tracking-widest text-center">
+                                Problemas com a visualização?
+                             </p>
                              <a
-                                href={lesson.cloudinaryUrl}
+                                href={getCleanPdfUrl(lesson.cloudinaryUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center gap-2"
+                                className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-xs flex items-center gap-2"
                              >
-                                <ExternalLink className="w-5 h-5" />
-                                Abrir Material PDF
+                                <ExternalLink className="w-4 h-4" />
+                                Abrir Manualmente
                              </a>
-                             <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest mt-4">
-                                Clique para ver o conteúdo
-                             </p>
                         </div>
-                    </div>
-
-                    {/* Mobile Navigation Hint (Bottom) */}
-                    <div className="w-full py-4 bg-slate-900 border-t border-white/10 text-center shrink-0">
-                         <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.25em]">
-                             Dica: Você pode usar o zoom com os dedos
-                         </span>
                     </div>
                 </div>
             )}
