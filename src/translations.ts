@@ -128,8 +128,8 @@ export const translations = {
         selectProductFirst: 'Por favor, ve a la pantalla de Inicio para seleccionar un área de miembros primero.',
 
         back: 'Volver',
-        downloadFile: 'Descargar Archivo',
-        supportMaterial: 'Material de Apoyo',
+        downloadFile: 'Descargar Arquivo',
+        supportMaterial: 'Material de Apoio',
         downloadSupportMaterial: 'Descarga el material complementario para estudiar junto con esta clase.',
         downloadPdf: 'Descargar PDF / Archivo',
         aboutClass: 'Sobre la Clase',
