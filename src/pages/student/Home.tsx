@@ -201,8 +201,8 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* Premium Carousel */}
-            {activeBanners.length > 0 && (
+            {/* Premium Carousel — only shown when user has products */}
+            {activeBanners.length > 0 && visibleProducts.length > 0 && (
                 <section className="relative w-full group">
                     <div className="relative h-56 md:h-80 w-full overflow-hidden rounded-[2.5rem] shadow-premium border border-white/20">
                         {activeBanners.map((banner, idx) => (
