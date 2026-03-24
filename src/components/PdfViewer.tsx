@@ -6,6 +6,14 @@ interface PdfViewerProps {
     title: string;
     onClose: () => void;
     preloaded?: boolean;
+    labels: {
+        loadingPdf: string;
+        previewUnavailable: string;
+        previewUnavailableDesc: string;
+        openPdfBrowser: string;
+        endOfDoc: string;
+        pages: string;
+    };
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -42,8 +50,9 @@ function getCloudinaryPageUrl(pdfUrl: string, page: number): string {
 
 // ─── Google Drive Viewer ──────────────────────────────────────────────────────
 
-function GoogleDriveViewer({ embedUrl, title, onClose, preloaded }: {
+function GoogleDriveViewer({ embedUrl, title, onClose, preloaded, labels }: {
     embedUrl: string; title: string; onClose: () => void; preloaded?: boolean;
+    labels: PdfViewerProps['labels'];
 }) {
     const [loaded, setLoaded] = useState(preloaded ?? false);
 
@@ -71,7 +80,7 @@ function GoogleDriveViewer({ embedUrl, title, onClose, preloaded }: {
                 {!loaded && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-100 z-10">
                         <div className="w-10 h-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
-                        <p className="text-slate-500 text-sm font-bold">Carregando PDF...</p>
+                    <p className="text-slate-500 text-sm font-bold">{labels.loadingPdf}</p>
                     </div>
                 )}
                 <iframe
@@ -88,8 +97,8 @@ function GoogleDriveViewer({ embedUrl, title, onClose, preloaded }: {
 
 // ─── Cloudinary Image-Based Viewer ───────────────────────────────────────────
 
-function CloudinaryViewer({ url, title, onClose }: {
-    url: string; title: string; onClose: () => void;
+function CloudinaryViewer({ url, title, onClose, labels }: {
+    url: string; title: string; onClose: () => void; labels: PdfViewerProps['labels'];
 }) {
     const [pages, setPages] = useState<number[]>([1]);
     const [failedPage, setFailedPage] = useState<number | null>(null);
@@ -128,12 +137,12 @@ function CloudinaryViewer({ url, title, onClose }: {
                     <div className="flex flex-col items-center justify-center gap-6 py-20 text-center px-8 max-w-sm mx-auto">
                         <FileText className="w-16 h-16 text-white/20" />
                         <div>
-                            <p className="text-white font-bold mb-2">Prévia indisponível</p>
-                            <p className="text-white/50 text-sm">Faça um novo upload pelo painel Admin ou use um link do Google Drive.</p>
+                            <p className="text-white font-bold mb-2">{labels.previewUnavailable}</p>
+                            <p className="text-white/50 text-sm">{labels.previewUnavailableDesc}</p>
                         </div>
                         <a href={url} target="_blank" rel="noopener noreferrer"
                             className="px-8 py-4 bg-primary text-white rounded-2xl font-bold w-full text-center">
-                            Abrir PDF no navegador
+                            {labels.openPdfBrowser}
                         </a>
                     </div>
                 ) : (
@@ -151,7 +160,7 @@ function CloudinaryViewer({ url, title, onClose }: {
                             <div className="py-10 text-center">
                                 <div className="inline-flex items-center gap-2 bg-white/5 rounded-full px-6 py-3">
                                     <span className="text-white/40 text-xs font-bold uppercase tracking-widest">
-                                        Fim · {failedPage - 1} págs.
+                                        {labels.endOfDoc} · {failedPage - 1} {labels.pages}
                                     </span>
                                 </div>
                             </div>
@@ -204,7 +213,7 @@ function PdfPageImage({ src, page, onLoad, onError }: {
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
-export default function PdfViewer({ url, title, onClose, preloaded }: PdfViewerProps) {
+export default function PdfViewer({ url, title, onClose, preloaded, labels }: PdfViewerProps) {
     // Lock body scroll
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -214,9 +223,9 @@ export default function PdfViewer({ url, title, onClose, preloaded }: PdfViewerP
     const driveEmbedUrl = getGoogleDriveEmbedUrl(url);
 
     if (driveEmbedUrl) {
-        return <GoogleDriveViewer embedUrl={driveEmbedUrl} title={title} onClose={onClose} preloaded={preloaded} />;
+        return <GoogleDriveViewer embedUrl={driveEmbedUrl} title={title} onClose={onClose} preloaded={preloaded} labels={labels} />;
     }
 
     // Fallback: Cloudinary image-based viewer
-    return <CloudinaryViewer url={url} title={title} onClose={onClose} />;
+    return <CloudinaryViewer url={url} title={title} onClose={onClose} labels={labels} />;
 }

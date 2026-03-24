@@ -46,7 +46,28 @@ export const translations = {
         accessClass: 'Acessar Aula',
         whatAreYouThinking: 'O que você está pensando?',
         publish: 'Publicar',
-        writeReply: 'Escreva sua resposta...'
+        writeReply: 'Escreva sua resposta...',
+
+        // ClassView
+        description: 'Descrição',
+        attachments: 'Anexos',
+        lastUpdated: 'Última atualização',
+        downloadAvailable: 'Download disponível',
+        classFooterNote: 'Esta aula é parte integrante do seu treinamento exclusivo.',
+        available: 'Disponível',
+        tapToOpen: 'Toque para abrir',
+        accessContent: 'Acessar Conteúdo',
+        videoLoadError: 'Erro ao carregar vídeo.',
+        openVideoExternal: 'Abrir vídeo externamente',
+        ready: 'Pronto',
+
+        // PdfViewer
+        loadingPdf: 'Carregando PDF...',
+        previewUnavailable: 'Prévia indisponível',
+        previewUnavailableDesc: 'Faça um novo upload pelo painel Admin ou use um link do Google Drive.',
+        openPdfBrowser: 'Abrir PDF no navegador',
+        endOfDoc: 'Fim',
+        pages: 'págs.',
     },
     en: {
         dashboard: 'Dashboard',
@@ -95,7 +116,28 @@ export const translations = {
         accessClass: 'Access Class',
         whatAreYouThinking: 'What are you thinking?',
         publish: 'Publish',
-        writeReply: 'Write your reply...'
+        writeReply: 'Write your reply...',
+
+        // ClassView
+        description: 'Description',
+        attachments: 'Attachments',
+        lastUpdated: 'Last updated',
+        downloadAvailable: 'Download available',
+        classFooterNote: 'This class is an integral part of your exclusive training.',
+        available: 'Available',
+        tapToOpen: 'Tap to open',
+        accessContent: 'Access Content',
+        videoLoadError: 'Error loading video.',
+        openVideoExternal: 'Open video externally',
+        ready: 'Ready',
+
+        // PdfViewer
+        loadingPdf: 'Loading PDF...',
+        previewUnavailable: 'Preview unavailable',
+        previewUnavailableDesc: 'Please re-upload via the Admin panel or use a Google Drive link.',
+        openPdfBrowser: 'Open PDF in browser',
+        endOfDoc: 'End',
+        pages: 'pages',
     },
     es: {
         dashboard: 'Panel',
@@ -128,8 +170,8 @@ export const translations = {
         selectProductFirst: 'Por favor, ve a la pantalla de Inicio para seleccionar un área de miembros primero.',
 
         back: 'Volver',
-        downloadFile: 'Descargar Arquivo',
-        supportMaterial: 'Material de Apoio',
+        downloadFile: 'Descargar Archivo',
+        supportMaterial: 'Material de Apoyo',
         downloadSupportMaterial: 'Descarga el material complementario para estudiar junto con esta clase.',
         downloadPdf: 'Descargar PDF / Archivo',
         aboutClass: 'Sobre la Clase',
@@ -144,7 +186,28 @@ export const translations = {
         accessClass: 'Acceder a la Clase',
         whatAreYouThinking: '¿Qué estás pensando?',
         publish: 'Publicar',
-        writeReply: 'Escribe tu respuesta...'
+        writeReply: 'Escribe tu respuesta...',
+
+        // ClassView
+        description: 'Descripción',
+        attachments: 'Archivos adjuntos',
+        lastUpdated: 'Última actualización',
+        downloadAvailable: 'Descarga disponible',
+        classFooterNote: 'Esta clase es parte integral de tu entrenamiento exclusivo.',
+        available: 'Disponible',
+        tapToOpen: 'Toca para abrir',
+        accessContent: 'Acceder al Contenido',
+        videoLoadError: 'Error al cargar el video.',
+        openVideoExternal: 'Abrir video externamente',
+        ready: 'Listo',
+
+        // PdfViewer
+        loadingPdf: 'Cargando PDF...',
+        previewUnavailable: 'Vista previa no disponible',
+        previewUnavailableDesc: 'Vuelve a subir desde el panel de Admin o usa un enlace de Google Drive.',
+        openPdfBrowser: 'Abrir PDF en el navegador',
+        endOfDoc: 'Fin',
+        pages: 'págs.',
     }
 };
 

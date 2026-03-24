@@ -142,10 +142,10 @@ export default function ClassView() {
                         ) : isVideo && videoError ? (
                             <div className="w-full h-full flex flex-col items-center justify-center bg-gray-950 text-white/60 gap-4 p-8 text-center">
                                 <PlayCircle className="w-14 h-14 opacity-30" />
-                                <p className="font-bold text-sm">Erro ao carregar vídeo.</p>
+                                <p className="font-bold text-sm">{t('videoLoadError')}</p>
                                 {lesson.cloudinaryUrl && (
                                     <a href={lesson.cloudinaryUrl} target="_blank" rel="noopener noreferrer" className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm">
-                                        Abrir vídeo externamente
+                                        {t('openVideoExternal')}
                                     </a>
                                 )}
                             </div>
@@ -177,15 +177,15 @@ export default function ClassView() {
                                             <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest">
                                                 Google Drive
                                                 {pdfPreloaded && (
-                                                    <span className="ml-2 inline-flex items-center gap-1 text-green-400">
-                                                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                                        Pronto
-                                                    </span>
-                                                )}
+                                                        <span className="ml-2 inline-flex items-center gap-1 text-green-400">
+                                                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                                            {t('ready')}
+                                                        </span>
+                                                    )}
                                             </p>
                                         )}
                                         <span className="inline-block mt-3 bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest ring-1 ring-white/30 group-hover/pdf:bg-primary transition-all">
-                                            Toque para abrir
+                                            {t('tapToOpen')}
                                         </span>
                                     </div>
                                 </div>
@@ -205,7 +205,7 @@ export default function ClassView() {
                                             rel="noopener noreferrer"
                                             className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/40 hover:scale-105 transition-all"
                                         >
-                                            Acessar Conteúdo
+                                            {t('accessContent')}
                                         </a>
                                     )}
                                 </div>
@@ -216,7 +216,7 @@ export default function ClassView() {
                     {/* ─── Description & Attachments ─── */}
                     <div className="bg-white rounded-2xl md:rounded-[2rem] shadow-premium border border-surface-100 overflow-hidden">
                         <div className="p-7 md:p-10">
-                            <h2 className="text-2xl font-display font-extrabold text-text-main mb-6">Descrição</h2>
+                            <h2 className="text-2xl font-display font-extrabold text-text-main mb-6">{t('description')}</h2>
 
                             {lesson.description && (
                                 <div className="prose prose-slate max-w-none w-full mb-8">
@@ -228,12 +228,12 @@ export default function ClassView() {
 
                             <div className="flex items-center gap-2 text-text-dim text-sm font-semibold mb-8 border-b border-surface-50 pb-8">
                                 <Calendar className="w-4 h-4" />
-                                <span>Última atualização: {format(new Date(lesson.createdAt), 'dd/MM/yyyy')}</span>
+                                <span>{t('lastUpdated')}: {format(new Date(lesson.createdAt), 'dd/MM/yyyy')}</span>
                             </div>
 
                             {lesson.attachmentUrl && (
                                 <div className="space-y-4">
-                                    <h3 className="text-xl font-display font-extrabold text-text-main">Anexos</h3>
+                                    <h3 className="text-xl font-display font-extrabold text-text-main">{t('attachments')}</h3>
                                     <a
                                         href={lesson.attachmentUrl}
                                         target="_blank"
@@ -245,9 +245,9 @@ export default function ClassView() {
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-text-main truncate group-hover:text-primary transition-colors">
-                                                {lesson.attachmentUrl.split('/').pop() || 'Material de Apoio'}
+                                                {lesson.attachmentUrl.split('/').pop() || t('supportMaterial')}
                                             </h4>
-                                            <p className="text-xs text-text-dim font-bold uppercase tracking-wider mt-1">Download disponível</p>
+                                            <p className="text-xs text-text-dim font-bold uppercase tracking-wider mt-1">{t('downloadAvailable')}</p>
                                         </div>
                                         <Download className="w-5 h-5 text-text-dim group-hover:text-primary transition-colors" />
                                     </a>
@@ -260,11 +260,11 @@ export default function ClassView() {
                     <div className="flex items-center justify-between px-8 py-6 bg-surface-50/50 rounded-2xl border border-surface-100/50">
                         <div className="flex items-center gap-3">
                             <Info className="text-primary w-5 h-5 opacity-60" />
-                            <span className="text-xs text-text-muted font-medium">Esta aula é parte integrante do seu treinamento exclusivo.</span>
+                            <span className="text-xs text-text-muted font-medium">{t('classFooterNote')}</span>
                         </div>
                         <div className="flex items-center gap-2 text-success text-[10px] font-bold uppercase tracking-widest">
                             <div className="w-1.5 h-1.5 bg-success rounded-full animate-pulse" />
-                            Disponível
+                            {t('available')}
                         </div>
                     </div>
                 </div>
@@ -277,6 +277,14 @@ export default function ClassView() {
                     title={lesson.title}
                     preloaded={pdfPreloaded}
                     onClose={() => setShowPdfModal(false)}
+                    labels={{
+                        loadingPdf: t('loadingPdf'),
+                        previewUnavailable: t('previewUnavailable'),
+                        previewUnavailableDesc: t('previewUnavailableDesc'),
+                        openPdfBrowser: t('openPdfBrowser'),
+                        endOfDoc: t('endOfDoc'),
+                        pages: t('pages'),
+                    }}
                 />
             )}
 
