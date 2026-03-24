@@ -37,9 +37,11 @@ export default function ClassView() {
     };
 
     // Get the thumbnail preview URL from a Cloudinary PDF
-    // Works for PDFs uploaded with resource_type 'image'
     const getPdfThumbnail = (url: string) => {
-        if (!url?.includes('cloudinary.com')) return null;
+        if (!url) return null;
+        // Google Drive: no thumbnail available via API without auth
+        if (url.includes('drive.google.com')) return null;
+        if (!url.includes('cloudinary.com')) return null;
         try {
             const clean = url.replace('/raw/upload/', '/image/upload/');
             const [base, file] = clean.split('/upload/');
@@ -49,6 +51,8 @@ export default function ClassView() {
             return null;
         }
     };
+
+    const isGoogleDriveUrl = (url: string) => url?.includes('drive.google.com');
 
     // Ensure the PDF URL is accessed as image resource type for better compatibility
     const getPdfViewUrl = (url: string) => {
@@ -76,7 +80,8 @@ export default function ClassView() {
 
     const isPdf = lesson.type === 'pdf';
     const isVideo = lesson.type === 'video';
-    const thumbnail = isPdf ? getPdfThumbnail(lesson.cloudinaryUrl) : null;
+    const isDrivePdf = isPdf && isGoogleDriveUrl(lesson.cloudinaryUrl);
+    const thumbnail = isPdf && !isDrivePdf ? getPdfThumbnail(lesson.cloudinaryUrl) : null;
 
     return (
         <>
@@ -128,16 +133,14 @@ export default function ClassView() {
                                 onClick={() => setShowPdfModal(true)}
                                 className="relative w-full h-full cursor-pointer group/pdf flex items-center justify-center bg-gray-900"
                             >
-                                {/* First-page thumbnail (if available) */}
+                                {/* Thumbnail or background */}
                                 {thumbnail ? (
-                                    <img
-                                        src={thumbnail}
-                                        alt="Prévia do PDF"
+                                    <img src={thumbnail} alt="Prévia do PDF"
                                         className="w-full h-full object-cover opacity-50 group-hover/pdf:opacity-70 transition-opacity duration-500"
                                         onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                     />
                                 ) : (
-                                    <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900" />
+                                    <div className={`absolute inset-0 ${isDrivePdf ? 'bg-gradient-to-br from-blue-900 to-slate-900' : 'bg-gradient-to-br from-slate-800 to-slate-900'}`} />
                                 )}
 
                                 {/* Overlay */}
@@ -147,6 +150,9 @@ export default function ClassView() {
                                     </div>
                                     <div>
                                         <h3 className="text-white text-xl md:text-2xl font-display font-bold">{lesson.title}</h3>
+                                        {isDrivePdf && (
+                                            <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest">Google Drive · Abertura Rápida</p>
+                                        )}
                                         <span className="inline-block mt-3 bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest ring-1 ring-white/30 group-hover/pdf:bg-primary transition-all">
                                             Toque para abrir
                                         </span>
