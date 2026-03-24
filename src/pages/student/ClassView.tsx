@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/store';
-import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, X } from 'lucide-react';
+import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
+import PdfViewer from '../../components/PdfViewer';
 
 export default function ClassView() {
     const { id } = useParams();
@@ -17,9 +18,9 @@ export default function ClassView() {
     const lesson = classes.find(c => c.id === id);
 
     // Render description text with clickable links
-    const renderDescription = (text: string) => {
+    const renderDescription = (text: string): React.ReactNode[] => {
         const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
-        const parts: (string | JSX.Element)[] = [];
+        const parts: React.ReactNode[] = [];
         let lastIndex = 0;
         let match;
         while ((match = linkRegex.exec(text)) !== null) {
@@ -58,16 +59,6 @@ export default function ClassView() {
     useEffect(() => {
         if (classes.length === 0) fetchInitialData();
     }, [classes.length, fetchInitialData]);
-
-    // Lock body scroll when PDF modal is open
-    useEffect(() => {
-        if (showPdfModal) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => { document.body.style.overflow = ''; };
-    }, [showPdfModal]);
 
     if (!lesson) {
         return (
@@ -242,67 +233,13 @@ export default function ClassView() {
                 </div>
             </div>
 
-            {/* ─────────────────────────────────────────────
-                PDF FULLSCREEN MODAL
-                Uses an iframe with the direct Cloudinary URL.
-                On desktop: browser renders PDF natively.
-                On mobile: falls back to a "Open in Browser" button 
-                (most mobile browsers can't embed PDFs in iframes).
-            ───────────────────────────────────────────── */}
+            {/* PDF FULLSCREEN VIEWER */}
             {showPdfModal && lesson?.cloudinaryUrl && (
-                <div
-                    className="fixed inset-0 z-[9999] bg-black flex flex-col"
-                    style={{ WebkitOverflowScrolling: 'touch' }}
-                >
-                    {/* Top Bar */}
-                    <div className="w-full h-14 bg-slate-900 flex items-center justify-between px-4 shrink-0 border-b border-white/10">
-                        <div className="flex items-center gap-3 overflow-hidden">
-                            <FileText className="w-5 h-5 text-primary shrink-0" />
-                            <span className="text-white font-bold text-sm truncate">{lesson.title}</span>
-                        </div>
-                        <button
-                            onClick={() => setShowPdfModal(false)}
-                            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-red-500 text-white flex items-center justify-center transition-all active:scale-90 shrink-0 ml-4"
-                            aria-label="Fechar"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    {/* PDF Viewer Area */}
-                    <div className="flex-1 relative bg-gray-100">
-                        {/*
-                            iframe works on desktop (Chrome, Safari macOS, Firefox).
-                            On iOS/Android the browser may block inline PDFs.
-                            In that case the "central button" below becomes visible.
-                        */}
-                        <iframe
-                            src={getPdfViewUrl(lesson.cloudinaryUrl)}
-                            className="absolute inset-0 w-full h-full border-none"
-                            title={lesson.title}
-                        />
-
-                        {/*
-                            Mobile Fallback — sits BEHIND the iframe (z-0).
-                            Visible when the iframe shows blank on mobile.
-                        */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-8 text-center" style={{ zIndex: 0 }}>
-                            <FileText className="w-16 h-16 text-slate-300" />
-                            <div>
-                                <p className="text-slate-600 font-bold mb-2">Abrindo material...</p>
-                                <p className="text-slate-400 text-sm">Se a visualização não aparecer, toque no botão abaixo.</p>
-                            </div>
-                            <a
-                                href={getPdfViewUrl(lesson.cloudinaryUrl)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-8 py-4 bg-primary text-white rounded-2xl font-bold shadow-lg active:scale-95 transition-all"
-                            >
-                                Abrir PDF
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <PdfViewer
+                    url={getPdfViewUrl(lesson.cloudinaryUrl)}
+                    title={lesson.title}
+                    onClose={() => setShowPdfModal(false)}
+                />
             )}
         </>
     );
