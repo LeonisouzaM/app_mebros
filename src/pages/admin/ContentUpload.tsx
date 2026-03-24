@@ -31,7 +31,7 @@ export default function ContentUpload() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'primary' | 'attachment' = 'primary') => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'primary' | 'attachment' | 'cover' = 'primary') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -75,6 +75,8 @@ export default function ContentUpload() {
                     if (file.type.startsWith('video/')) setType('video');
                     else if (file.type === 'application/pdf') setType('pdf');
                     else if (file.type.startsWith('image/')) setType('image');
+                } else if (field === 'cover') {
+                    setCoverUrl(data.secure_url);
                 } else {
                     setAttachmentUrl(data.secure_url);
                 }
@@ -287,20 +289,53 @@ export default function ContentUpload() {
                     </div>
 
                     <div>
-                        <label htmlFor="coverUrl" className="block text-sm font-semibold text-gray-700 mb-1">
-                            URL da Capa do Módulo (Opcional)
-                        </label>
+                        <div className="flex items-center justify-between mb-1">
+                            <label htmlFor="coverUrl" className="block text-sm font-semibold text-gray-700">
+                                Capa da Aula / Módulo (Opcional)
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (fileInputRef.current) {
+                                        fileInputRef.current.onchange = (e: any) => handleFileUpload(e, 'cover');
+                                        fileInputRef.current.click();
+                                    }
+                                }}
+                                disabled={isUploading}
+                                className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase hover:bg-primary/20 transition-colors disabled:opacity-50"
+                            >
+                                📷 Enviar Imagem
+                            </button>
+                        </div>
                         <input
                             id="coverUrl"
                             type="url"
                             value={coverUrl}
                             onChange={(e) => setCoverUrl(e.target.value)}
                             className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
-                            placeholder="https://sua-imagem.com/capa.jpg"
+                            placeholder="Cole um link direto de imagem OU use o botão acima."
                         />
                         <p className="text-xs text-text-muted mt-1">
-                            Resolução ideal: <strong>1920x1080 (Proporção 16:9)</strong>. Isso substitui o visualizador padrão da aula por uma capa bonita.
+                            ⚠️ Links do <strong>Canva</strong> não funcionam aqui — use o botão <strong>"📷 Enviar Imagem"</strong> para fazer upload direto da imagem exportada do Canva.
                         </p>
+                        {/* Live Preview */}
+                        {coverUrl && (
+                            <div className="mt-3 rounded-2xl overflow-hidden border border-surface-200 shadow-sm aspect-video bg-surface-50 relative">
+                                <img
+                                    src={coverUrl}
+                                    alt="Prévia da capa"
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                />
+                                <div className="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-4 bg-red-50">
+                                    <p className="text-red-500 text-xs font-bold">❌ Imagem não pôde ser carregada</p>
+                                    <p className="text-red-400 text-[10px] mt-1">Este link não é uma imagem direta. Use o botão "📷 Enviar Imagem".</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div>
