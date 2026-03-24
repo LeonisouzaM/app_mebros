@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, FileText, Download } from 'lucide-react';
+import { X, FileText } from 'lucide-react';
 
 interface PdfViewerProps {
     url: string;
@@ -42,8 +42,8 @@ function getCloudinaryPageUrl(pdfUrl: string, page: number): string {
 
 // ─── Google Drive Viewer ──────────────────────────────────────────────────────
 
-function GoogleDriveViewer({ embedUrl, title, url, onClose, preloaded }: {
-    embedUrl: string; title: string; url: string; onClose: () => void; preloaded?: boolean;
+function GoogleDriveViewer({ embedUrl, title, onClose, preloaded }: {
+    embedUrl: string; title: string; onClose: () => void; preloaded?: boolean;
 }) {
     const [loaded, setLoaded] = useState(preloaded ?? false);
 
@@ -56,15 +56,6 @@ function GoogleDriveViewer({ embedUrl, title, url, onClose, preloaded }: {
                     <span className="text-white font-semibold text-sm truncate">{title}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-9 h-9 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-xl flex items-center justify-center transition-all"
-                        title="Abrir no Google Drive"
-                    >
-                        <Download className="w-4 h-4" />
-                    </a>
                     <button
                         onClick={onClose}
                         className="w-10 h-10 bg-white/10 hover:bg-red-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
@@ -125,10 +116,6 @@ function CloudinaryViewer({ url, title, onClose }: {
                     <span className="text-white font-semibold text-sm truncate">{title}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <a href={url} target="_blank" rel="noopener noreferrer"
-                        className="w-9 h-9 bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded-xl flex items-center justify-center transition-all">
-                        <Download className="w-4 h-4" />
-                    </a>
                     <button onClick={onClose}
                         className="w-10 h-10 bg-white/10 hover:bg-red-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-90">
                         <X className="w-5 h-5" />
@@ -227,7 +214,7 @@ export default function PdfViewer({ url, title, onClose, preloaded }: PdfViewerP
     const driveEmbedUrl = getGoogleDriveEmbedUrl(url);
 
     if (driveEmbedUrl) {
-        return <GoogleDriveViewer embedUrl={driveEmbedUrl} title={title} url={url} onClose={onClose} preloaded={preloaded} />;
+        return <GoogleDriveViewer embedUrl={driveEmbedUrl} title={title} onClose={onClose} preloaded={preloaded} />;
     }
 
     // Fallback: Cloudinary image-based viewer
