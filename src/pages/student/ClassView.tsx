@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/store';
-import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, Maximize2, X, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, X, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -253,7 +253,7 @@ export default function ClassView() {
                 </div>
             </div>
 
-            {/* Robust Fullscreen PDF Modal (Optimized for Mobile) */}
+            {/* Robust Fullscreen PDF Modal (Microsoft Office Engine for Max Compatibility) */}
             {showPdfModal && lesson?.cloudinaryUrl && (
                 <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
                     {/* Header/Controls (Safe Area Aware) */}
@@ -262,9 +262,9 @@ export default function ClassView() {
                             <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center shrink-0">
                                 <FileText className="w-5 h-5 text-primary" />
                             </div>
-                            <div className="truncate">
-                                <h3 className="font-bold text-white text-sm md:text-base truncate leading-tight">{lesson.title}</h3>
-                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">Acesso Seguro</p>
+                            <div className="truncate text-white">
+                                <h3 className="font-bold text-sm md:text-base truncate leading-tight">{lesson.title}</h3>
+                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Leitor Seguro de PDF</p>
                             </div>
                         </div>
                         <button
@@ -276,49 +276,46 @@ export default function ClassView() {
                         </button>
                     </div>
 
-                    {/* Viewer Wrapper (Native Embed + Fail-Safe Access) */}
-                    <div className="w-full flex-1 bg-white relative flex flex-col items-center justify-center">
+                    {/* Viewer Wrapper (Microsoft Engine / Native Browser) */}
+                    <div className="w-full flex-1 bg-white relative">
                         {/* 
-                            We use <object> which is often more reliable than <iframe> for PDFs.
-                            If it fails, the fallback buttons below take over.
+                            Using Microsoft Office Online Viewer - highly reliable for mobile browser embedding
+                            and rendering files from Cloudinary without 'No Preview' errors.
                         */}
-                        <object
-                            data={getCleanPdfUrl(lesson.cloudinaryUrl)}
-                            type="application/pdf"
-                            className="w-full h-full z-10"
-                        >
-                            {/* Native Fallback inside Object */}
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 gap-6 p-8 text-center">
-                                <FileText className="w-16 h-16 text-primary/30 mb-2" />
-                                <h4 className="text-text-main font-bold">Quase lá!</h4>
-                                <p className="text-sm text-text-muted">Seu material está pronto para ser visualizado.</p>
-                                <a
-                                    href={getCleanPdfUrl(lesson.cloudinaryUrl)}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center gap-2"
-                                >
-                                    <ExternalLink className="w-5 h-5" />
-                                    Ver PDF Completo
-                                </a>
-                            </div>
-                        </object>
-
-                        {/* Forced UI Button for Mobile (Shows above object if needed) */}
-                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 md:hidden bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-2xl border border-primary/20 flex flex-col items-center gap-3">
-                             <p className="text-[10px] font-bold text-text-main uppercase tracking-widest text-center">
-                                Problemas com a visualização?
-                             </p>
-                             <a
+                        <iframe
+                            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(getCleanPdfUrl(lesson.cloudinaryUrl))}`}
+                            className="w-full h-full border-none z-10"
+                            title="PDF Viewer"
+                        />
+                        
+                        {/* Background Fallback (If Iframe is blocked/slow) */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 gap-6 p-8 text-center -z-10">
+                            <FileText className="w-16 h-16 text-primary/20 mb-2" />
+                            <h4 className="text-text-main font-bold">Seu material está pronto!</h4>
+                            <p className="text-sm text-text-muted">Clique abaixo para abrir a versão de alta performance:</p>
+                            <a
                                 href={getCleanPdfUrl(lesson.cloudinaryUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-xs flex items-center gap-2"
-                             >
-                                <ExternalLink className="w-4 h-4" />
-                                Abrir Manualmente
-                             </a>
+                                className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center gap-2"
+                            >
+                                <ExternalLink className="w-5 h-5" />
+                                ACESSAR MANUALMENTE
+                            </a>
                         </div>
+                    </div>
+
+                    {/* Footer Mobile Fix */}
+                    <div className="w-full py-4 bg-slate-900 border-t border-white/10 flex items-center justify-center px-4 shrink-0">
+                         <a 
+                            href={getCleanPdfUrl(lesson.cloudinaryUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[10px] text-white font-extrabold uppercase tracking-[0.2em] hover:text-primary transition-colors flex items-center gap-2"
+                         >
+                            <ExternalLink className="w-3 h-3" />
+                            Problemas ao carregar? Clique aqui.
+                         </a>
                     </div>
                 </div>
             )}
