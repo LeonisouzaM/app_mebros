@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/store';
-import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, X, ExternalLink } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, PlayCircle, Info, Calendar, FileText, X, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -13,6 +13,7 @@ export default function ClassView() {
     const { t } = useTranslation();
     const [videoError, setVideoError] = useState(false);
     const [showPdfModal, setShowPdfModal] = useState(false);
+    const [pdfPage, setPdfPage] = useState(1);
 
     const lesson = classes.find(c => c.id === id);
 
@@ -55,7 +56,7 @@ export default function ClassView() {
         return parts;
     };
 
-    const getPdfPreviewUrl = (url: string) => {
+    const getPdfPreviewUrl = (url: string, page: number = 1) => {
         if (!url || !url.includes('cloudinary.com')) return null;
         try {
             // Fix for PDFs that were uploaded as 'raw'. We try to access them as 'image' to get the preview.
@@ -63,8 +64,8 @@ export default function ClassView() {
             const parts = cleanUrl.split('/upload/');
             if (parts.length !== 2) return null;
             
-            // Generate a high-quality preview of the first page (pg_1)
-            return `${parts[0]}/upload/pg_1,c_fill,h_1000,w_750,f_auto,q_auto/${parts[1].replace('.pdf', '.jpg')}`;
+            // Generate a high-quality preview of a specific page
+            return `${parts[0]}/upload/pg_${page},c_fill,h_1200,w_900,f_auto,q_auto/${parts[1].replace('.pdf', '.jpg')}`;
         } catch (e) {
             return null;
         }
@@ -253,10 +254,10 @@ export default function ClassView() {
                 </div>
             </div>
 
-            {/* Robust Fullscreen PDF Modal (Microsoft Office Engine for Max Compatibility) */}
+            {/* Premium Document Reader Modal (100% Reliability via Image Pages) */}
             {showPdfModal && lesson?.cloudinaryUrl && (
                 <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col items-center animate-in fade-in zoom-in-95 duration-200">
-                    {/* Header/Controls (Safe Area Aware) */}
+                    {/* Header/Controls */}
                     <div className="w-full h-16 md:h-20 bg-slate-900 flex justify-between items-center px-4 md:px-8 border-b border-white/10 shrink-0">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center shrink-0">
@@ -264,57 +265,71 @@ export default function ClassView() {
                             </div>
                             <div className="truncate text-white">
                                 <h3 className="font-bold text-sm md:text-base truncate leading-tight">{lesson.title}</h3>
-                                <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Leitor Seguro de PDF</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Página {pdfPage}</span>
+                                    <div className="w-1 h-1 bg-white/20 rounded-full" />
+                                    <span className="text-[10px] text-primary font-bold uppercase tracking-widest">Modo Leitura</span>
+                                </div>
                             </div>
                         </div>
                         <button
-                            onClick={() => setShowPdfModal(false)}
-                            className="w-10 h-10 bg-white/10 hover:bg-red-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
+                            onClick={() => {
+                                setShowPdfModal(false);
+                                setPdfPage(1);
+                            }}
+                            className="w-12 h-12 bg-white/10 hover:bg-red-500 text-white rounded-2xl flex items-center justify-center transition-all active:scale-90"
                             title="Fechar"
                         >
                             <X className="w-6 h-6" />
                         </button>
                     </div>
 
-                    {/* Viewer Wrapper (Microsoft Engine / Native Browser) */}
-                    <div className="w-full flex-1 bg-white relative">
-                        {/* 
-                            Using Microsoft Office Online Viewer - highly reliable for mobile browser embedding
-                            and rendering files from Cloudinary without 'No Preview' errors.
-                        */}
-                        <iframe
-                            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(getCleanPdfUrl(lesson.cloudinaryUrl))}`}
-                            className="w-full h-full border-none z-10"
-                            title="PDF Viewer"
-                        />
-                        
-                        {/* Background Fallback (If Iframe is blocked/slow) */}
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 gap-6 p-8 text-center -z-10">
-                            <FileText className="w-16 h-16 text-primary/20 mb-2" />
-                            <h4 className="text-text-main font-bold">Seu material está pronto!</h4>
-                            <p className="text-sm text-text-muted">Clique abaixo para abrir a versão de alta performance:</p>
-                            <a
-                                href={getCleanPdfUrl(lesson.cloudinaryUrl)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center gap-2"
+                    {/* Viewer Wrapper */}
+                    <div className="w-full flex-1 relative bg-slate-900 overflow-hidden flex flex-col">
+                        <div className="flex-1 overflow-y-auto px-4 py-8 flex flex-col items-center">
+                            <div className="w-full max-w-4xl relative shadow-2xl rounded-lg overflow-hidden border border-white/5 bg-white">
+                                 <img
+                                    key={pdfPage}
+                                    src={getPdfPreviewUrl(lesson.cloudinaryUrl, pdfPage) || ''}
+                                    className="w-full h-auto animate-in fade-in slide-in-from-bottom-4 duration-300"
+                                    alt={`Página ${pdfPage}`}
+                                 />
+                            </div>
+                        </div>
+
+                        {/* Navigation Controls */}
+                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-slate-900/80 backdrop-blur-xl p-3 rounded-3xl border border-white/10 shadow-2xl z-50">
+                            <button
+                                onClick={() => setPdfPage(prev => Math.max(1, prev - 1))}
+                                disabled={pdfPage === 1}
+                                className="w-12 h-12 bg-white/5 disabled:opacity-20 text-white rounded-2xl flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all font-bold"
                             >
-                                <ExternalLink className="w-5 h-5" />
-                                ACESSAR MANUALMENTE
-                            </a>
+                                <ChevronLeft className="w-6 h-6" />
+                            </button>
+                            
+                            <div className="px-6 py-2 bg-primary rounded-xl text-white text-sm font-bold shadow-lg shadow-primary/20">
+                                {pdfPage}
+                            </div>
+
+                            <button
+                                onClick={() => setPdfPage(prev => prev + 1)}
+                                className="w-12 h-12 bg-white/5 text-white rounded-2xl flex items-center justify-center hover:bg-white/10 active:scale-90 transition-all font-bold"
+                            >
+                                <ChevronRight className="w-6 h-6" />
+                            </button>
                         </div>
                     </div>
 
-                    {/* Footer Mobile Fix */}
-                    <div className="w-full py-4 bg-slate-900 border-t border-white/10 flex items-center justify-center px-4 shrink-0">
+                    {/* Footer */}
+                    <div className="w-full py-4 bg-slate-900 border-t border-white/10 flex items-center justify-around px-8 shrink-0">
                          <a 
                             href={getCleanPdfUrl(lesson.cloudinaryUrl)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[10px] text-white font-extrabold uppercase tracking-[0.2em] hover:text-primary transition-colors flex items-center gap-2"
+                            className="text-[10px] text-white/40 font-bold uppercase tracking-[0.2em] hover:text-white transition-colors flex items-center gap-2"
                          >
                             <ExternalLink className="w-3 h-3" />
-                            Problemas ao carregar? Clique aqui.
+                            Abrir PDF Original
                          </a>
                     </div>
                 </div>
