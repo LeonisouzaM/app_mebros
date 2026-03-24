@@ -56,7 +56,8 @@ export default function ContentUpload() {
             if (file.type.startsWith('video/')) {
                 resourceType = 'video';
             } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-                resourceType = 'raw';
+                // We use 'image' for PDFs in Cloudinary to allow better previews and transformations
+                resourceType = 'image';
             } else if (file.type.startsWith('image/')) {
                 resourceType = 'image';
             }

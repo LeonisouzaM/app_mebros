@@ -269,31 +269,51 @@ export default function ClassView() {
                         </div>
                     </div>
 
-                    {/* Viewer Wrapper (Google Docs Viewer used as Proxy to fix white screen on mobile) */}
-                    <div className="w-full flex-1 bg-white relative">
+                    {/* Viewer Wrapper (Direct Embed + Native Mobile Fallback) */}
+                    <div className="w-full flex-1 bg-white relative flex flex-col items-center justify-center">
                         {/* 
-                            We use Google Docs Viewer because it's the most compatible way to render PDFs
-                            in iframes on both iOS/Android and Desktop, bypassing most cross-origin/iframe blocks.
+                            We now use a direct iframe but provide a clear fallback if the device 
+                            (like iOS or some Android browsers) doesn't natively render PDFs in iframes.
                         */}
                         <iframe
-                            src={`https://docs.google.com/viewer?url=${encodeURIComponent(lesson.cloudinaryUrl)}&embedded=true`}
-                            className="w-full h-full border-none"
+                            src={lesson.cloudinaryUrl}
+                            className="w-full h-full border-none z-10"
                             title="PDF Viewer"
                         />
                         
-                        {/* Loading Indicator for slow connections */}
-                        <div className="absolute inset-0 flex items-center justify-center -z-10 bg-slate-50">
-                             <div className="flex flex-col items-center gap-4">
-                                <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                <span className="text-xs font-bold text-text-muted uppercase tracking-widest">Carregando Material...</span>
+                        {/* 
+                          Native Fallback: If the iframe is blank/white (often on iPhones), 
+                          the buttons below allow the student to open the PDF directly.
+                        */}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 gap-6 p-8">
+                             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary animate-pulse">
+                                <FileText className="w-8 h-8" />
                              </div>
+                             <div className="text-center max-w-xs">
+                                <h4 className="text-text-main font-bold mb-2">Seu celular está pronto?</h4>
+                                <p className="text-xs text-text-muted font-medium mb-8">
+                                    Em alguns aparelhos, é necessário clicar no botão abaixo para ativar a visualização do material.
+                                </p>
+                             </div>
+                             <a
+                                href={lesson.cloudinaryUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-10 py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 active:scale-95 transition-all flex items-center gap-2"
+                             >
+                                <ExternalLink className="w-5 h-5" />
+                                Abrir Material PDF
+                             </a>
+                             <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest mt-4">
+                                Clique para ver o conteúdo
+                             </p>
                         </div>
                     </div>
 
                     {/* Mobile Navigation Hint (Bottom) */}
                     <div className="w-full py-4 bg-slate-900 border-t border-white/10 text-center shrink-0">
                          <span className="text-[9px] text-white/40 font-bold uppercase tracking-[0.25em]">
-                             Deslize para ler as páginas
+                             Dica: Você pode usar o zoom com os dedos
                          </span>
                     </div>
                 </div>
