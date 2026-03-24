@@ -77,7 +77,7 @@ export default function Login() {
                 <div className="bg-white rounded-[3rem] p-10 md:p-12 shadow-premium border border-surface-100 flex flex-col gap-8">
                     <div className="text-center space-y-4">
                         <div className="mx-auto h-20 w-20 bg-primary/5 flex items-center justify-center rounded-[2rem] shadow-xl shadow-primary/10 border border-white/50 rotate-3 transition-transform hover:rotate-0 overflow-hidden">
-                            <img src="/logo.png" alt="Logo" className="w-full h-full object-cover p-1" />
+                            <img src="/logo.svg" alt="Logo" className="w-full h-full object-cover p-1" />
                         </div>
                         <div className="space-y-1">
                             <h2 className="text-3xl font-display font-display font-black tracking-tight text-text-main">
