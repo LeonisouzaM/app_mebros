@@ -30,6 +30,8 @@ export default function ContentUpload() {
     const [uploadError, setUploadError] = useState('');
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const attachmentInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'primary' | 'attachment' | 'cover' = 'primary') => {
         const file = e.target.files?.[0];
@@ -161,11 +163,26 @@ export default function ContentUpload() {
                             Sempre que você selecionar um arquivo, nós já enviamos para o Cloudinary e preenchemos o link final abaixo magicamente. ✨
                         </p>
 
+                        {/* Hidden inputs — one per upload type to avoid conflicts */}
                         <input
                             type="file"
                             className="hidden"
                             ref={fileInputRef}
                             onChange={(e) => handleFileUpload(e, 'primary')}
+                        />
+                        <input
+                            type="file"
+                            className="hidden"
+                            ref={attachmentInputRef}
+                            accept=".pdf,application/pdf"
+                            onChange={(e) => handleFileUpload(e, 'attachment')}
+                        />
+                        <input
+                            type="file"
+                            className="hidden"
+                            ref={coverInputRef}
+                            accept="image/*"
+                            onChange={(e) => handleFileUpload(e, 'cover')}
                         />
 
                         <button
@@ -267,12 +284,7 @@ export default function ContentUpload() {
                             </label>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    if (fileInputRef.current) {
-                                        fileInputRef.current.onchange = (e: any) => handleFileUpload(e, 'attachment');
-                                        fileInputRef.current.click();
-                                    }
-                                }}
+                                onClick={() => attachmentInputRef.current?.click()}
                                 className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase hover:bg-primary/20 transition-colors"
                             >
                                 Carregar PDF Agora
@@ -295,12 +307,7 @@ export default function ContentUpload() {
                             </label>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    if (fileInputRef.current) {
-                                        fileInputRef.current.onchange = (e: any) => handleFileUpload(e, 'cover');
-                                        fileInputRef.current.click();
-                                    }
-                                }}
+                                onClick={() => coverInputRef.current?.click()}
                                 disabled={isUploading}
                                 className="text-[10px] bg-primary/10 text-primary px-2 py-1 rounded-md font-bold uppercase hover:bg-primary/20 transition-colors disabled:opacity-50"
                             >
