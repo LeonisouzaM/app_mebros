@@ -14,6 +14,7 @@ export default function ClassView() {
     const { t } = useTranslation();
     const [videoError, setVideoError] = useState(false);
     const [showPdfModal, setShowPdfModal] = useState(false);
+    const [pdfPreloaded, setPdfPreloaded] = useState(false);
 
     const lesson = classes.find(c => c.id === id);
 
@@ -63,6 +64,28 @@ export default function ClassView() {
     useEffect(() => {
         if (classes.length === 0) fetchInitialData();
     }, [classes.length, fetchInitialData]);
+
+    // Pre-load Cloudinary first-page as soon as lesson is available
+    useEffect(() => {
+        if (!lesson) return;
+        const isPdfLesson = lesson.type === 'pdf' && lesson.cloudinaryUrl;
+        if (!isPdfLesson) return;
+
+        const isDrive = isGoogleDriveUrl(lesson.cloudinaryUrl);
+        if (isDrive) {
+            // For Drive, mark as preloaded immediately (iframe renders in background below)
+            const timer = setTimeout(() => setPdfPreloaded(true), 100);
+            return () => clearTimeout(timer);
+        } else {
+            // For Cloudinary, pre-fetch the first page image
+            const previewUrl = getPdfThumbnail(lesson.cloudinaryUrl);
+            if (previewUrl) {
+                const img = new Image();
+                img.src = previewUrl;
+                img.onload = () => setPdfPreloaded(true);
+            }
+        }
+    }, [lesson?.id]);
 
     if (!lesson) {
         return (
@@ -151,7 +174,15 @@ export default function ClassView() {
                                     <div>
                                         <h3 className="text-white text-xl md:text-2xl font-display font-bold">{lesson.title}</h3>
                                         {isDrivePdf && (
-                                            <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest">Google Drive · Abertura Rápida</p>
+                                            <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest">
+                                                Google Drive
+                                                {pdfPreloaded && (
+                                                    <span className="ml-2 inline-flex items-center gap-1 text-green-400">
+                                                        <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+                                                        Pronto
+                                                    </span>
+                                                )}
+                                            </p>
                                         )}
                                         <span className="inline-block mt-3 bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest ring-1 ring-white/30 group-hover/pdf:bg-primary transition-all">
                                             Toque para abrir
@@ -244,9 +275,40 @@ export default function ClassView() {
                 <PdfViewer
                     url={getPdfViewUrl(lesson.cloudinaryUrl)}
                     title={lesson.title}
+                    preloaded={pdfPreloaded}
                     onClose={() => setShowPdfModal(false)}
                 />
             )}
+
+            {/*
+                BACKGROUND PRE-LOADER for Google Drive PDFs.
+                Renders the iframe invisibly as soon as the lesson page opens,
+                so by the time the user clicks it's already cached by the browser.
+                Only active for Drive URLs (Cloudinary pages preload via Image() above).
+            */}
+            {lesson?.type === 'pdf' && lesson.cloudinaryUrl && isGoogleDriveUrl(lesson.cloudinaryUrl) && !showPdfModal && (() => {
+                const driveMatch = lesson.cloudinaryUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+                const embedUrl = driveMatch ? `https://drive.google.com/file/d/${driveMatch[1]}/preview` : null;
+                if (!embedUrl) return null;
+                return (
+                    <div aria-hidden="true" style={{
+                        position: 'fixed',
+                        bottom: -9999,
+                        left: -9999,
+                        width: 1,
+                        height: 1,
+                        overflow: 'hidden',
+                        pointerEvents: 'none',
+                        opacity: 0,
+                    }}>
+                        <iframe
+                            src={embedUrl}
+                            title="preload"
+                            onLoad={() => setPdfPreloaded(true)}
+                        />
+                    </div>
+                );
+            })()}
         </>
     );
 }

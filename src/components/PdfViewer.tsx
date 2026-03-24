@@ -5,6 +5,7 @@ interface PdfViewerProps {
     url: string;
     title: string;
     onClose: () => void;
+    preloaded?: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -41,10 +42,10 @@ function getCloudinaryPageUrl(pdfUrl: string, page: number): string {
 
 // ─── Google Drive Viewer ──────────────────────────────────────────────────────
 
-function GoogleDriveViewer({ embedUrl, title, url, onClose }: {
-    embedUrl: string; title: string; url: string; onClose: () => void;
+function GoogleDriveViewer({ embedUrl, title, url, onClose, preloaded }: {
+    embedUrl: string; title: string; url: string; onClose: () => void; preloaded?: boolean;
 }) {
-    const [loaded, setLoaded] = useState(false);
+    const [loaded, setLoaded] = useState(preloaded ?? false);
 
     return (
         <div className="fixed inset-0 z-[9999] bg-slate-950 flex flex-col">
@@ -216,7 +217,7 @@ function PdfPageImage({ src, page, onLoad, onError }: {
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
-export default function PdfViewer({ url, title, onClose }: PdfViewerProps) {
+export default function PdfViewer({ url, title, onClose, preloaded }: PdfViewerProps) {
     // Lock body scroll
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -226,8 +227,7 @@ export default function PdfViewer({ url, title, onClose }: PdfViewerProps) {
     const driveEmbedUrl = getGoogleDriveEmbedUrl(url);
 
     if (driveEmbedUrl) {
-        // Fast path: Google Drive viewer (works instantly on all devices)
-        return <GoogleDriveViewer embedUrl={driveEmbedUrl} title={title} url={url} onClose={onClose} />;
+        return <GoogleDriveViewer embedUrl={driveEmbedUrl} title={title} url={url} onClose={onClose} preloaded={preloaded} />;
     }
 
     // Fallback: Cloudinary image-based viewer
