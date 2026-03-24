@@ -35,6 +35,7 @@ export interface ClassItem {
     productId?: string;
     unlockDate?: string;
     attachmentUrl?: string;
+    moduleName?: string;
     type?: 'video' | 'pdf' | 'link' | 'image';
     createdAt: string;
 }

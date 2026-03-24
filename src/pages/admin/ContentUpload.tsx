@@ -22,6 +22,7 @@ export default function ContentUpload() {
     const [buttonText, setButtonText] = useState('');
     const [unlockDate, setUnlockDate] = useState('');
     const [attachmentUrl, setAttachmentUrl] = useState('');
+    const [moduleName, setModuleName] = useState('Módulo 1');
     const [type, setType] = useState<'video' | 'pdf' | 'link' | 'image'>('video');
     const [success, setSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState('Conteúdo publicado com sucesso!');
@@ -92,12 +93,12 @@ export default function ContentUpload() {
         if (!title) return;
 
         if (editingId) {
-            updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined });
+            updateClass(editingId, { title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: productId || undefined, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined, moduleName });
             setSuccessMessage('Conteúdo atualizado com sucesso!');
         } else {
             // Default to 'default' product if none selected and products exist
             const finalProductId = productId || (products.length > 0 ? products[0].id : undefined);
-            addClass({ title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: finalProductId, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined });
+            addClass({ title, cloudinaryUrl: url, coverUrl: coverUrl || undefined, description, buttonText: buttonText || undefined, productId: finalProductId, unlockDate: unlockDate || undefined, type, attachmentUrl: attachmentUrl || undefined, moduleName });
             setSuccessMessage('Conteúdo publicado e agora disponível para os alunos!');
         }
 
@@ -116,6 +117,7 @@ export default function ContentUpload() {
         setButtonText(item.buttonText || '');
         setUnlockDate(item.unlockDate || '');
         setAttachmentUrl(item.attachmentUrl || '');
+        setModuleName(item.moduleName || 'Módulo 1');
         setType(item.type || 'video');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -130,6 +132,7 @@ export default function ContentUpload() {
         setButtonText('');
         setUnlockDate('');
         setAttachmentUrl('');
+        setModuleName('Módulo 1');
         setType('video');
     };
 
@@ -207,6 +210,19 @@ export default function ContentUpload() {
                                         <option key={p.id} value={p.id}>{p.name}</option>
                                     ))}
                                 </select>
+                            </div>
+                            <div>
+                                <label htmlFor="moduleName" className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Em qual Módulo?
+                                </label>
+                                <input
+                                    id="moduleName"
+                                    type="text"
+                                    value={moduleName}
+                                    onChange={(e) => setModuleName(e.target.value)}
+                                    className="w-full px-4 py-3 border border-surface-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50"
+                                    placeholder="Ex: Módulo 1, Módulo 2..."
+                                />
                             </div>
                             <div>
                                 <label htmlFor="type" className="block text-sm font-semibold text-gray-700 mb-1">

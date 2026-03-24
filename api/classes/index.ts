@@ -50,6 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 productId: c.product_id,
                 unlockDate: c.unlock_date,
                 type: c.type,
+                moduleName: c.module_name || 'Módulo 1',
                 attachmentUrl: c.attachment_url,
                 createdAt: c.created_at
             })));
@@ -59,15 +60,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const auth = requireAdmin(req, res);
             if (!auth) return;
 
-            const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate, type, attachmentUrl } = req.body;
+            const { id, title, cloudinaryUrl, coverUrl, description, buttonText, productId, unlockDate, type, attachmentUrl, moduleName } = req.body;
             if (!title || !cloudinaryUrl) return res.status(400).json({ error: 'Título e URL são obrigatórios' });
 
             const classId = id || `class_${Date.now()}`;
             const existing = await sql`SELECT id FROM classes WHERE id = ${classId}`;
             const isNewClass = existing.length === 0;
             await sql`
-                INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date, type, attachment_url)
-                VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl ?? null}, ${description ?? null}, ${buttonText ?? null}, ${productId ?? null}, ${unlockDate ?? null}, ${type ?? null}, ${attachmentUrl ?? null})
+                INSERT INTO classes (id, title, cloudinary_url, cover_url, description, button_text, product_id, unlock_date, type, attachment_url, module_name)
+                VALUES (${classId}, ${title}, ${cloudinaryUrl}, ${coverUrl ?? null}, ${description ?? null}, ${buttonText ?? null}, ${productId ?? null}, ${unlockDate ?? null}, ${type ?? null}, ${attachmentUrl ?? null}, ${moduleName ?? 'Módulo 1'})
                 ON CONFLICT (id) DO UPDATE SET
                     title = EXCLUDED.title,
                     cloudinary_url = EXCLUDED.cloudinary_url,
@@ -77,7 +78,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     product_id = EXCLUDED.product_id,
                     unlock_date = EXCLUDED.unlock_date,
                     type = EXCLUDED.type,
-                    attachment_url = EXCLUDED.attachment_url
+                    attachment_url = EXCLUDED.attachment_url,
+                    module_name = EXCLUDED.module_name
             `;
 
             if (isNewClass) {

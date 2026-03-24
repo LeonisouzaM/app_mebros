@@ -337,88 +337,108 @@ export default function Home() {
                                         <p className="text-text-muted font-medium">{t('noClasses')}</p>
                                     </div>
                                 ) : (
-                                    <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                                        {productClasses.map((item) => {
-                                            const isLocked = item.unlockDate ? isAfter(startOfDay(new Date(item.unlockDate)), startOfDay(new Date())) : false;
+                                    <div className="space-y-12">
+                                        {Object.entries(
+                                            productClasses.reduce((acc, curr) => {
+                                                const module = curr.moduleName || 'Módulo 1';
+                                                if (!acc[module]) acc[module] = [];
+                                                acc[module].push(curr);
+                                                return acc;
+                                            }, {} as Record<string, typeof productClasses>)
+                                        ).map(([moduleName, moduleClasses]) => (
+                                            <div key={moduleName} className="space-y-6">
+                                                <div className="flex items-center gap-4">
+                                                    <h3 className="text-xl font-display font-extrabold text-text-main flex items-center gap-2">
+                                                        <div className="w-2 h-8 bg-primary rounded-full" />
+                                                        {moduleName}
+                                                    </h3>
+                                                    <div className="flex-1 h-[1px] bg-surface-100" />
+                                                </div>
+                                                <div className="grid gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                                                    {moduleClasses.map((item) => {
+                                                        const isLocked = item.unlockDate ? isAfter(startOfDay(new Date(item.unlockDate)), startOfDay(new Date())) : false;
 
-                                            return (
-                                                <article
-                                                    key={item.id}
-                                                    className="card-premium group flex flex-col h-full bg-white overflow-hidden"
-                                                >
-                                                    {/* Media Container */}
-                                                    <div className="relative aspect-video overflow-hidden bg-surface-50">
-                                                        {isLocked ? (
-                                                            <>
-                                                                {(item.coverUrl || item.cloudinaryUrl) && (
-                                                                    <img
-                                                                        className="w-full h-full object-cover blur-[2px] opacity-40"
-                                                                        src={item.coverUrl || (item.cloudinaryUrl.includes('image') || (!item.cloudinaryUrl.includes('.pdf') && !item.cloudinaryUrl.includes('video')) ? item.cloudinaryUrl : '')}
-                                                                        alt={item.title}
-                                                                    />
-                                                                )}
-                                                                <div className="absolute inset-0 flex flex-col items-center justify-center z-40 bg-slate-900/10">
-                                                                    <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col items-center border border-white/50">
-                                                                        <Lock className="w-6 h-6 text-text-main mb-2" />
-                                                                        <span className="text-[10px] font-bold tracking-widest uppercase text-text-main">{t('accessLocked')}</span>
+                                                        return (
+                                                            <article
+                                                                key={item.id}
+                                                                className="card-premium group flex flex-col h-full bg-white overflow-hidden"
+                                                            >
+                                                                {/* Media Container */}
+                                                                <div className="relative aspect-video overflow-hidden bg-surface-50">
+                                                                    {isLocked ? (
+                                                                        <>
+                                                                            {(item.coverUrl || item.cloudinaryUrl) && (
+                                                                                <img
+                                                                                    className="w-full h-full object-cover blur-[2px] opacity-40"
+                                                                                    src={item.coverUrl || (item.cloudinaryUrl.includes('image') || (!item.cloudinaryUrl.includes('.pdf') && !item.cloudinaryUrl.includes('video')) ? item.cloudinaryUrl : '')}
+                                                                                    alt={item.title}
+                                                                                />
+                                                                            )}
+                                                                            <div className="absolute inset-0 flex flex-col items-center justify-center z-40 bg-slate-900/10">
+                                                                                <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl flex flex-col items-center border border-white/50">
+                                                                                    <Lock className="w-6 h-6 text-text-main mb-2" />
+                                                                                    <span className="text-[10px] font-bold tracking-widest uppercase text-text-main">{t('accessLocked')}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <img
+                                                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                                                src={item.coverUrl || item.cloudinaryUrl}
+                                                                                alt={item.title}
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.src = "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop";
+                                                                                }}
+                                                                            />
+                                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                                                                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                                                                    <PlayCircle className="w-8 h-8 text-primary fill-current" />
+                                                                                </div>
+                                                                            </div>
+                                                                        </>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Content */}
+                                                                <div className="p-6 flex flex-col flex-1">
+                                                                    <div className="flex-1">
+                                                                        <div className="flex items-center gap-2 mb-3">
+                                                                            <span className="bg-surface-50 text-[10px] font-bold text-text-dim px-2 py-1 rounded-md uppercase tracking-wider">
+                                                                                {format(new Date(item.createdAt), "dd MMM yyyy", { locale: dateLocale })}
+                                                                            </span>
+                                                                        </div>
+                                                                        <h3 className="text-lg font-display font-bold text-text-main leading-tight mb-2 group-hover:text-primary transition-colors">
+                                                                            {item.title}
+                                                                        </h3>
+                                                                        <p className="text-sm text-text-muted line-clamp-2 font-medium">
+                                                                            {renderDescription(item.description)}
+                                                                        </p>
+                                                                    </div>
+
+                                                                    <div className="mt-6 pt-5 border-t border-surface-50">
+                                                                        {isLocked ? (
+                                                                            <div className="flex items-center gap-2 text-xs font-bold text-text-dim">
+                                                                                <Lock className="w-3.5 h-3.5" />
+                                                                                {t('expiresOn')}{format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <Link
+                                                                                to={`/class/${item.id}`}
+                                                                                className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-xs hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all duration-300 active:scale-95"
+                                                                            >
+                                                                                <PlayCircle className="w-4 h-4" />
+                                                                                {t('accessClass')}
+                                                                            </Link>
+                                                                        )}
                                                                     </div>
                                                                 </div>
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <img
-                                                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                                    src={item.coverUrl || item.cloudinaryUrl}
-                                                                    alt={item.title}
-                                                                    onError={(e) => {
-                                                                        e.currentTarget.src = "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?q=80&w=2070&auto=format&fit=crop";
-                                                                    }}
-                                                                />
-                                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                                                                    <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                                                        <PlayCircle className="w-8 h-8 text-primary fill-current" />
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Content */}
-                                                    <div className="p-6 flex flex-col flex-1">
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-3">
-                                                                <span className="bg-surface-50 text-[10px] font-bold text-text-dim px-2 py-1 rounded-md uppercase tracking-wider">
-                                                                    {format(new Date(item.createdAt), "dd MMM yyyy", { locale: dateLocale })}
-                                                                </span>
-                                                            </div>
-                                                            <h3 className="text-lg font-display font-bold text-text-main leading-tight mb-2 group-hover:text-primary transition-colors">
-                                                                {item.title}
-                                                            </h3>
-                                                            <p className="text-sm text-text-muted line-clamp-2 font-medium">
-                                                                {renderDescription(item.description)}
-                                                            </p>
-                                                        </div>
-
-                                                        <div className="mt-6 pt-5 border-t border-surface-50">
-                                                            {isLocked ? (
-                                                                <div className="flex items-center gap-2 text-xs font-bold text-text-dim">
-                                                                    <Lock className="w-3.5 h-3.5" />
-                                                                    {t('expiresOn')}{format(new Date(item.unlockDate!), "dd/MM/yyyy", { locale: dateLocale })}
-                                                                </div>
-                                                            ) : (
-                                                                <Link
-                                                                    to={`/class/${item.id}`}
-                                                                    className="flex items-center justify-center gap-2 w-full py-3 bg-primary text-white rounded-xl font-bold text-xs hover:bg-primary-hover shadow-lg shadow-primary/20 transition-all duration-300 active:scale-95"
-                                                                >
-                                                                    <PlayCircle className="w-4 h-4" />
-                                                                    {t('accessClass')}
-                                                                </Link>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                </article>
-                                            )
-                                        })}
+                                                            </article>
+                                                        )
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 )}
                                 </section>

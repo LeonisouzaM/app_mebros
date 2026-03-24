@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/store';
-import { ChevronLeft, Download, PlayCircle, Info, Calendar } from 'lucide-react';
+import { ChevronLeft, Download, PlayCircle, Info, Calendar, FileText, Maximize2, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -12,6 +12,7 @@ export default function ClassView() {
     const fetchInitialData = useStore((state) => state.fetchInitialData);
     const { t } = useTranslation();
     const [videoError, setVideoError] = useState(false);
+    const [showPdfModal, setShowPdfModal] = useState(false);
 
     const lesson = classes.find(c => c.id === id);
 
@@ -110,11 +111,31 @@ export default function ClassView() {
                             }}
                         />
                     ) : lesson.type === 'pdf' && lesson.cloudinaryUrl ? (
-                        <iframe 
-                            src={`${lesson.cloudinaryUrl}#toolbar=0`} 
-                            className="w-full h-full min-h-[60vh] bg-white rounded-2xl"
-                            title={lesson.title}
-                        />
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 p-8 text-center">
+                            <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-6 shadow-inner ring-1 ring-primary/20">
+                                <FileText className="w-10 h-10" />
+                            </div>
+                            <h3 className="text-xl md:text-2xl font-display font-bold text-text-main mb-2">{lesson.title}</h3>
+                            <p className="text-text-muted mb-8 font-medium">Este material está disponível em formato PDF.</p>
+                            <div className="flex flex-wrap items-center justify-center gap-4">
+                                <button
+                                    onClick={() => setShowPdfModal(true)}
+                                    className="px-8 py-3.5 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 hover:scale-105 hover:bg-primary-hover transition-all flex items-center gap-2"
+                                >
+                                    <Maximize2 className="w-5 h-5" />
+                                    Ver em Tela Cheia
+                                </button>
+                                <a
+                                    href={lesson.cloudinaryUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-8 py-3.5 bg-white text-text-main border border-surface-200 rounded-2xl font-bold shadow-sm hover:bg-surface-50 transition-all flex items-center gap-2"
+                                >
+                                    <Download className="w-5 h-5" />
+                                    Baixar PDF
+                                </a>
+                            </div>
+                        </div>
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-gray-950 relative overflow-hidden">
                             {lesson.coverUrl ? (
@@ -213,6 +234,45 @@ export default function ClassView() {
                     </div>
                 </div>
             </div>
+
+            {/* Fullscreen PDF Modal (Hotmart/Kiwify Style) */}
+            {showPdfModal && lesson?.cloudinaryUrl && (
+                <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-sm flex flex-col items-center justify-center p-4 md:p-8 animate-in fade-in duration-300">
+                    {/* Header/Controls */}
+                    <div className="w-full max-w-6xl flex justify-between items-center mb-4 text-white">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-lg leading-tight">{lesson.title}</h3>
+                                <p className="text-xs text-white/50 font-bold uppercase tracking-widest">Visualizador Seguro</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowPdfModal(false)}
+                            className="w-12 h-12 bg-white/10 hover:bg-red-500 text-white rounded-2xl flex items-center justify-center transition-all hover:rotate-90 group active:scale-90"
+                            title="Fechar (Esc)"
+                        >
+                            <X className="w-6 h-6" />
+                        </button>
+                    </div>
+
+                    {/* Viewer Wrapper */}
+                    <div className="w-full max-w-6xl flex-1 bg-white rounded-3xl overflow-hidden shadow-2xl relative border border-white/10">
+                        <iframe
+                            src={`${lesson.cloudinaryUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                            className="w-full h-full border-none"
+                            title="PDF Viewer"
+                        />
+                    </div>
+
+                    {/* Footer / Hint */}
+                    <div className="mt-6 text-white/40 text-[10px] font-bold uppercase tracking-[0.3em]">
+                        Use o scroll ou as setas do teclado para navegar
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

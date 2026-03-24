@@ -65,6 +65,7 @@ export async function initDb() {
     await sql`ALTER TABLE feed_posts ADD COLUMN IF NOT EXISTS image_url TEXT`;
     await sql`ALTER TABLE classes ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'link'`;
     await sql`ALTER TABLE classes ADD COLUMN IF NOT EXISTS attachment_url TEXT`;
+    await sql`ALTER TABLE classes ADD COLUMN IF NOT EXISTS module_name VARCHAR(255) DEFAULT 'Módulo 1'`;
   } catch (e) {
     console.log('Columns handled');
   }
