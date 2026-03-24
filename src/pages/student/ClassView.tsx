@@ -55,6 +55,20 @@ export default function ClassView() {
         return parts;
     };
 
+    const getPdfPreviewUrl = (url: string) => {
+        if (!url || !url.includes('cloudinary.com')) return null;
+        // If it's a Cloudinary URL, we can get the first page as an image
+        // Works for 'image' resource_type PDFs. 
+        // Example: .../image/upload/v1234/file.pdf -> .../image/upload/pg_1,c_fill,w_800/v1234/file.jpg
+        try {
+            const parts = url.split('/upload/');
+            if (parts.length !== 2) return null;
+            return `${parts[0]}/upload/pg_1,c_fill,h_800,w_600,f_auto/${parts[1].replace('.pdf', '.jpg')}`;
+        } catch (e) {
+            return null;
+        }
+    };
+
     useEffect(() => {
         if (classes.length === 0) {
             fetchInitialData();
@@ -111,29 +125,26 @@ export default function ClassView() {
                             }}
                         />
                     ) : lesson.type === 'pdf' && lesson.cloudinaryUrl ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 p-8 text-center">
-                            <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mb-6 shadow-inner ring-1 ring-primary/20">
-                                <FileText className="w-10 h-10" />
-                            </div>
-                            <h3 className="text-xl md:text-2xl font-display font-bold text-text-main mb-2">{lesson.title}</h3>
-                            <p className="text-text-muted mb-8 font-medium">Este material está disponível em formato PDF.</p>
-                            <div className="flex flex-wrap items-center justify-center gap-4">
-                                <button
-                                    onClick={() => setShowPdfModal(true)}
-                                    className="px-8 py-3.5 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-primary/30 hover:scale-105 hover:bg-primary-hover transition-all flex items-center gap-2"
-                                >
-                                    <Maximize2 className="w-5 h-5" />
-                                    Ver em Tela Cheia
-                                </button>
-                                <a
-                                    href={lesson.cloudinaryUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="px-8 py-3.5 bg-white text-text-main border border-surface-200 rounded-2xl font-bold shadow-sm hover:bg-surface-50 transition-all flex items-center gap-2"
-                                >
-                                    <Download className="w-5 h-5" />
-                                    Baixar PDF
-                                </a>
+                        <div 
+                            onClick={() => setShowPdfModal(true)}
+                            className="relative w-full h-full cursor-pointer overflow-hidden group/pdf flex items-center justify-center bg-gray-900"
+                        >
+                            {/* PDF Preview / First Page */}
+                            <img 
+                                src={getPdfPreviewUrl(lesson.cloudinaryUrl) || lesson.coverUrl || "https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?q=80&w=1932&auto=format&fit=crop"} 
+                                className="w-full h-full object-contain opacity-60 group-hover/pdf:scale-105 transition-all duration-700 blur-[2px] group-hover/pdf:blur-0"
+                                alt="PDF Preview"
+                            />
+                            
+                            {/* Overlay Controls */}
+                            <div className="absolute inset-0 bg-black/40 group-hover/pdf:bg-black/20 transition-all flex flex-col items-center justify-center p-8 text-center">
+                                <div className="w-20 h-20 bg-primary text-white rounded-full flex items-center justify-center mb-6 shadow-2xl shadow-primary/40 group-hover/pdf:scale-110 transition-transform ring-4 ring-white/10">
+                                    <FileText className="w-10 h-10" />
+                                </div>
+                                <h3 className="text-white text-xl md:text-2xl font-display font-bold mb-2 shadow-sm">{lesson.title}</h3>
+                                <span className="bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest ring-1 ring-white/30 group-hover/pdf:bg-primary group-hover/pdf:ring-primary transition-all">
+                                    Acessar Material Completo
+                                </span>
                             </div>
                         </div>
                     ) : (
@@ -159,7 +170,7 @@ export default function ClassView() {
                                         {t('downloadFile') || 'Acessar Conteúdo'}
                                     </a>
                                 ) : (
-                                    <p className="text-white/70 font-medium">Conteúdo em texto abaixo</p>
+                                    <p className="text-white/70 font-medium font-bold uppercase tracking-widest">Postagem de Texto</p>
                                 )}
                             </div>
                         </div>
