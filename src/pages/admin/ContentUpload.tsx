@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { UploadCloud, CheckCircle2, FileUp, Loader2 } from 'lucide-react';
+import { upload } from '@vercel/blob/client';
 
 export default function ContentUpload() {
     const addClass = useStore((state) => state.addClass);
@@ -44,12 +45,11 @@ export default function ContentUpload() {
 
         if (isPdf) {
             try {
-                const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-                    method: 'POST',
-                    body: file,
+                // Upload direto pelo navegador (pula o limite de 5MB do Vercel API)
+                const blob = await upload(file.name, file, {
+                    access: 'public',
+                    handleUploadUrl: '/api/upload',
                 });
-
-                const blob = await response.json();
 
                 if (blob.url) {
                     if (field === 'primary') {
@@ -61,11 +61,11 @@ export default function ContentUpload() {
                         setCoverUrl(blob.url);
                     }
                 } else {
-                    setUploadError(blob.error || 'Erro ao subir para Vercel Blob. Verifique se o TOKEN está configurado.');
+                    setUploadError('Erro ao subir para Vercel Blob. Verifique o Storage no painel Vercel.');
                 }
             } catch (err) {
                 console.error('Vercel Blob Upload Error:', err);
-                setUploadError('Tivemos um problema de conexão com a Vercel.');
+                setUploadError('Houve uma falha na conexão. Tente novamente ou verifique se o arquivo ultrapassa o limite da conta Hobby (250MB total).');
             } finally {
                 setIsUploading(false);
                 if (fileInputRef.current) fileInputRef.current.value = '';
