@@ -82,11 +82,9 @@ interface AppState {
     fetchBanners: () => Promise<void>;
     fetchFeed: (productId?: string) => Promise<void>;
     fetchComments: (productId?: string) => Promise<void>;
-    login: (email: string) => boolean;
     loginWithApi: (email: string) => Promise<boolean>;
     setCurrentUser: (user: User, token?: string) => void;
     logout: () => void;
-    addUser: (email: string) => void;
 
     addProduct: (item: Omit<Product, 'id' | 'createdAt'>) => Promise<void>;
     updateProduct: (id: string, item: Partial<Omit<Product, 'id' | 'createdAt'>>) => Promise<void>;
@@ -154,11 +152,6 @@ export const useStore = create<AppState>()(
             authToken: null,
             isLoading: false,
 
-            // Legacy local-only login (disabled — use loginWithApi)
-            login: (_email: string) => {
-                return false;
-            },
-
             // Full API login that stores JWT
             loginWithApi: async (email: string): Promise<boolean> => {
                 try {
@@ -189,20 +182,6 @@ export const useStore = create<AppState>()(
                 set({ currentUser: user, ...(token ? { authToken: token } : {}) }),
 
             logout: () => set({ currentUser: null, authToken: null }),
-
-            addUser: (email: string) =>
-                set((state) => ({
-                    users: [
-                        ...state.users,
-                        {
-                            id: Date.now().toString(),
-                            email,
-                            role: 'student',
-                            name: email.split('@')[0],
-                            photo: `https://ui-avatars.com/api/?name=${email.split('@')[0]}&background=3B82F6&color=fff`,
-                        },
-                    ],
-                })),
 
             updateSystemBanners: async (banners) => {
                 const previousBanners = get().systemBanners;
