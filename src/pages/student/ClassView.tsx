@@ -14,7 +14,6 @@ export default function ClassView() {
     const { t } = useTranslation();
     const [videoError, setVideoError] = useState(false);
     const [showPdfModal, setShowPdfModal] = useState(false);
-    const [pdfPreloaded, setPdfPreloaded] = useState(false);
 
     const lesson = classes.find(c => c.id === id);
 
@@ -37,58 +36,11 @@ export default function ClassView() {
         return parts;
     };
 
-    // Get the thumbnail preview URL from a Cloudinary PDF
-    const getPdfThumbnail = (url: string) => {
-        if (!url) return null;
-        // Google Drive: no thumbnail available via API without auth
-        if (url.includes('drive.google.com')) return null;
-        if (!url.includes('cloudinary.com')) return null;
-        try {
-            const clean = url.replace('/raw/upload/', '/image/upload/');
-            const [base, file] = clean.split('/upload/');
-            if (!file) return null;
-            return `${base}/upload/pg_1,w_800,h_600,c_fill,f_jpg,q_auto/${file.replace(/\.pdf$/i, '.jpg')}`;
-        } catch {
-            return null;
-        }
-    };
-
     const isGoogleDriveUrl = (url: string) => url?.includes('drive.google.com');
-
-    // Ensure the PDF URL is accessed as image resource type for better compatibility
-    const getPdfViewUrl = (url: string) => {
-        if (!url) return '';
-        return url.replace('/raw/upload/', '/image/upload/');
-    };
 
     useEffect(() => {
         if (classes.length === 0) fetchInitialData();
     }, [classes.length, fetchInitialData]);
-
-    // Pre-load Cloudinary first-page as soon as lesson is available
-    useEffect(() => {
-        if (!lesson) return;
-        const isPdfLesson = lesson.type === 'pdf' && lesson.cloudinaryUrl;
-        if (!isPdfLesson) return;
-
-        const isDrive = isGoogleDriveUrl(lesson.cloudinaryUrl);
-        if (isDrive) {
-            // For Drive, mark as preloaded immediately (iframe renders in background below)
-            const timer = setTimeout(() => setPdfPreloaded(true), 100);
-            return () => clearTimeout(timer);
-        } else {
-            // For Cloudinary, pre-fetch the first page image
-            const previewUrl = getPdfThumbnail(lesson.cloudinaryUrl);
-            if (previewUrl) {
-                let cancelled = false;
-                const img = new Image();
-                img.src = previewUrl;
-                img.onload = () => { if (!cancelled) setPdfPreloaded(true); };
-                img.onerror = () => {}; // silence errors silently
-                return () => { cancelled = true; img.src = ''; };
-            }
-        }
-    }, [lesson?.id]);
 
     if (!lesson) {
         return (
@@ -107,7 +59,6 @@ export default function ClassView() {
     const isPdf = lesson.type === 'pdf';
     const isVideo = lesson.type === 'video';
     const isDrivePdf = isPdf && isGoogleDriveUrl(lesson.cloudinaryUrl);
-    const thumbnail = isPdf && !isDrivePdf ? getPdfThumbnail(lesson.cloudinaryUrl) : null;
 
     return (
         <>
@@ -160,14 +111,7 @@ export default function ClassView() {
                                 className="relative w-full h-full cursor-pointer group/pdf flex items-center justify-center bg-gray-900"
                             >
                                 {/* Thumbnail or background */}
-                                {thumbnail ? (
-                                    <img src={thumbnail} alt="Prévia do PDF"
-                                        className="w-full h-full object-cover opacity-50 group-hover/pdf:opacity-70 transition-opacity duration-500"
-                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                    />
-                                ) : (
-                                    <div className={`absolute inset-0 ${isDrivePdf ? 'bg-gradient-to-br from-blue-900 to-slate-900' : 'bg-gradient-to-br from-slate-800 to-slate-900'}`} />
-                                )}
+                                <div className={`absolute inset-0 ${isDrivePdf ? 'bg-gradient-to-br from-blue-900 to-slate-900' : 'bg-gradient-to-br from-slate-800 to-slate-900'}`} />
 
                                 {/* Overlay */}
                                 <div className="absolute inset-0 bg-black/40 group-hover/pdf:bg-black/20 transition-all flex flex-col items-center justify-center p-8 text-center gap-4">
@@ -179,12 +123,6 @@ export default function ClassView() {
                                         {isDrivePdf && (
                                             <p className="text-white/60 text-xs font-bold mt-1 uppercase tracking-widest">
                                                 Google Drive
-                                                {pdfPreloaded && (
-                                                        <span className="ml-2 inline-flex items-center gap-1 text-green-400">
-                                                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
-                                                            {t('ready')}
-                                                        </span>
-                                                    )}
                                             </p>
                                         )}
                                         <span className="inline-block mt-3 bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest ring-1 ring-white/30 group-hover/pdf:bg-primary transition-all">
@@ -276,9 +214,8 @@ export default function ClassView() {
             {/* PDF FULLSCREEN VIEWER */}
             {showPdfModal && lesson?.cloudinaryUrl && (
                 <PdfViewer
-                    url={getPdfViewUrl(lesson.cloudinaryUrl)}
+                    url={lesson.cloudinaryUrl}
                     title={lesson.title}
-                    preloaded={pdfPreloaded}
                     onClose={() => setShowPdfModal(false)}
                     labels={{
                         loadingPdf: t('loadingPdf'),
