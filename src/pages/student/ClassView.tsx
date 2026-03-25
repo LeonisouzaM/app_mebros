@@ -80,9 +80,12 @@ export default function ClassView() {
             // For Cloudinary, pre-fetch the first page image
             const previewUrl = getPdfThumbnail(lesson.cloudinaryUrl);
             if (previewUrl) {
+                let cancelled = false;
                 const img = new Image();
                 img.src = previewUrl;
-                img.onload = () => setPdfPreloaded(true);
+                img.onload = () => { if (!cancelled) setPdfPreloaded(true); };
+                img.onerror = () => {}; // silence errors silently
+                return () => { cancelled = true; img.src = ''; };
             }
         }
     }, [lesson?.id]);
@@ -288,35 +291,10 @@ export default function ClassView() {
                 />
             )}
 
-            {/*
-                BACKGROUND PRE-LOADER for Google Drive PDFs.
-                Renders the iframe invisibly as soon as the lesson page opens,
-                so by the time the user clicks it's already cached by the browser.
-                Only active for Drive URLs (Cloudinary pages preload via Image() above).
+            {/* 
+                PRE-LOADER removed for stability in PWA mode.
+                Iframes in background often cause freezes on Safari Standalone.
             */}
-            {lesson?.type === 'pdf' && lesson.cloudinaryUrl && isGoogleDriveUrl(lesson.cloudinaryUrl) && !showPdfModal && (() => {
-                const driveMatch = lesson.cloudinaryUrl.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-                const embedUrl = driveMatch ? `https://drive.google.com/file/d/${driveMatch[1]}/preview` : null;
-                if (!embedUrl) return null;
-                return (
-                    <div aria-hidden="true" style={{
-                        position: 'fixed',
-                        bottom: -9999,
-                        left: -9999,
-                        width: 1,
-                        height: 1,
-                        overflow: 'hidden',
-                        pointerEvents: 'none',
-                        opacity: 0,
-                    }}>
-                        <iframe
-                            src={embedUrl}
-                            title="preload"
-                            onLoad={() => setPdfPreloaded(true)}
-                        />
-                    </div>
-                );
-            })()}
         </>
     );
 }

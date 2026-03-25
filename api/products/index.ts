@@ -58,23 +58,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (!auth) return;
 
             const { id, name, description, coverUrl, language, supportNumber, hotmartId, banners } = req.body;
-            if (!name) return res.status(400).json({ error: 'Nome é obrigatório' });
+            console.log('API Products POST received:', { id, name });
+
+            if (!name) {
+                console.error('API Products POST error: Name is required');
+                return res.status(400).json({ error: 'Nome é obrigatório' });
+            }
 
             const productId = id || `prod_${Date.now()}`;
+            console.log(`Saving product: ${productId} (${name})`);
+
             const existing = await sql`SELECT id FROM products WHERE id = ${productId}`;
             const isNewProduct = existing.length === 0;
-            await sql`
-                INSERT INTO products (id, name, description, cover_url, language, support_number, hotmart_id, banners)
-                VALUES (${productId}, ${name}, ${description ?? null}, ${coverUrl ?? null}, ${language ?? 'pt'}, ${supportNumber ?? null}, ${hotmartId ?? null}, ${banners || []})
-                ON CONFLICT (id) DO UPDATE SET
-                    name = EXCLUDED.name,
-                    description = EXCLUDED.description,
-                    cover_url = EXCLUDED.cover_url,
-                    language = EXCLUDED.language,
-                    support_number = EXCLUDED.support_number,
-                    hotmart_id = EXCLUDED.hotmart_id,
-                    banners = EXCLUDED.banners
-            `;
+            
+            try {
+                await sql`
+                    INSERT INTO products (id, name, description, cover_url, language, support_number, hotmart_id, banners)
+                    VALUES (${productId}, ${name}, ${description ?? null}, ${coverUrl ?? null}, ${language ?? 'pt'}, ${supportNumber ?? null}, ${hotmartId ?? null}, ${banners || []})
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        description = EXCLUDED.description,
+                        cover_url = EXCLUDED.cover_url,
+                        language = EXCLUDED.language,
+                        support_number = EXCLUDED.support_number,
+                        hotmart_id = EXCLUDED.hotmart_id,
+                        banners = EXCLUDED.banners
+                `;
+                console.log(`Product ${productId} saved successfully in DB`);
+            } catch (dbError: any) {
+                console.error('DB Insert Error:', dbError);
+                throw dbError;
+            }
 
             if (isNewProduct) {
                 try {

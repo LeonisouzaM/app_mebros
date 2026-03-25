@@ -1,16 +1,18 @@
 import { neon } from '@neondatabase/serverless';
 
-export const sql = (strings: TemplateStringsArray, ...values: any[]) => {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL is missing in Vercel environment variables');
-  }
-  const db = neon(process.env.DATABASE_URL);
-  return db(strings, ...values);
-};
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is missing in environment variables');
+}
+
+export const sql = neon(process.env.DATABASE_URL);
+
+// Variable to track if DB is already initialized in this lambda instance
+let isInitialized = false;
 
 
-// Function to initialize tables
 export async function initDb() {
+  if (isInitialized) return;
+  
   await sql`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -122,4 +124,6 @@ export async function initDb() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
+
+  isInitialized = true;
 }

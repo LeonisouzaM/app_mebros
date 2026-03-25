@@ -293,9 +293,14 @@ export const useStore = create<AppState>()(
                         () => set({ currentUser: null, authToken: null })
                     );
                     if (!res.ok) {
+                        try {
+                            const errorData = await res.json();
+                            showToast(`Erro: ${errorData.error || 'Falha ao salvar produto'}`, 'error');
+                        } catch {
+                            showToast('Erro ao salvar produto. Tente novamente.', 'error');
+                        }
                         // Revert
                         set((state) => ({ products: state.products.filter(p => p.id !== tempId) }));
-                        showToast('Erro ao salvar produto. Tente novamente.', 'error');
                     } else {
                         showToast('Produto salvo com sucesso!', 'success');
                     }
