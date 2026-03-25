@@ -10,6 +10,7 @@ interface PdfViewerProps {
         previewUnavailable: string;
         previewUnavailableDesc: string;
         openPdfBrowser: string;
+        [key: string]: string; // Permite outras chaves de tradução sem dar erro no build
     };
 }
 
