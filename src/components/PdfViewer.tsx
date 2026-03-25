@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { X, FileText } from 'lucide-react';
-import { Worker, Viewer, Localization, SpecialZoomLevel } from '@react-pdf-viewer/core';
+import { Worker, Viewer, SpecialZoomLevel, type LocalizationMap } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 
 // Import styles
@@ -41,7 +41,7 @@ function getRawPdfUrl(url: string): string {
 
 // ─── Pt-BR Localization ──────────────────────────────────────────────────────
 
-const ptBR: Localization = {
+const ptBR: LocalizationMap = {
     core: {
         download: 'Baixar',
         print: 'Imprimir',

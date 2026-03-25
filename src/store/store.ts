@@ -101,6 +101,7 @@ interface AppState {
     removeComment: (id: string) => Promise<void>;
     likeComment: (commentId: string) => Promise<void>;
     updateProfile: (data: { name?: string; photo?: string }) => Promise<void>;
+    addUser: (email: string) => void;
     isLoading: boolean;
 }
 
@@ -650,6 +651,17 @@ export const useStore = create<AppState>()(
                     const error = await res.json();
                     showToast(error.error || 'Erro ao atualizar perfil', 'error');
                 }
+            },
+
+            addUser: (email: string) => {
+                const newUser: User = {
+                    id: `manual_${Date.now()}`,
+                    email,
+                    role: 'student',
+                    name: email.split('@')[0],
+                    accessibleProducts: [],
+                };
+                set((state) => ({ users: [...state.users, newUser] }));
             },
         }),
         {
