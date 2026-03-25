@@ -10,13 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@embedpdf/react-pdf-viewer": "^2.10.0",
     "@neondatabase/serverless": "^1.0.2",
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
     "@types/jsonwebtoken": "^9.0.10",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.18.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.575.0",
+    "pdfjs-dist": "^3.11.174",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",

@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, FileText } from 'lucide-react';
-import { PDFViewer } from '@embedpdf/react-pdf-viewer';
+import { Worker, Viewer, Localization, SpecialZoomLevel } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+
+// Import styles
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 
 interface PdfViewerProps {
     url: string;
@@ -19,67 +24,105 @@ interface PdfViewerProps {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Detect if a URL is a Google Drive link and extract the embed URL */
 function getGoogleDriveEmbedUrl(url: string): string | null {
     const fileIdMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (fileIdMatch) {
-        return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
-    }
+    if (fileIdMatch) return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
     const openIdMatch = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
-    if (openIdMatch) {
-        return `https://drive.google.com/file/d/${openIdMatch[1]}/preview`;
-    }
+    if (openIdMatch) return `https://drive.google.com/file/d/${openIdMatch[1]}/preview`;
     return null;
 }
 
-/** Ensure Cloudinary URL points to the raw PDF (not the image transform) */
 function getRawPdfUrl(url: string): string {
     if (!url) return '';
-    // Revert any image-upload transforms back to raw
     return url
         .replace('/image/upload/', '/raw/upload/')
         .replace('/video/upload/', '/raw/upload/');
 }
 
-// ─── iOS PWA-safe scroll lock / unlock ────────────────────────────────────────
+// ─── Pt-BR Localization ──────────────────────────────────────────────────────
 
-function useScrollLock() {
+const ptBR: Localization = {
+    core: {
+        download: 'Baixar',
+        print: 'Imprimir',
+        search: 'Pesquisar',
+        zoom: 'Zoom',
+        nextPage: 'Próxima página',
+        previousPage: 'Página anterior',
+        fullScreen: 'Tela cheia',
+        enterPassword: 'Digite a senha',
+    },
+    defaultLayout: {
+        toolbar: {
+            download: 'Baixar arquivo',
+            print: 'Imprimir arquivo',
+            fullScreen: 'Ver em tela cheia',
+            search: 'Pesquisar',
+            zoom: 'Zoom',
+        }
+    }
+};
+
+// ─── iOS Scroll Lock ─────────────────────────────────────────────────────────
+
+function useScrollLock(onClose?: () => void) {
     useEffect(() => {
         const scrollY = window.scrollY;
         const body = document.body;
-        const prevPosition = body.style.position;
-        const prevTop = body.style.top;
-        const prevWidth = body.style.width;
-        const prevOverflow = body.style.overflow;
+        const prevStyle = {
+            position: body.style.position,
+            top: body.style.top,
+            width: body.style.width,
+            overflow: body.style.overflow,
+            overscrollBehavior: body.style.overscrollBehavior
+        };
 
+        // Prevent scrolling and "bounce" on mobile
         body.style.overflow = 'hidden';
         body.style.position = 'fixed';
         body.style.top = `-${scrollY}px`;
         body.style.width = '100%';
+        body.style.overscrollBehavior = 'none';
+
+        // Handle Android/Mobile Back Button (popstate)
+        const handlePopState = (e: PopStateEvent) => {
+            if (onClose) {
+                e.preventDefault();
+                onClose();
+            }
+        };
+
+        // Push a state to detect back button
+        window.history.pushState({ pdfOpen: true }, '');
+        window.addEventListener('popstate', handlePopState);
 
         return () => {
-            body.style.overflow = prevOverflow;
-            body.style.position = prevPosition;
-            body.style.top = prevTop;
-            body.style.width = prevWidth;
+            Object.assign(body.style, prevStyle);
             window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
+            window.removeEventListener('popstate', handlePopState);
+            
+            // Clean up the history state if we close via the UI (Close button)
+            if (window.history.state?.pdfOpen) {
+                window.history.back();
+            }
         };
-    }, []);
+    }, [onClose]);
 }
 
-// ─── Shared Top Bar ───────────────────────────────────────────────────────────
+// ─── Shared Components ───────────────────────────────────────────────────────
 
 function ViewerTopBar({ title, onClose }: { title: string; onClose: () => void }) {
     return (
-        <div className="w-full h-14 bg-slate-900 border-b border-white/10 flex items-center justify-between px-3 shrink-0">
+        <div className="w-full h-14 bg-slate-900 border-b border-white/10 flex items-center justify-between px-3 shrink-0 z-[101]">
             <div className="flex items-center gap-2 overflow-hidden">
-                <FileText className="w-5 h-5 text-primary shrink-0" />
+                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center shrink-0">
+                    <FileText className="w-4 h-4 text-primary" />
+                </div>
                 <span className="text-white font-semibold text-sm truncate">{title}</span>
             </div>
             <button
                 onClick={onClose}
-                className="w-10 h-10 bg-white/10 hover:bg-red-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-90 shrink-0 ml-2"
-                aria-label="Fechar"
+                className="w-10 h-10 bg-white/10 hover:bg-red-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
             >
                 <X className="w-5 h-5" />
             </button>
@@ -87,164 +130,106 @@ function ViewerTopBar({ title, onClose }: { title: string; onClose: () => void }
     );
 }
 
-// ─── Google Drive Viewer (iframe) ─────────────────────────────────────────────
+// ─── Google Drive Fallback ───────────────────────────────────────────────────
 
 function GoogleDriveViewer({ embedUrl, title, onClose, preloaded, labels }: {
     embedUrl: string; title: string; onClose: () => void; preloaded?: boolean;
     labels: PdfViewerProps['labels'];
 }) {
-    useScrollLock();
+    useScrollLock(onClose);
     const [loaded, setLoaded] = useState(preloaded ?? false);
     const [timedOut, setTimedOut] = useState(false);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-
-    useEffect(() => {
-        return () => {
-            if (iframeRef.current) {
-                try { iframeRef.current.src = 'about:blank'; } catch (e) { /* ignore */ }
-            }
-        };
-    }, []);
 
     useEffect(() => {
         if (!loaded) {
-            const timer = setTimeout(() => {
-                if (!loaded) setTimedOut(true);
-            }, 10000);
+            const timer = setTimeout(() => setTimedOut(true), 12000);
             return () => clearTimeout(timer);
         }
     }, [loaded]);
 
     return (
-        <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col">
+        <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col h-[100dvh] animate-in fade-in duration-300">
             <ViewerTopBar title={title} onClose={onClose} />
-
-            <div className="flex-1 relative bg-white overflow-hidden">
+            <div className="flex-1 relative bg-white">
                 {!loaded && !timedOut && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-100 z-10">
-                        <div className="w-10 h-10 border-4 border-slate-200 border-t-primary rounded-full animate-spin" />
-                        <p className="text-slate-500 text-sm font-bold">{labels.loadingPdf}</p>
-                    </div>
-                )}
-                {timedOut && !loaded && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-slate-100 z-20 p-8 text-center">
-                        <FileText className="w-16 h-16 text-slate-300" />
-                        <div>
-                            <p className="text-slate-800 font-bold mb-2">{labels.previewUnavailable}</p>
-                            <p className="text-slate-500 text-sm">{labels.previewUnavailableDesc}</p>
-                        </div>
-                        <a
-                            href={embedUrl.replace('/preview', '/view')}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-8 py-4 bg-primary text-white rounded-2xl font-bold w-full max-w-xs shadow-lg"
-                        >
-                            {labels.openPdfBrowser}
-                        </a>
-                        <button onClick={onClose} className="text-sm text-slate-400 font-bold hover:text-slate-600">
-                            Voltar
-                        </button>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100 z-10">
+                        <div className="w-12 h-12 border-4 border-slate-200 border-t-primary rounded-full animate-spin mb-4" />
+                        <p className="text-slate-500 font-bold text-sm">{labels.loadingPdf}</p>
                     </div>
                 )}
                 <iframe
-                    ref={iframeRef}
                     src={embedUrl}
-                    className={`absolute inset-0 w-full h-full border-none transform-gpu transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-                    title={title}
-                    allow="autoplay"
-                    onLoad={() => { setLoaded(true); setTimedOut(false); }}
+                    className={`w-full h-full border-none transition-opacity duration-700 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                    onLoad={() => setLoaded(true)}
                 />
             </div>
         </div>
     );
 }
 
-// ─── EmbedPDF Viewer (Cloudinary / Direct URL) ────────────────────────────────
+// ─── React PDF Viewer (Core) ─────────────────────────────────────────────────
 
-function EmbedPdfViewer({ url, title, onClose, labels }: {
+function ReactPdfViewer({ url, title, onClose, labels }: {
     url: string; title: string; onClose: () => void;
     labels: PdfViewerProps['labels'];
 }) {
-    useScrollLock();
+    useScrollLock(onClose);
     const [loadError, setLoadError] = useState(false);
     const rawUrl = getRawPdfUrl(url);
 
-    // Handle Escape key
-    const handleKeyDown = useCallback((e: KeyboardEvent) => {
-        if (e.key === 'Escape') onClose();
-    }, [onClose]);
-
-    useEffect(() => {
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleKeyDown]);
-
-    if (loadError) {
-        return (
-            <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col">
-                <ViewerTopBar title={title} onClose={onClose} />
-                <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8 text-center bg-slate-800">
-                    <FileText className="w-16 h-16 text-white/20" />
-                    <div>
-                        <p className="text-white font-bold mb-2">{labels.previewUnavailable}</p>
-                        <p className="text-white/50 text-sm">{labels.previewUnavailableDesc}</p>
-                    </div>
-                    <a
-                        href={rawUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-8 py-4 bg-primary text-white rounded-2xl font-bold w-full max-w-xs text-center"
-                    >
-                        {labels.openPdfBrowser}
-                    </a>
-                </div>
-            </div>
-        );
-    }
+    // Initialiaze the default layout plugin
+    const defaultLayoutPluginInstance = defaultLayoutPlugin({
+        sidebarTabs: () => [], // Hide sidebar for cleaner look
+    });
 
     return (
-        <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col">
+        <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col h-[100dvh] animate-in fade-in duration-300">
             <ViewerTopBar title={title} onClose={onClose} />
-
-            {/* EmbedPDF renders the actual PDF via PDFium (WebAssembly) */}
-            <div className="flex-1 overflow-hidden">
-                <PDFViewer
-                    config={{
-                        src: rawUrl,
-                        theme: { preference: 'light' },
-                    }}
-                    style={{ width: '100%', height: '100%' }}
-                    onError={() => setLoadError(true)}
-                />
+            
+            <div className="flex-1 overflow-hidden bg-slate-100">
+                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                    {loadError ? (
+                        <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-6">
+                            <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center">
+                                <FileText className="w-10 h-10 text-slate-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-slate-900 font-bold text-lg mb-2">{labels.previewUnavailable}</h3>
+                                <p className="text-slate-500 text-sm max-w-xs">{labels.previewUnavailableDesc}</p>
+                            </div>
+                            <a href={rawUrl} target="_blank" rel="noopener noreferrer" className="btn-primary px-8">
+                                {labels.openPdfBrowser}
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="h-full">
+                            <Viewer
+                                fileUrl={rawUrl}
+                                plugins={[defaultLayoutPluginInstance]}
+                                theme="light"
+                                localization={ptBR}
+                                defaultScale={SpecialZoomLevel.PageFit}
+                                onDocumentLoad={() => setLoadError(false)}
+                                //@ts-ignore
+                                onException={(e) => {
+                                    console.error('PDF Load Error:', e);
+                                    setLoadError(true);
+                                }}
+                            />
+                        </div>
+                    )}
+                </Worker>
             </div>
         </div>
     );
 }
 
-// ─── Main Export ──────────────────────────────────────────────────────────────
-
-export default function PdfViewer({ url, title, onClose, preloaded, labels }: PdfViewerProps) {
-    const driveEmbedUrl = getGoogleDriveEmbedUrl(url);
+export default function PdfViewer(props: PdfViewerProps) {
+    const driveEmbedUrl = getGoogleDriveEmbedUrl(props.url);
 
     if (driveEmbedUrl) {
-        return (
-            <GoogleDriveViewer
-                embedUrl={driveEmbedUrl}
-                title={title}
-                onClose={onClose}
-                preloaded={preloaded}
-                labels={labels}
-            />
-        );
+        return <GoogleDriveViewer {...props} embedUrl={driveEmbedUrl} />;
     }
 
-    // EmbedPDF for all direct/Cloudinary PDF URLs
-    return (
-        <EmbedPdfViewer
-            url={url}
-            title={title}
-            onClose={onClose}
-            labels={labels}
-        />
-    );
+    return <ReactPdfViewer {...props} />;
 }

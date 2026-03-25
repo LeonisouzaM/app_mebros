@@ -58,8 +58,8 @@ export default function ContentUpload() {
             if (file.type.startsWith('video/')) {
                 resourceType = 'video';
             } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-                // We use 'image' for PDFs in Cloudinary to allow better previews and transformations
-                resourceType = 'image';
+                // For direct PDF viewing with EmbedPDF, 'auto' or 'raw' is best
+                resourceType = 'auto';
             } else if (file.type.startsWith('image/')) {
                 resourceType = 'image';
             }

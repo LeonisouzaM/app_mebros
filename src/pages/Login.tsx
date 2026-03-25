@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store/store';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Download } from 'lucide-react';
+import { LogIn, Download, MessageCircle } from 'lucide-react';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -145,6 +145,20 @@ export default function Login() {
                     &copy; 2026 Plataforma Premium
                 </p>
             </footer>
+
+            {/* Support WhatsApp */}
+            <a
+                href="https://wa.me/5517981980763"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:shadow-hover hover:scale-110 transition-all z-40 group animate-fade-up"
+                aria-label="Suporte WhatsApp"
+            >
+                <MessageCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+                <span className="absolute right-full mr-3 bg-white text-[#25D366] px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-[#25D366]/10">
+                    Precisa de ajuda?
+                </span>
+            </a>
         </div>
     );
 }
