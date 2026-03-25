@@ -25,8 +25,9 @@ function getEmbedUrl(url: string): string {
         if (id) return `https://drive.google.com/file/d/${id}/preview`;
     }
 
-    // Se for Cloudinary, já usamos o link direto que faz o embed automático no navegador
-    return url;
+    // Para Cloudinary e outros, usamos o motor do Google Docs para garantir o Embed no mobile
+    // Isso evita o erro de "Falha ao carregar documento PDF"
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
 }
 
 export default function PdfViewer({ url, title, onClose, labels }: PdfViewerProps) {
