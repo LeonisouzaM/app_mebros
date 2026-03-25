@@ -32,36 +32,66 @@ export default function ContentUpload() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const attachmentInputRef = useRef<HTMLInputElement>(null);
     const coverInputRef = useRef<HTMLInputElement>(null);
-
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'primary' | 'attachment' | 'cover' = 'primary') => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        setIsUploading(true);
+        setUploadError('');
+
+        // Se for PDF, enviamos para Vercel Blob (mais estável para mobile)
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+        if (isPdf) {
+            try {
+                const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+                    method: 'POST',
+                    body: file,
+                });
+
+                const blob = await response.json();
+
+                if (blob.url) {
+                    if (field === 'primary') {
+                        setUrl(blob.url);
+                        setType('pdf');
+                    } else if (field === 'attachment') {
+                        setAttachmentUrl(blob.url);
+                    } else if (field === 'cover') {
+                        setCoverUrl(blob.url);
+                    }
+                } else {
+                    setUploadError(blob.error || 'Erro ao subir para Vercel Blob. Verifique se o TOKEN está configurado.');
+                }
+            } catch (err) {
+                console.error('Vercel Blob Upload Error:', err);
+                setUploadError('Tivemos um problema de conexão com a Vercel.');
+            } finally {
+                setIsUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                if (attachmentInputRef.current) attachmentInputRef.current.value = '';
+            }
+            return;
+        }
+
+        // Senão (vídeos/imagens), continua usando Cloudinary se configurado
         const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
         const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
         if (!cloudName || !uploadPreset || cloudName === 'seu_cloud_name') {
-            setUploadError('Por favor, adicione suas chaves do Cloudinary no arquivo .env (veja a área de arquivos do seu projeto).');
+            setUploadError('Para subir vídeos/fotos use o Cloudinary ou configure o Vercel Blob.');
+            setIsUploading(false);
             return;
         }
-
-        setIsUploading(true);
-        setUploadError('');
 
         const formData = new FormData();
         formData.append('file', file);
         formData.append('upload_preset', uploadPreset);
 
         try {
-            // Detecção robusta do resource_type do Cloudinary
             let resourceType = 'auto';
             if (file.type.startsWith('video/')) {
                 resourceType = 'video';
-            } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-                // For direct PDF viewing with EmbedPDF, 'auto' or 'raw' is best
-                resourceType = 'auto';
-            } else if (file.type.startsWith('image/')) {
-                resourceType = 'image';
             }
 
             const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
@@ -75,7 +105,6 @@ export default function ContentUpload() {
                 if (field === 'primary') {
                     setUrl(data.secure_url);
                     if (file.type.startsWith('video/')) setType('video');
-                    else if (file.type === 'application/pdf') setType('pdf');
                     else if (file.type.startsWith('image/')) setType('image');
                 } else if (field === 'cover') {
                     setCoverUrl(data.secure_url);
@@ -86,7 +115,7 @@ export default function ContentUpload() {
                 setUploadError(data.error?.message || 'Erro do Cloudinary ao salvar o arquivo.');
             }
         } catch (err) {
-            setUploadError('Tivemos um problema de conexão durante o upload.');
+            setUploadError('Erro de conexão durante o upload no Cloudinary.');
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
