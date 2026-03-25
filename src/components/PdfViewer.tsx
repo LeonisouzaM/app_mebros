@@ -35,17 +35,8 @@ function getGoogleDriveEmbedUrl(url: string): string | null {
 function getRawPdfUrl(url: string): string {
     if (!url) return '';
     
-    // Se for Cloudinary e contiver /image/upload ou /video/upload, tentamos normalizar para /raw/upload
-    // que é o recomendado para PDFs, mas preservamos a URL se ela já parecer um link direto de PDF.
-    if (url.includes('res.cloudinary.com')) {
-        // Apenas substitui se não for um link que já está no formato correto
-        if (!url.includes('/raw/upload/')) {
-            return url
-                .replace('/image/upload/', '/raw/upload/')
-                .replace('/video/upload/', '/raw/upload/');
-        }
-    }
-    
+    // Simplificamos para usar a URL original do banco. 
+    // Muitas vezes, forçar /raw/upload causa erros de permissão se o arquivo foi carregado como 'image' ou 'auto'.
     return url;
 }
 
