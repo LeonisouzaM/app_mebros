@@ -81,11 +81,13 @@ export default function PdfViewer({ url, title, onClose, labels }: PdfViewerProp
 
                 {error && !loaded && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-20 p-8 text-center animate-in zoom-in-95">
-                        <div className="bg-amber-50 p-6 rounded-full border border-amber-100 mb-6">
-                            <FileText className="w-12 h-12 text-amber-500" />
+                        <div className="bg-amber-50 p-6 rounded-full border border-amber-100 mb-6 font-bold text-amber-600">
+                            V2.0
                         </div>
-                        <h3 className="font-display font-black text-xl text-slate-900 mb-2">Conexão demorada</h3>
-                        <p className="text-slate-500 text-sm mb-8 px-4">Seu PDF ainda não abriu? Você pode usar o visualizador do Google docs como alternativa.</p>
+                        <h3 className="font-display font-black text-xl text-slate-900 mb-2">O arquivo não abriu?</h3>
+                        <p className="text-slate-500 text-sm mb-8 px-4 leading-relaxed">
+                            Pode ser cache do seu navegador. Tente limpar o histórico ou usar o botão abaixo para abrir via Google.
+                        </p>
                         
                         <div className="flex flex-col w-full gap-3 max-w-xs">
                             <a 
@@ -103,7 +105,7 @@ export default function PdfViewer({ url, title, onClose, labels }: PdfViewerProp
                                 rel="noopener noreferrer" 
                                 className="w-full py-4 text-slate-400 font-bold text-sm"
                             >
-                                Carregar original direto
+                                Abrir Link Direto
                             </a>
                         </div>
                     </div>
