@@ -153,26 +153,30 @@ export default function Login() {
             {showInstallModal && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setShowInstallModal(false)} />
-                    <div className="relative bg-white rounded-[2.5rem] p-7 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
-                        <div className="text-center space-y-5">
-                            <div className="space-y-2">
-                                <h3 className="text-2xl font-display font-black text-slate-900 tracking-tight">Como instalar</h3>
-                                <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                                    Siga o tutorial abaixo para adicionar o App diretamente à sua tela de início.
+                    <div className="relative bg-white rounded-[2.5rem] p-5 md:p-7 max-w-[340px] w-full shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
+                        <div className="text-center space-y-4">
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-display font-black text-slate-900 tracking-tight">Como instalar</h3>
+                                <p className="text-xs font-medium text-slate-500 leading-relaxed px-2">
+                                    Siga os passos abaixo para adicionar o App diretamente à sua tela de início.
                                 </p>
                             </div>
                             
-                            <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-2xl aspect-[9/16] relative bg-slate-100 ring-1 ring-slate-200">
-                                <img 
-                                    src="/ezgif-2c6a041e2a17d873.gif" 
-                                    alt="Tutorial de Instalação" 
+                            {/* Video Container with height limit for smaller phones */}
+                            <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl aspect-[9/16] max-h-[45vh] mx-auto relative bg-slate-100 ring-1 ring-slate-200">
+                                <video 
+                                    src="/ezgif-2c754fc873d35296.mp4" 
+                                    autoPlay 
+                                    loop 
+                                    muted 
+                                    playsInline 
                                     className="w-full h-full object-cover scale-105"
                                 />
                             </div>
 
                             <button 
                                 onClick={() => setShowInstallModal(false)}
-                                className="btn-primary w-full py-4 text-base shadow-xl shadow-primary/30"
+                                className="btn-primary w-full py-3.5 text-sm shadow-xl shadow-primary/30 font-bold"
                             >
                                 Entendi, obrigado!
                             </button>
