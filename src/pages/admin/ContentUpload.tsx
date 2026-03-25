@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { UploadCloud, CheckCircle2, FileUp, Loader2 } from 'lucide-react';
+import { UploadCloud, CheckCircle2, FileUp, Loader2, Database } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export default function ContentUpload() {
     const addClass = useStore((state) => state.addClass);
@@ -26,7 +27,7 @@ export default function ContentUpload() {
     const [moduleName, setModuleName] = useState('Módulo 1');
     const [type, setType] = useState<'video' | 'pdf' | 'link' | 'image'>('video');
     const [success, setSuccess] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('Conteúdo publicado com sucesso!');
+    const [successMessage, setSuccessMessage] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [uploadError, setUploadError] = useState('');
 
@@ -38,16 +39,51 @@ export default function ContentUpload() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+        setIsUploading(true);
+        setUploadError('');
 
-        if (!cloudName || !uploadPreset || cloudName === 'seu_cloud_name') {
-            setUploadError('Por favor, adicione suas chaves do Cloudinary em seu painel / .env.');
+        // ─── Lógica para PDFs (Supabase) ──────────────────────────────────────
+        if (file.type === 'application/pdf') {
+            const bucketName = 'pdfs'; // Certifique-se de criar este bucket no Supabase!
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const filePath = `${fileName}`;
+
+            try {
+                const { data, error } = await supabase.storage
+                    .from(bucketName)
+                    .upload(filePath, file);
+
+                if (error) throw error;
+
+                const { data: { publicUrl } } = supabase.storage
+                    .from(bucketName)
+                    .getPublicUrl(filePath);
+
+                if (field === 'primary') {
+                    setUrl(publicUrl);
+                    setType('pdf');
+                } else if (field === 'attachment') {
+                    setAttachmentUrl(publicUrl);
+                } else {
+                    setCoverUrl(publicUrl);
+                }
+                
+                setSuccessMessage('PDF enviado com sucesso para o Supabase!');
+                setSuccess(true);
+                setTimeout(() => setSuccess(false), 3000);
+
+            } catch (err: any) {
+                setUploadError(`Erro Supabase: ${err.message || 'Verifique se o bucket "pdfs" existe e é público.'}`);
+            } finally {
+                setIsUploading(false);
+            }
             return;
         }
 
-        setIsUploading(true);
-        setUploadError('');
+        // ─── Lógica para Outros Media (Cloudinary) ────────────────────────────
+        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
         const formData = new FormData();
         formData.append('file', file);
@@ -55,7 +91,6 @@ export default function ContentUpload() {
 
         try {
             let resourceType = file.type.startsWith('video/') ? 'video' : 'auto';
-
             const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
                 method: 'POST',
                 body: formData,
@@ -67,7 +102,6 @@ export default function ContentUpload() {
                 if (field === 'primary') {
                     setUrl(data.secure_url);
                     if (file.type.startsWith('video/')) setType('video');
-                    else if (file.type === 'application/pdf') setType('pdf');
                     else if (file.type.startsWith('image/')) setType('image');
                 } else if (field === 'cover') {
                     setCoverUrl(data.secure_url);
@@ -75,15 +109,12 @@ export default function ContentUpload() {
                     setAttachmentUrl(data.secure_url);
                 }
             } else {
-                setUploadError(data.error?.message || 'Erro do Cloudinary ao salvar o arquivo.');
+                setUploadError(data.error?.message || 'Erro do Cloudinary.');
             }
         } catch (err) {
             setUploadError('Erro de conexão durante o upload.');
         } finally {
             setIsUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-            if (attachmentInputRef.current) attachmentInputRef.current.value = '';
-            if (coverInputRef.current) coverInputRef.current.value = '';
         }
     };
 
@@ -109,7 +140,7 @@ export default function ContentUpload() {
             setSuccessMessage('Conteúdo atualizado com sucesso!');
         } else {
             addClass(accessData);
-            setSuccessMessage('Conteúdo publicado com sucesso!');
+            setSuccessMessage('Aula publicada com sucesso!');
         }
 
         cancelEdit();
@@ -150,19 +181,28 @@ export default function ContentUpload() {
         <div className="space-y-6">
             <header className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    <UploadCloud className="text-primary h-6 w-6" />
-                    Upload de Conteúdo
+                    <Database className="text-primary h-6 w-6" />
+                    Gerenciador de Conteúdo
                 </h1>
-                <p className="text-sm text-text-muted mt-1">Configure todas as opções da sua nova aula abaixo.</p>
+                <p className="text-sm text-text-muted mt-1">
+                    Upload de PDFs (Supabase) e Vídeos/Imagens (Cloudinary).
+                </p>
             </header>
 
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-sm border border-surface-200">
                 <div className="space-y-6">
 
                     {/* Sessão de Upload Rápido Cloudinary */}
-                    <div className="bg-surface-50 p-6 rounded-2xl border border-dashed border-primary/40 text-center">
-                        <h3 className="text-sm font-semibold text-gray-800 mb-2">Enviar do seu Computador (PDF, Imagem, Vídeo)</h3>
-                        <p className="text-[10px] text-text-muted mb-4 max-w-sm mx-auto">O arquivo será enviado para o Cloudinary e o link preenchido abaixo automaticamente.</p>
+                    <div className="bg-slate-50 p-6 rounded-2xl border border-dashed border-primary/30 text-center hover:bg-slate-100 transition-all group overflow-hidden relative">
+                        {isUploading && (
+                             <div className="absolute inset-x-0 bottom-0 h-1 bg-primary/10">
+                                <div className="h-full bg-primary animate-progress origin-left" />
+                             </div>
+                        )}
+                        <h3 className="text-sm font-semibold text-gray-800 mb-2">Drag & Drop de Arquivo</h3>
+                        <p className="text-[10px] text-text-muted mb-4 max-w-sm mx-auto">
+                            PDFs vão para o Supabase. Vídeos vão para o Cloudinary.
+                        </p>
                         
                         <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => handleFileUpload(e, 'primary')} />
                         <input type="file" className="hidden" ref={attachmentInputRef} accept=".pdf,application/pdf" onChange={(e) => handleFileUpload(e, 'attachment')} />
@@ -172,12 +212,12 @@ export default function ContentUpload() {
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
-                            className="inline-flex items-center gap-2 py-2 px-6 border border-primary text-primary bg-white rounded-xl shadow-sm hover:bg-blue-50 font-semibold"
+                            className="inline-flex items-center gap-2 py-2.5 px-6 bg-primary text-white rounded-xl shadow-lg shadow-blue-500/20 font-bold active:scale-95 transition-all disabled:opacity-50"
                         >
                             {isUploading ? (
-                                <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+                                <><Loader2 className="w-4 h-4 animate-spin" /> Processando Arquivo...</>
                             ) : (
-                                <><FileUp className="w-4 h-4" /> Escolher Arquivo para Aula</>
+                                <><FileUp className="w-4 h-4" /> Selecionar Aula da Máquina</>
                             )}
                         </button>
                     </div>
@@ -186,31 +226,31 @@ export default function ContentUpload() {
                     {products.length > 0 && (
                         <div className="grid md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Produto</label>
-                                <select value={productId || products[0].id} onChange={(e) => setProductId(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50">
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">Vincular ao Produto</label>
+                                <select value={productId || products[0].id} onChange={(e) => setProductId(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 font-bold">
                                     {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Módulo</label>
-                                <input type="text" value={moduleName} onChange={(e) => setModuleName(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50" placeholder="Ex: Módulo 1" />
+                                <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">Nome do Módulo</label>
+                                <input type="text" value={moduleName} onChange={(e) => setModuleName(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50" placeholder="Ex: Comece Aqui" />
                             </div>
                         </div>
                     )}
 
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Tipo de Aula</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">Tipo de Atividade</label>
                             <select value={type} onChange={(e) => setType(e.target.value as any)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 font-bold text-primary">
                                 <option value="video">🎥 Vídeo Aula</option>
-                                <option value="pdf">📄 Material PDF</option>
+                                <option value="pdf">📄 Material PDF (Supabase)</option>
                                 <option value="link">🔗 Link Externo</option>
                                 <option value="image">🖼️ Imagem</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Título da Aula</label>
-                            <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50" />
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">Título Principal</label>
+                            <input type="text" required value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 font-bold" />
                         </div>
                     </div>
 
@@ -218,30 +258,30 @@ export default function ContentUpload() {
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <div className="flex justify-between mb-1">
-                                <label className="block text-[10px] font-bold text-gray-700 uppercase">Capa da Aula (Opcional)</label>
-                                <button type="button" onClick={() => coverInputRef.current?.click()} className="text-[10px] text-primary font-bold">CARREGAR CAPA</button>
+                                <label className="block text-xs font-bold text-gray-400 uppercase tracking-tight">Capa da Aula</label>
+                                <button type="button" onClick={() => coverInputRef.current?.click()} className="text-[10px] text-primary font-bold">UPAR NOVO</button>
                             </div>
                             <input type="url" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" placeholder="Link da imagem..." />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-gray-700 uppercase mb-1">Link do Conteúdo Principal</label>
-                            <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" placeholder="URL do Video ou PDF..." />
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">URL Destino/Link Aula</label>
+                            <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" placeholder="Cloudinary ou Supabase..." />
                         </div>
                     </div>
 
                     {/* Material de Apoio Extra */}
                     <div>
                         <div className="flex justify-between mb-1">
-                            <label className="block text-xs font-bold text-gray-700 uppercase">Material de Apoio PDF Extra (Opcional)</label>
-                            <button type="button" onClick={() => attachmentInputRef.current?.click()} className="text-[10px] text-primary font-bold">CARREGAR APOIO</button>
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-tight">Documento PDF Complementar</label>
+                            <button type="button" onClick={() => attachmentInputRef.current?.click()} className="text-[10px] text-primary font-bold">UPAR PDF</button>
                         </div>
-                        <input type="url" value={attachmentUrl} onChange={(e) => setAttachmentUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50" placeholder="Link do PDF complementar..." />
+                        <input type="url" value={attachmentUrl} onChange={(e) => setAttachmentUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" placeholder="Link do arquivo de apoio..." />
                     </div>
 
-                    {/* Descrição com atalho para link */}
+                    {/* Descrição */}
                     <div>
                         <div className="flex justify-between mb-1">
-                            <label className="block text-xs font-bold text-gray-700 uppercase">Descrição da Aula</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-tight">Área de Texto (Descrição)</label>
                             <button
                                 type="button"
                                 onClick={() => {
@@ -253,51 +293,56 @@ export default function ContentUpload() {
                                 }}
                                 className="text-[10px] text-primary font-bold"
                             >
-                                🔗 INSERIR LINK
+                                🔗 LINK NO TEXTO
                             </button>
                         </div>
-                        <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-sm" placeholder="O que o aluno vai aprender nesta aula?" />
+                        <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-sm" />
                     </div>
 
                     {/* Botões e Datas */}
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Texto do Botão (Ex: Baixar agora)</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">CTA do Botão</label>
                             <input type="text" value={buttonText} onChange={(e) => setButtonText(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50" />
                         </div>
                         <div>
-                            <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Data de Liberação (Drip)</label>
+                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">Liberação Automática</label>
                             <input type="date" value={unlockDate} onChange={(e) => setUnlockDate(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50" />
                         </div>
                     </div>
 
-                    {uploadError && <p className="text-xs font-bold text-red-500 text-center">{uploadError}</p>}
+                    {uploadError && (
+                        <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 text-xs font-bold animate-in shake-1">
+                            {uploadError}
+                        </div>
+                    )}
 
-                    <button type="submit" className="w-full py-4 bg-primary text-white rounded-2xl font-bold shadow-xl shadow-blue-500/20">
-                        {editingId ? 'SALVAR ALTERAÇÕES' : 'PUBLICAR NO CURSO'}
+                    <button type="submit" className="w-full py-4 bg-primary text-white rounded-2xl font-black shadow-xl shadow-blue-500/20 active:scale-95 transition-all text-sm uppercase tracking-widest">
+                        {editingId ? 'Confirmar Edição' : 'Publicar Aula Agora'}
                     </button>
 
                     {success && (
-                        <div className="p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 flex items-center justify-center gap-2">
+                        <div className="p-4 bg-green-50 text-green-700 rounded-xl border border-green-100 flex items-center justify-center gap-2 animate-in slide-in-from-top-4">
                             <CheckCircle2 className="w-5 h-5" /> <strong>{successMessage}</strong>
                         </div>
                     )}
                 </div>
             </form>
 
-            {/* Listagem Final */}
-            <div className="mt-8 bg-white p-6 rounded-3xl border border-surface-200">
-                <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2 tracking-tight uppercase text-xs opacity-50">Aulas Postadas ({classes.length})</h2>
+            <div className="mt-8 bg-white p-6 rounded-3xl border border-surface-200 shadow-sm opacity-90">
+                <h2 className="text-[10px] font-black text-gray-400 mb-4 tracking-widest uppercase">CONTEÚDOS PUBLICADOS ({classes.length})</h2>
                 <ul className="space-y-3">
                     {classes.map((item) => (
-                        <li key={item.id} className="flex justify-between items-center bg-surface-50 p-4 rounded-2xl border border-surface-100">
+                        <li key={item.id} className="flex justify-between items-center bg-surface-50 p-4 rounded-2xl border border-surface-100 hover:bg-white hover:shadow-md transition-all group">
                             <div className="flex-1 min-w-0 pr-4">
                                 <h3 className="font-bold text-slate-800 text-sm truncate">{item.title}</h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase">{item.moduleName || 'Sem Módulo'} • {item.type}</p>
+                                <p className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">
+                                    {item.moduleName || 'Módulo Geral'} • <span className={item.type === 'pdf' ? 'text-blue-500' : 'text-primary'}>{item.type}</span>
+                                </p>
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => handleEdit(item)} className="px-4 py-1.5 bg-white text-blue-600 rounded-xl text-xs font-bold border border-blue-50 hover:bg-blue-50 transition-colors">Editar</button>
-                                <button onClick={() => removeClass(item.id)} className="px-4 py-1.5 bg-white text-red-600 rounded-lg text-xs font-bold border border-red-50 hover:bg-red-50 transition-colors">Excluir</button>
+                                <button onClick={() => handleEdit(item)} className="px-5 py-2 bg-white text-blue-600 rounded-xl text-[10px] font-black border border-blue-50 hover:bg-blue-600 hover:text-white transition-all">EDITAR</button>
+                                <button onClick={() => removeClass(item.id)} className="px-5 py-2 bg-white text-red-600 rounded-xl text-[10px] font-black border border-red-50 hover:bg-red-600 hover:text-white transition-all">LIMPAR</button>
                             </div>
                         </li>
                     ))}
