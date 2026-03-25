@@ -11,11 +11,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const payload = req.body;
 
-        // 1. Validate Hotmart Token (Hottok)
+        // 1. Validate Hotmart Token (Hottok) — MANDATORY
+        const expectedHottok = process.env.HOTMART_HOTTOK;
         const hottok = req.headers['x-hotmart-hottok'] || req.query.hottok || payload?.hottok;
-        if (process.env.HOTMART_HOTTOK && hottok !== process.env.HOTMART_HOTTOK) {
-            console.warn('Alerta: Token Hottok inválido recebido!');
-            return res.status(401).json({ error: 'Unauthorized: Invalid Hottok' });
+        if (!expectedHottok || hottok !== expectedHottok) {
+            console.warn('Alerta: Token Hottok inválido ou ausente! Acesso bloqueado.');
+            return res.status(401).json({ error: 'Unauthorized: Invalid or missing Hottok' });
         }
 
         console.log('Webhook Recebido da Hotmart:', JSON.stringify(payload, null, 2));

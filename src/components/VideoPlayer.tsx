@@ -17,10 +17,26 @@ export default function VideoPlayer({ url, title, onClose }: VideoPlayerProps) {
             if (e.key === 'Escape') onClose();
         };
         window.addEventListener('keydown', handleEsc);
-        document.body.style.overflow = 'hidden';
+
+        // iOS PWA-safe scroll lock
+        const scrollY = window.scrollY;
+        const body = document.body;
+        const prevPosition = body.style.position;
+        const prevTop = body.style.top;
+        const prevWidth = body.style.width;
+        const prevOverflow = body.style.overflow;
+        body.style.overflow = 'hidden';
+        body.style.position = 'fixed';
+        body.style.top = `-${scrollY}px`;
+        body.style.width = '100%';
+
         return () => {
             window.removeEventListener('keydown', handleEsc);
-            document.body.style.overflow = 'auto';
+            body.style.overflow = prevOverflow;
+            body.style.position = prevPosition;
+            body.style.top = prevTop;
+            body.style.width = prevWidth;
+            window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
         };
     }, [onClose]);
 

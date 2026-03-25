@@ -2,7 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sql, initDb } from '../db.js';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_change_me';
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET is missing from environment variables');
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {

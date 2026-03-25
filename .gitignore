@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment files — NEVER commit secrets
+.env
+.env.*
+!.env.example
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +27,28 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Debug/diagnostic scripts and logs (raiz do projeto)
+check-*.js
+check_*.ts
+debug-*.js
+diag*.js
+diag*.txt
+dump-*.js
+list-*.js
+list_*.ts
+fix-*.js
+fix-*.txt
+promote*.js
+promote*.ts
+sim.js
+test-*.ts
+test_*.ts
+migrate-*.js
+create-*.js
+*.txt
+db-output.json
+output.txt
+prod-output.log
+access_log.txt
+db_access.txt
