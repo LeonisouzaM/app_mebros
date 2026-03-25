@@ -190,17 +190,30 @@ function ReactPdfViewer({ url, title, onClose, labels }: {
             <div className="flex-1 overflow-hidden bg-slate-100">
                 <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                     {loadError ? (
-                        <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-6">
-                            <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center">
-                                <FileText className="w-10 h-10 text-slate-400" />
+                        <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-6 bg-white">
+                            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center border border-amber-100">
+                                <FileText className="w-10 h-10 text-amber-500" />
                             </div>
-                            <div>
-                                <h3 className="text-slate-900 font-bold text-lg mb-2">{labels.previewUnavailable}</h3>
-                                <p className="text-slate-500 text-sm max-w-xs">{labels.previewUnavailableDesc}</p>
+                            <div className="space-y-2">
+                                <h3 className="text-slate-900 font-display font-black text-xl">{labels.previewUnavailable}</h3>
+                                <p className="text-slate-500 text-sm max-w-xs font-medium">Este arquivo pode ter restrições de acesso ou ser muito pesado para o celular.</p>
                             </div>
-                            <a href={rawUrl} target="_blank" rel="noopener noreferrer" className="btn-primary px-8">
-                                {labels.openPdfBrowser}
-                            </a>
+                            
+                            <div className="flex flex-col w-full gap-3 max-w-sm px-4">
+                                {/* Botão para o visualizador do Google (mais compatível) */}
+                                <a 
+                                    href={`https://docs.google.com/viewer?url=${encodeURIComponent(rawUrl)}&embedded=true`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="btn-primary w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                                >
+                                    Abrir com Visualizador Google
+                                </a>
+
+                                <a href={rawUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 px-6 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all">
+                                    {labels.openPdfBrowser}
+                                </a>
+                            </div>
                         </div>
                     ) : (
                         <div className="h-full">
@@ -214,6 +227,7 @@ function ReactPdfViewer({ url, title, onClose, labels }: {
                                 //@ts-ignore
                                 onException={(e) => {
                                     console.error('PDF Load Error:', e);
+                                    // Se der 401 ou erro de rede, ativamos o fallback
                                     setLoadError(true);
                                 }}
                             />
