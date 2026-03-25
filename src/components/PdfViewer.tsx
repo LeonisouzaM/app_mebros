@@ -34,9 +34,19 @@ function getGoogleDriveEmbedUrl(url: string): string | null {
 
 function getRawPdfUrl(url: string): string {
     if (!url) return '';
-    return url
-        .replace('/image/upload/', '/raw/upload/')
-        .replace('/video/upload/', '/raw/upload/');
+    
+    // Se for Cloudinary e contiver /image/upload ou /video/upload, tentamos normalizar para /raw/upload
+    // que é o recomendado para PDFs, mas preservamos a URL se ela já parecer um link direto de PDF.
+    if (url.includes('res.cloudinary.com')) {
+        // Apenas substitui se não for um link que já está no formato correto
+        if (!url.includes('/raw/upload/')) {
+            return url
+                .replace('/image/upload/', '/raw/upload/')
+                .replace('/video/upload/', '/raw/upload/');
+        }
+    }
+    
+    return url;
 }
 
 // ─── Pt-BR Localization ──────────────────────────────────────────────────────
