@@ -25,9 +25,9 @@ function getEmbedUrl(url: string): string {
         if (id) return `https://drive.google.com/file/d/${id}/preview`;
     }
 
-    // Para Cloudinary e outros, usamos o motor do Google Docs para garantir o Embed no mobile
-    // Isso evita o erro de "Falha ao carregar documento PDF"
-    return `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+    // Para Cloudinary, o link direto é mais aceito pelo navegador nativo do Celular
+    // O motor do Google (Docs) às vezes é bloqueado pelo Cloudinary.
+    return url;
 }
 
 export default function PdfViewer({ url, title, onClose, labels }: PdfViewerProps) {
