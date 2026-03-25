@@ -176,6 +176,7 @@ function ReactPdfViewer({ url, title, onClose, labels }: {
 }) {
     useScrollLock(onClose);
     const [loadError, setLoadError] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const rawUrl = getRawPdfUrl(url);
 
     // Initialiaze the default layout plugin
@@ -187,30 +188,37 @@ function ReactPdfViewer({ url, title, onClose, labels }: {
         <div className="fixed inset-0 z-[10000] bg-slate-950 flex flex-col h-[100dvh] animate-in fade-in duration-300">
             <ViewerTopBar title={title} onClose={onClose} />
             
-            <div className="flex-1 overflow-hidden bg-slate-100">
+            <div className="flex-1 overflow-hidden bg-white relative">
+                {/* Spinner de carregamento progressivo */}
+                {isLoading && !loadError && (
+                    <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white gap-4">
+                        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none">Processando PDF...</p>
+                    </div>
+                )}
+
                 <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
                     {loadError ? (
-                        <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-6 bg-white">
+                        <div className="h-full flex flex-col items-center justify-center p-8 text-center gap-6 bg-white animate-in zoom-in-95">
                             <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center border border-amber-100">
                                 <FileText className="w-10 h-10 text-amber-500" />
                             </div>
                             <div className="space-y-2">
                                 <h3 className="text-slate-900 font-display font-black text-xl">{labels.previewUnavailable}</h3>
-                                <p className="text-slate-500 text-sm max-w-xs font-medium">Este arquivo pode ter restrições de acesso ou ser muito pesado para o celular.</p>
+                                <p className="text-slate-500 text-sm max-w-xs font-medium px-4">Este arquivo pode ter restrições de acesso ou ser muito pesado para o celular.</p>
                             </div>
                             
                             <div className="flex flex-col w-full gap-3 max-w-sm px-4">
-                                {/* Botão para o visualizador do Google (mais compatível) */}
                                 <a 
                                     href={`https://docs.google.com/viewer?url=${encodeURIComponent(rawUrl)}&embedded=true`} 
                                     target="_blank" 
                                     rel="noopener noreferrer" 
-                                    className="btn-primary w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-blue-500/20"
+                                    className="btn-primary w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20"
                                 >
                                     Abrir com Visualizador Google
                                 </a>
 
-                                <a href={rawUrl} target="_blank" rel="noopener noreferrer" className="w-full py-3 px-6 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all">
+                                <a href={rawUrl} target="_blank" rel="noopener noreferrer" className="w-full py-4 px-6 bg-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-200 transition-all text-center">
                                     {labels.openPdfBrowser}
                                 </a>
                             </div>
@@ -223,12 +231,15 @@ function ReactPdfViewer({ url, title, onClose, labels }: {
                                 theme="light"
                                 localization={ptBR}
                                 defaultScale={SpecialZoomLevel.PageFit}
-                                onDocumentLoad={() => setLoadError(false)}
+                                onDocumentLoad={() => {
+                                    setLoadError(false);
+                                    setIsLoading(false);
+                                }}
                                 //@ts-ignore
                                 onException={(e) => {
-                                    console.error('PDF Load Error:', e);
-                                    // Se der 401 ou erro de rede, ativamos o fallback
+                                    console.error('ERRO NO VISUALIZADOR:', e.message || e);
                                     setLoadError(true);
+                                    setIsLoading(false);
                                 }}
                             />
                         </div>
