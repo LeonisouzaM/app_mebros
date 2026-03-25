@@ -153,17 +153,17 @@ export default function Login() {
             {showInstallModal && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
                     <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setShowInstallModal(false)} />
-                    <div className="relative bg-white rounded-[2.5rem] p-5 md:p-7 max-w-[340px] w-full shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
-                        <div className="text-center space-y-4">
-                            <div className="space-y-1">
-                                <h3 className="text-xl font-display font-black text-slate-900 tracking-tight">Como instalar</h3>
-                                <p className="text-xs font-medium text-slate-500 leading-relaxed px-2">
+                    <div className="relative bg-white rounded-[2.5rem] p-6 md:p-8 max-w-[420px] w-full shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
+                        <div className="text-center space-y-5">
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-display font-black text-slate-900 tracking-tight">Como instalar</h3>
+                                <p className="text-sm font-medium text-slate-500 leading-relaxed px-4">
                                     Siga os passos abaixo para adicionar o App diretamente à sua tela de início.
                                 </p>
                             </div>
                             
-                            {/* Video Container with height limit for smaller phones */}
-                            <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl aspect-[9/16] max-h-[45vh] mx-auto relative bg-slate-100 ring-1 ring-slate-200">
+                            {/* Larger Video Container */}
+                            <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl aspect-[9/16] max-h-[58vh] mx-auto relative bg-slate-100 ring-1 ring-slate-200">
                                 <video 
                                     src="/ezgif-6f29e7a5fd545037.mp4" 
                                     autoPlay 
@@ -176,7 +176,7 @@ export default function Login() {
 
                             <button 
                                 onClick={() => setShowInstallModal(false)}
-                                className="btn-primary w-full py-3.5 text-sm shadow-xl shadow-primary/30 font-bold"
+                                className="btn-primary w-full py-4 text-base shadow-xl shadow-primary/30 font-bold"
                             >
                                 Entendi, obrigado!
                             </button>
