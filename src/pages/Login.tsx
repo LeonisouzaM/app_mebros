@@ -165,7 +165,7 @@ export default function Login() {
                             {/* Video Container with height limit for smaller phones */}
                             <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl aspect-[9/16] max-h-[45vh] mx-auto relative bg-slate-100 ring-1 ring-slate-200">
                                 <video 
-                                    src="/ezgif-2c754fc873d35296.mp4" 
+                                    src="/ezgif-6f29e7a5fd545037.mp4" 
                                     autoPlay 
                                     loop 
                                     muted 
