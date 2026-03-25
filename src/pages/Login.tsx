@@ -8,6 +8,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [showInstallModal, setShowInstallModal] = useState(false);
     const loginWithApi = useStore((state) => state.loginWithApi);
     const navigate = useNavigate();
 
@@ -22,7 +23,7 @@ export default function Login() {
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) {
-            alert("Use o Chrome ou Safari no celular para instalar o App de estudos.");
+            setShowInstallModal(true);
             return;
         }
         deferredPrompt.prompt();
@@ -148,7 +149,39 @@ export default function Login() {
                 </footer>
             </div>
 
-            {/* Support WhatsApp - Moved outside for better mobile visibility */}
+            {/* Install Tutorial Modal */}
+            {showInstallModal && (
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setShowInstallModal(false)} />
+                    <div className="relative bg-white rounded-[2.5rem] p-7 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
+                        <div className="text-center space-y-5">
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-display font-black text-slate-900 tracking-tight">Como instalar</h3>
+                                <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                                    Siga o tutorial abaixo para adicionar o App diretamente à sua tela de início.
+                                </p>
+                            </div>
+                            
+                            <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-2xl aspect-[9/16] relative bg-slate-100 ring-1 ring-slate-200">
+                                <img 
+                                    src="/ezgif-2c6a041e2a17d873.gif" 
+                                    alt="Tutorial de Instalação" 
+                                    className="w-full h-full object-cover scale-105"
+                                />
+                            </div>
+
+                            <button 
+                                onClick={() => setShowInstallModal(false)}
+                                className="btn-primary w-full py-4 text-base shadow-xl shadow-primary/30"
+                            >
+                                Entendi, obrigado!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Support WhatsApp - Floating Button */}
             <a
                 href="https://wa.me/5517981980763"
                 target="_blank"
