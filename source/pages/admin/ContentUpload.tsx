@@ -52,9 +52,24 @@ export default function ContentUpload() {
                     headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
                     body: formData,
                 });
-                const data = await response.json().catch(() => ({}));
+
+                // Vercel can return non-JSON bodies for 404/413/5xx, so keep a useful error message
+                const rawText = await response.text().catch(() => '');
+                const data = (() => {
+                    try {
+                        return rawText ? JSON.parse(rawText) : {};
+                    } catch {
+                        return {};
+                    }
+                })();
                 if (!response.ok) {
-                    throw new Error(data?.error || 'Falha ao enviar PDF');
+                    const apiError = (data as any)?.error as string | undefined;
+                    const details = (data as any)?.details as string | undefined;
+                    const fallback =
+                        rawText && rawText.trim()
+                            ? rawText.trim().slice(0, 220)
+                            : `HTTP ${response.status}`;
+                    throw new Error([apiError, details, fallback].filter(Boolean).join(' | ') || 'Falha ao enviar PDF');
                 }
 
                 const publicUrl = data?.publicUrl as string | undefined;
