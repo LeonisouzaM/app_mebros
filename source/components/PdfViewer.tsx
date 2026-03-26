@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { X, FileText } from 'lucide-react';
-import { Viewer, Worker, SpecialZoomLevel } from '@react-pdf-viewer/core';
+import { Viewer, Worker, SpecialZoomLevel, type LocalizationMap } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
-// @ts-ignore
-import { ptBR } from '@react-pdf-viewer/locales';
+// `@react-pdf-viewer/locales` doesn't expose a package entrypoint (no main/exports),
+// so we import the JSON locale file directly to keep Vite/Rollup builds working.
+import ptPT from '@react-pdf-viewer/locales/lib/pt_PT.json';
 
 // Import Styles
 import '@react-pdf-viewer/core/lib/styles/index.css';
@@ -90,7 +91,7 @@ export default function PdfViewer({ url, title, onClose, labels }: PdfViewerProp
                                 fileUrl={url}
                                 plugins={[defaultLayoutPluginInstance]}
                                 theme="light"
-                                localization={ptBR}
+                                localization={ptPT as unknown as LocalizationMap}
                                 defaultScale={SpecialZoomLevel.PageFit}
                                 onDocumentLoad={() => {
                                     setIsLoading(false);

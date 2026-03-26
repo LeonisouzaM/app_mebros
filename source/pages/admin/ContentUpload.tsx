@@ -49,8 +49,10 @@ export default function ContentUpload() {
             const filePath = `${fileName}`;
 
             try {
-                // @ts-ignore
-                const { error } = await supabase.storage.from(bucketName).upload(filePath, file);
+                const { error } = await supabase.storage.from(bucketName).upload(filePath, file, {
+                    contentType: 'application/pdf',
+                    upsert: true,
+                });
                 if (error) throw error;
 
                 const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(filePath);
