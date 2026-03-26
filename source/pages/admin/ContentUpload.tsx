@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { CheckCircle2, FileUp, Loader2, Database } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 export default function ContentUpload() {
     const addClass = useStore((state) => state.addClass);
@@ -44,35 +45,40 @@ export default function ContentUpload() {
 
         if (file.type === 'application/pdf') {
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-
-                const response = await fetch('/api/storage/upload-pdf', {
+                // 1) Ask API (admin-only) to create signed upload token (small payload)
+                const prepRes = await fetch('/api/storage/create-pdf-upload', {
                     method: 'POST',
-                    headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
-                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+                    },
+                    body: JSON.stringify({ filename: file.name }),
                 });
-
-                // Vercel can return non-JSON bodies for 404/413/5xx, so keep a useful error message
-                const rawText = await response.text().catch(() => '');
-                const data = (() => {
+                const prepRaw = await prepRes.text().catch(() => '');
+                const prepData = (() => {
                     try {
-                        return rawText ? JSON.parse(rawText) : {};
+                        return prepRaw ? JSON.parse(prepRaw) : {};
                     } catch {
                         return {};
                     }
-                })();
-                if (!response.ok) {
-                    const apiError = (data as any)?.error as string | undefined;
-                    const details = (data as any)?.details as string | undefined;
-                    const fallback =
-                        rawText && rawText.trim()
-                            ? rawText.trim().slice(0, 220)
-                            : `HTTP ${response.status}`;
-                    throw new Error([apiError, details, fallback].filter(Boolean).join(' | ') || 'Falha ao enviar PDF');
+                })() as any;
+
+                if (!prepRes.ok) {
+                    const apiError = prepData?.error as string | undefined;
+                    const details = prepData?.details as string | undefined;
+                    const fallback = prepRaw && prepRaw.trim() ? prepRaw.trim().slice(0, 220) : `HTTP ${prepRes.status}`;
+                    throw new Error([apiError, details, fallback].filter(Boolean).join(' | ') || 'Falha ao preparar upload');
                 }
 
-                const publicUrl = data?.publicUrl as string | undefined;
+                const { path, token, publicUrl } = prepData as { path?: string; token?: string; publicUrl?: string };
+                if (!path || !token) throw new Error('Falha ao preparar upload (token ausente)');
+
+                // 2) Upload directly to Supabase using the signed token (no Vercel payload limit)
+                const { error: uploadErr } = await supabase.storage
+                    .from('pdfs')
+                    .uploadToSignedUrl(path, token, file, { contentType: 'application/pdf' });
+                if (uploadErr) throw new Error(uploadErr.message || 'Falha ao enviar PDF');
+
                 if (!publicUrl) throw new Error('Upload concluído, mas URL pública não retornou');
 
                 if (field === 'primary') {
