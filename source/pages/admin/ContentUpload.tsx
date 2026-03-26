@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { CheckCircle2, FileUp, Loader2, Database } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
 
 export default function ContentUpload() {
     const addClass = useStore((state) => state.addClass);
@@ -10,6 +9,7 @@ export default function ContentUpload() {
     const classes = useStore((state) => state.classes);
     const products = useStore((state) => state.products);
     const fetchInitialData = useStore((state) => state.fetchInitialData);
+    const authToken = useStore((state) => state.authToken);
 
     useEffect(() => {
         fetchInitialData();
@@ -43,19 +43,22 @@ export default function ContentUpload() {
         setUploadError('');
 
         if (file.type === 'application/pdf') {
-            const bucketName = 'pdfs'; 
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
-            const filePath = `${fileName}`;
-
             try {
-                const { error } = await supabase.storage.from(bucketName).upload(filePath, file, {
-                    contentType: 'application/pdf',
-                    upsert: true,
-                });
-                if (error) throw error;
+                const formData = new FormData();
+                formData.append('file', file);
 
-                const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+                const response = await fetch('/api/storage/upload-pdf', {
+                    method: 'POST',
+                    headers: authToken ? { Authorization: `Bearer ${authToken}` } : undefined,
+                    body: formData,
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data?.error || 'Falha ao enviar PDF');
+                }
+
+                const publicUrl = data?.publicUrl as string | undefined;
+                if (!publicUrl) throw new Error('Upload concluído, mas URL pública não retornou');
 
                 if (field === 'primary') {
                     setUrl(publicUrl);
@@ -71,7 +74,7 @@ export default function ContentUpload() {
                 setTimeout(() => setSuccess(false), 3000);
 
             } catch (err: any) {
-                setUploadError(`Erro Supabase: ${err.message || 'Verifique se o bucket "pdfs" existe e é público.'}`);
+                setUploadError(`Erro Supabase: ${err.message || 'Falha ao enviar PDF'}`);
             } finally {
                 setIsUploading(false);
             }

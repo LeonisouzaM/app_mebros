@@ -19,6 +19,7 @@
     "@vercel/blob": "^2.3.1",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.18.0",
+    "formidable": "^3.5.4",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.575.0",
     "pdfjs-dist": "^3.11.174",
