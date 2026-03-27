@@ -66,48 +66,66 @@ export default function Feed() {
     }
 
     return (
-        <div className="pt-6 px-4 md:px-0">
-            <header className="mb-8 flex items-center justify-between">
+        <div className="pt-6 px-4 md:px-0 pb-32 animate-fade-up">
+            <header className="mb-10 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <Rss className="text-primary h-6 w-6" />
+                    <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest inline-block mb-3">
                         {t('notices')}
+                    </span>
+                    <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
+                        Atualizações recentes
                     </h1>
-                    <p className="text-sm text-text-muted mt-1">
-                        {t('latestUpdates')}
+                    <p className="text-sm text-slate-500 mt-2 font-medium">
+                        Fique por dentro de tudo que acontece no curso.
                     </p>
                 </div>
             </header>
 
             {feedPosts.length === 0 ? (
-                <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
-                    <p className="text-text-muted">{t('noNotices')}</p>
+                <div className="card-modern p-12 text-center bg-white/50 border-dashed border-slate-200">
+                    <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Rss className="text-slate-300 w-8 h-8" />
+                    </div>
+                    <p className="text-slate-500 text-sm font-medium">{t('noNotices')}</p>
                 </div>
             ) : (
-                <div className="relative border-l border-surface-200 ml-4 md:ml-6 space-y-8 pb-12">
+                <div className="relative border-l-2 border-slate-100 ml-4 md:ml-6 space-y-10 pb-12">
                     {feedPosts.map((post) => (
-                        <article key={post.id} className="relative pl-6 md:pl-8 group">
+                        <article key={post.id} className="relative pl-8 md:pl-12 group animate-fade-up">
                             {/* Timeline dot */}
-                            <div className="absolute w-4 h-4 bg-primary rounded-full -left-[8px] top-1 ring-4 ring-white shadow-sm group-hover:scale-125 transition-transform" />
+                            <div className="absolute w-5 h-5 bg-white rounded-full -left-[11px] top-2 ring-4 ring-primary/5 shadow-premium flex items-center justify-center overflow-hidden border border-slate-100 group-hover:scale-125 transition-transform duration-300">
+                                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+                            </div>
 
-                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-surface-200 transition-all hover:shadow-md hover:border-blue-100">
-                                <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
-                                    <h3 className="text-lg font-bold text-gray-900">
-                                        {post.title}
-                                    </h3>
-                                    <div className="flex items-center text-xs font-medium text-primary bg-blue-50 px-3 py-1 rounded-full whitespace-nowrap">
-                                        <Calendar className="w-3 h-3 mr-1" />
-                                        {format(new Date(post.createdAt), "d 'de' MMMM 'às' HH:mm", { locale: dateLocale })}
+                            <div className="card-modern group-hover:shadow-2xl group-hover:shadow-primary/5 transition-all duration-500 overflow-hidden">
+                                <div className="p-6 md:p-8">
+                                    <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="text-xl md:text-2xl font-display font-black text-slate-900 tracking-tight">
+                                                {post.title}
+                                            </h3>
+                                            <div className="flex items-center text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">
+                                                <Calendar className="w-3.5 h-3.5 mr-1.5 text-primary opacity-50" />
+                                                {format(new Date(post.createdAt), "d 'de' MMMM 'às' HH:mm", { locale: dateLocale })}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="text-text-muted text-sm whitespace-pre-wrap leading-relaxed">
-                                    {renderDescription(post.description)}
-                                </div>
-                                {post.imageUrl && (
-                                    <div className="mt-4 rounded-xl overflow-hidden border border-surface-100 shadow-sm">
-                                        <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[400px] object-cover" />
+                                    
+                                    <div className="text-slate-600 text-[15px] whitespace-pre-wrap leading-relaxed font-medium">
+                                        {renderDescription(post.description)}
                                     </div>
-                                )}
+
+                                    {post.imageUrl && (
+                                        <div className="mt-8 rounded-[24px] overflow-hidden shadow-2xl shadow-black/5 border border-white/40 ring-1 ring-slate-100/50">
+                                            <img src={post.imageUrl} alt={post.title} className="w-full h-auto max-h-[500px] object-cover hover:scale-105 transition-transform duration-1000" />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="px-8 py-4 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
+                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+                                        Oficial da área de membros
+                                    </span>
+                                </div>
                             </div>
                         </article>
                     ))}

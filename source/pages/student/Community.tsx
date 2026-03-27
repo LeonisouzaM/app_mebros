@@ -144,43 +144,40 @@ export default function Community() {
     }
 
     return (
-        <div className="pt-6 px-4 md:px-0">
-            <header className="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                        <MessageCircle className="text-primary h-6 w-6" />
-                        {t('community')}
-                    </h1>
-                    <p className="text-sm text-text-muted mt-1">
-                        {t('communityDesc')}
-                    </p>
-                </div>
+        <div className="pt-6 px-4 md:px-0 pb-32 animate-fade-up">
+            <header className="mb-8">
+                <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
+                    {language === 'es' ? 'Comunidad' : t('community')} <span className="text-primary inline-block opacity-80">💬</span>
+                </h1>
+                <p className="text-sm text-slate-500 mt-2 font-medium">
+                    {language === 'es' ? 'Mira lo que otros estudiantes están compartiendo.' : t('communityDesc')}
+                </p>
             </header>
 
             {!currentProductId && isAdmin ? (
-                <div className="bg-blue-50 p-8 rounded-2xl text-center border border-blue-100 mb-8">
-                    <p className="text-primary font-medium">Selecione um produto acima para ver e postar na comunidade.</p>
+                <div className="card-modern p-10 text-center bg-primary/5 border-primary/10 mb-8">
+                    <p className="text-primary font-bold text-sm">Selecione um produto acima para ver e postar na comunidade.</p>
                 </div>
             ) : (
                 <>
-                    <form onSubmit={handlePostComment} className="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-surface-200">
+                    {/* Posting Area */}
+                    <div className="card-modern p-6 mb-10 overflow-visible relative">
                         <div className="flex gap-4">
                             <img
-                                src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`}
+                                src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=A855F7&color=fff`}
                                 alt="Me"
-                                className="w-12 h-12 rounded-full shadow-sm border border-surface-100 object-cover flex-shrink-0"
+                                className="w-12 h-12 rounded-full border-2 border-slate-50 shadow-sm object-cover flex-shrink-0"
                             />
                             <div className="flex-1 space-y-4">
                                 {accessibleProductsList.length > 1 && (
                                     <div className="mb-2">
-                                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Postar para o Produto:</label>
                                         <select
                                             value={targetProductId}
                                             onChange={(e) => setTargetProductId(e.target.value)}
-                                            className="w-full px-3 py-2 border border-surface-200 rounded-lg text-xs bg-surface-50 focus:ring-2 focus:ring-primary outline-none font-semibold"
+                                            className="w-full px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                             required
                                         >
-                                            <option value="">Selecione para onde postar...</option>
+                                            <option value="">Postar para o Produto...</option>
                                             {accessibleProductsList.map(p => (
                                                 <option key={p.id} value={p.id}>{p.name}</option>
                                             ))}
@@ -190,25 +187,25 @@ export default function Community() {
                                 <textarea
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
-                                    placeholder={isAdmin ? "Escreva algo como administrador..." : t('whatAreYouThinking')}
-                                    className="w-full px-4 py-3 border border-surface-200 rounded-2xl focus:ring-2 focus:ring-primary focus:border-transparent transition-all bg-surface-50 resize-none text-sm min-h-[100px]"
+                                    placeholder={language === 'es' ? '¿Qué estás pensando?' : t('whatAreYouThinking')}
+                                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-[20px] focus:ring-2 focus:ring-primary/20 focus:bg-white outline-none transition-all resize-none text-[15px] min-h-[100px] text-slate-700 font-medium"
                                 />
 
                                 {imageUrl && (
-                                    <div className="relative w-max">
-                                        <img src={imageUrl} alt="Upload preview" className="h-32 w-auto max-w-[200px] object-contain rounded-xl border border-surface-200 shadow-sm" />
+                                    <div className="relative w-max group/img">
+                                        <img src={imageUrl} alt="Upload preview" className="h-40 w-auto max-w-full object-cover rounded-2xl border border-slate-100 shadow-md transition-transform group-hover/img:scale-[1.02]" />
                                         <button
                                             type="button"
                                             onClick={() => setImageUrl('')}
-                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition-colors"
+                                            className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-2 shadow-xl hover:bg-red-600 transition-all active:scale-90"
                                         >
-                                            <Trash2 className="w-3 h-3" />
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 )}
 
                                 <div className="flex justify-between items-center relative gap-4">
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-2">
                                         <input
                                             type="file"
                                             className="hidden"
@@ -220,32 +217,32 @@ export default function Community() {
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
                                             disabled={isUploading}
-                                            className="p-2.5 text-gray-400 hover:text-primary transition-all flex items-center justify-center rounded-xl hover:bg-surface-100 active:scale-95"
+                                            className="p-3 text-slate-400 hover:text-primary transition-all flex items-center justify-center rounded-2xl hover:bg-slate-50 active:scale-90"
                                             title="Anexar imagem"
                                         >
-                                            {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
+                                            {isUploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <ImageIcon className="w-6 h-6" />}
                                         </button>
 
                                         <button
                                             type="button"
                                             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                                            className="p-2.5 text-gray-400 hover:text-primary transition-all flex items-center justify-center rounded-xl hover:bg-surface-100 active:scale-95"
+                                            className="p-3 text-slate-400 hover:text-primary transition-all flex items-center justify-center rounded-2xl hover:bg-slate-50 active:scale-90"
                                             title="Inserir emoji"
                                         >
-                                            <Smile className="w-5 h-5" />
+                                            <Smile className="w-6 h-6" />
                                         </button>
 
                                         {showEmojiPicker && (
-                                            <div className="absolute bottom-full left-0 mb-4 z-50">
+                                            <div className="absolute bottom-full left-0 mb-4 z-[100]">
                                                 <div className="fixed inset-0" onClick={() => setShowEmojiPicker(false)} />
-                                                <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-surface-200 scale-95 origin-bottom-left animate-in fade-in zoom-in-95 duration-200">
+                                                <div className="relative shadow-2xl rounded-3xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200 origin-bottom-left">
                                                     <EmojiPicker
                                                         onEmojiClick={onEmojiClick}
                                                         theme={Theme.LIGHT}
                                                         lazyLoadEmojis={true}
                                                         searchPlaceholder="Buscar emoji..."
                                                         previewConfig={{ showPreview: false }}
-                                                        width={320}
+                                                        width={300}
                                                         height={400}
                                                     />
                                                 </div>
@@ -254,29 +251,31 @@ export default function Community() {
                                     </div>
 
                                     <button
-                                        type="submit"
+                                        onClick={handlePostComment}
                                         disabled={!newComment.trim() || isUploading}
-                                        className="flex-1 md:flex-none flex items-center justify-center gap-2 py-3 px-8 bg-primary text-white rounded-2xl font-bold hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20 active:scale-[0.98]"
+                                        className="py-3 px-10 bg-gradient-to-r from-primary to-primary-hover text-white rounded-[20px] font-black text-sm uppercase tracking-widest disabled:opacity-30 disabled:grayscale transition-all shadow-xl shadow-primary/20 active:scale-95"
                                     >
-                                        <Send className="w-4 h-4" />
-                                        {isAdmin ? 'Publicar Comunicado' : t('publish')}
+                                        {language === 'es' ? 'Publicar' : isAdmin ? 'Comunicado' : t('publish')}
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    </form>
+                    </div>
 
+                    {/* Feed Area */}
                     {comments.length === 0 ? (
-                        <div className="bg-white p-12 rounded-3xl text-center shadow-sm border border-surface-200">
-                            <div className="bg-surface-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <MessageCircle className="text-gray-300 w-8 h-8" />
+                        <div className="card-modern p-16 text-center bg-white/50 border-dashed flex flex-col items-center">
+                            <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mb-6">
+                                <MessageSquare className="text-slate-200 w-10 h-10" />
                             </div>
-                            <p className="text-text-muted font-medium">{t('noComments')}</p>
+                            <p className="text-slate-400 font-bold text-sm max-w-xs leading-relaxed uppercase tracking-tighter">
+                                {language === 'es' ? 'Aún no hay comentarios en la comunidad.' : t('noComments')}
+                            </p>
                         </div>
                     ) : (
-                        <div className="space-y-6 pb-20">
+                        <div className="space-y-8">
                             {comments.map((comment) => (
-                                <article key={comment.id} className="card-premium group overflow-hidden bg-white">
+                                <article key={comment.id} className="card-modern overflow-hidden">
                                     <div className="p-6">
                                         {/* Post Header */}
                                         <div className="flex items-center justify-between mb-5">
@@ -284,83 +283,83 @@ export default function Community() {
                                                 <img
                                                     src={comment.userPhoto}
                                                     alt={comment.userName}
-                                                    className="w-10 h-10 rounded-full border border-surface-100 shadow-sm object-cover flex-shrink-0"
+                                                    className="w-11 h-11 rounded-full border-2 border-slate-50 shadow-sm object-cover"
                                                 />
                                                 <div>
-                                                    <h3 className="text-sm font-display font-bold text-text-main leading-tight">
+                                                    <h3 className="text-[15px] font-black text-slate-900 leading-tight">
                                                         {comment.userName}
                                                     </h3>
-                                                    <span className="text-[10px] text-text-dim font-bold uppercase tracking-wider">
-                                                        {format(new Date(comment.createdAt), "d 'de' MMMM 'às' HH:mm", { locale: dateLocale })}
+                                                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5 block">
+                                                        {format(new Date(comment.createdAt), "d MMM, HH:mm", { locale: dateLocale })}
                                                     </span>
                                                 </div>
                                             </div>
                                             {(isAdmin || user?.email === comment.userEmail) && (
                                                 <button
                                                     onClick={() => removeComment(comment.id)}
-                                                    className="text-text-dim hover:text-error transition-colors p-2 rounded-xl hover:bg-error/5"
+                                                    className="text-slate-300 hover:text-red-500 transition-colors p-2.5 rounded-2xl hover:bg-red-50"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-5 h-5" />
                                                 </button>
                                             )}
                                         </div>
 
-                                        {/* Post Text */}
-                                        <div className="text-[15px] text-text-main leading-relaxed font-medium mb-4 whitespace-pre-wrap">
+                                        {/* Post Content */}
+                                        <div className="text-[15px] text-slate-600 leading-relaxed font-medium mb-6 whitespace-pre-wrap">
                                             {comment.text}
                                         </div>
-                                    </div>
 
-                                    {/* Post Image */}
-                                    {comment.imageUrl && (
-                                        <div className="bg-surface-50 border-y border-surface-100 cursor-zoom-in overflow-hidden" onClick={() => window.open(comment.imageUrl, '_blank')}>
-                                            <img
-                                                src={comment.imageUrl}
-                                                alt="Post content"
-                                                className="w-full h-auto max-h-[600px] object-contain transition-transform duration-700 hover:scale-[1.02]"
-                                            />
-                                        </div>
-                                    )}
+                                        {comment.imageUrl && (
+                                            <div className="mb-6 rounded-3xl overflow-hidden border border-slate-100 shadow-sm" onClick={() => window.open(comment.imageUrl, '_blank')}>
+                                                <img
+                                                    src={comment.imageUrl}
+                                                    alt="Post media"
+                                                    className="w-full h-auto max-h-[500px] object-contain bg-slate-50"
+                                                />
+                                            </div>
+                                        )}
 
-                                    {/* Actions */}
-                                    <div className="px-6 py-4">
-                                        <div className="flex items-center gap-8">
+                                        {/* Interaction Bar */}
+                                        <div className="flex items-center gap-6 pt-4 border-t border-slate-50">
                                             <button
                                                 onClick={() => likeComment(comment.id)}
-                                                className={`flex items-center gap-2 text-xs font-bold transition-all active:scale-125 ${comment.hasLiked ? 'text-error' : 'text-text-dim hover:text-error'}`}
+                                                className={`flex items-center gap-2.5 px-4 py-2 rounded-2xl transition-all active:scale-125 ${comment.hasLiked ? 'text-rose-500 bg-rose-50' : 'text-slate-400 hover:bg-slate-50'}`}
                                             >
-                                                <Heart className={`w-4 h-4 ${comment.hasLiked ? 'fill-current' : ''}`} />
-                                                {comment.likesCount || 0}
+                                                <Heart className={`w-5 h-5 ${comment.hasLiked ? 'fill-current' : ''}`} />
+                                                <span className="text-sm font-black">{comment.likesCount || 0}</span>
                                             </button>
                                             <button
                                                 onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                                className={`flex items-center gap-2 text-xs font-bold transition-colors ${replyingTo === comment.id ? 'text-primary' : 'text-text-dim hover:text-primary'}`}
+                                                className={`flex items-center gap-2.5 px-4 py-2 rounded-2xl transition-all ${replyingTo === comment.id ? 'text-primary bg-primary/5' : 'text-slate-400 hover:bg-slate-50'}`}
                                             >
-                                                <MessageSquare className="w-4 h-4" />
-                                                {comment.replies?.length || 0}
+                                                <MessageCircle className="w-5 h-5" />
+                                                <span className="text-sm font-black">{comment.replies?.length || 0}</span>
                                             </button>
                                         </div>
                                     </div>
 
                                     {/* Replies Section */}
                                     {((comment.replies && comment.replies.length > 0) || replyingTo === comment.id) && (
-                                        <div className="bg-surface-50 p-6 border-t border-surface-100 space-y-5">
+                                        <div className="bg-slate-50/50 p-6 border-t border-slate-50 space-y-5">
                                             {comment.replies?.map((reply: any) => (
-                                                <div key={reply.id} className="flex gap-4 group/reply">
-                                                    <img src={reply.userPhoto} className="w-8 h-8 rounded-full border border-surface-200 object-cover flex-shrink-0" />
-                                                    <div className="flex-1 bg-white p-4 rounded-2xl border border-surface-200 shadow-sm relative group-hover/reply:border-primary/20 transition-colors">
+                                                <div key={reply.id} className="flex gap-4">
+                                                    <img src={reply.userPhoto} className="w-9 h-9 rounded-full border border-white shadow-sm object-cover flex-shrink-0" />
+                                                    <div className="flex-1 bg-white p-4 rounded-[20px] shadow-sm border border-slate-100">
                                                         <div className="flex justify-between items-baseline mb-1">
-                                                            <span className="text-xs font-bold text-gray-900">{reply.userName}</span>
-                                                            <span className="text-[10px] text-gray-400 font-medium">{format(new Date(reply.createdAt), "d 'de' MMMM 'às' HH:mm", { locale: dateLocale })}</span>
+                                                            <span className="text-[13px] font-black text-slate-900">{reply.userName}</span>
+                                                            <span className="text-[9px] text-slate-400 font-bold uppercase">{format(new Date(reply.createdAt), "HH:mm", { locale: dateLocale })}</span>
                                                         </div>
-                                                        <p className="text-xs text-gray-700 leading-relaxed">{reply.text}</p>
+                                                        <p className="text-[13px] text-slate-600 font-medium leading-relaxed">{reply.text}</p>
                                                     </div>
                                                 </div>
                                             ))}
 
                                             {replyingTo === comment.id && (
                                                 <div className="flex gap-4 pt-2">
-                                                    <img src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`} className="w-9 h-9 rounded-full border border-surface-200 object-cover flex-shrink-0" />
+                                                    <img 
+                                                        src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=A855F7&color=fff`} 
+                                                        className="w-9 h-9 rounded-full border border-white shadow-sm object-cover flex-shrink-0" 
+                                                    />
                                                     <div className="flex-1 flex gap-2">
                                                         <input
                                                             autoFocus
@@ -368,14 +367,14 @@ export default function Community() {
                                                             onChange={(e) => setReplyText(e.target.value)}
                                                             onKeyDown={(e) => e.key === 'Enter' && handlePostReply(comment.id)}
                                                             placeholder={t('writeReply')}
-                                                            className="flex-1 bg-white border border-surface-200 rounded-2xl px-4 py-2.5 text-xs focus:ring-2 focus:ring-primary outline-none shadow-sm transition-all focus:border-transparent"
+                                                            className="flex-1 bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                                         />
                                                         <button
                                                             disabled={!replyText.trim()}
                                                             onClick={() => handlePostReply(comment.id)}
-                                                            className="bg-primary text-white p-2.5 rounded-2xl disabled:opacity-50 shadow-md shadow-blue-500/20 active:scale-95 transition-all"
+                                                            className="bg-primary text-white p-3 rounded-2xl shadow-lg shadow-primary/20 active:scale-90 transition-all disabled:opacity-30"
                                                         >
-                                                            <Send className="w-4 h-4" />
+                                                            <Send className="w-5 h-5" />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -384,10 +383,10 @@ export default function Community() {
                                     )}
                                 </article>
                             ))}
-                        </div >
+                        </div>
                     )}
                 </>
             )}
-        </div >
+        </div>
     );
 }

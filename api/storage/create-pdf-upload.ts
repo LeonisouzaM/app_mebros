@@ -3,11 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 import { requireAdmin } from '../_lib/authMiddleware.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 function getSupabaseAdminClient() {
-    if (!SUPABASE_URL) throw new Error('SUPABASE_URL is missing');
-    if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing');
+    if (!SUPABASE_URL) {
+        console.error('SUPABASE_URL is missing. Available envs:', Object.keys(process.env).filter(k => k.includes('SUPABASE')));
+        throw new Error('SUPABASE_URL is missing');
+    }
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+        console.error('SUPABASE_SERVICE_ROLE_KEY is missing. Available envs:', Object.keys(process.env).filter(k => k.includes('SUPABASE')));
+        throw new Error('SUPABASE_SERVICE_ROLE_KEY is missing');
+    }
     return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
         auth: { persistSession: false },
     });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useStore } from '../store/store';
 import { useNavigate } from 'react-router-dom';
-import { LogIn, Download, MessageCircle } from 'lucide-react';
+import { LogIn, Download, MessageCircle, Mail, Shield } from 'lucide-react';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -59,58 +59,71 @@ export default function Login() {
 
     return (
         <>
-            <div className="min-h-screen bg-background relative flex flex-col justify-center items-center py-12 px-4 overflow-hidden">
-                {/* Ambient Background Orbs */}
-                <div className="absolute top-[-10%] right-[-10%] w-[400px] h-[400px] bg-primary/5 rounded-full blur-[100px] -z-10 animate-pulse" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[80px] -z-10" />
+            <div className="min-h-screen bg-slate-50 relative flex flex-col justify-center items-center py-12 px-4 overflow-hidden font-inter">
+                {/* Modern Background Decor */}
+                <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse" />
+                <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-[100px] -z-10" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.03)_0%,transparent_70%)] -z-10" />
 
-                {/* Install Button */}
-                <div className="mb-8 animate-fade-up">
+                {/* Install Button - Minimalist Tablet Style */}
+                <div className="mb-12 animate-fade-up">
                     <button
                         onClick={handleInstallClick}
-                        className="glass-effect hover:bg-white text-text-main flex items-center justify-center gap-2 py-2.5 px-6 rounded-2xl font-bold shadow-premium transition-all duration-300 text-xs uppercase tracking-widest border-white/60"
+                        className="bg-white/80 backdrop-blur-md hover:bg-white text-slate-600 flex items-center justify-center gap-2.5 py-3 px-8 rounded-full font-black shadow-xl shadow-black/[0.03] transition-all duration-300 text-[10px] uppercase tracking-[0.2em] border border-white/60 group"
                     >
-                        <Download className="w-4 h-4 text-primary" />
+                        <Download className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
                         Instalar Aplicativo
                     </button>
                 </div>
 
-                <div className="max-w-md w-full animate-fade-up transition-all duration-500">
-                    <div className="bg-white rounded-[3rem] p-10 md:p-12 shadow-premium border border-surface-100 flex flex-col gap-8">
-                        <div className="text-center space-y-4">
-                            <div className="mx-auto h-20 w-20 bg-primary/5 flex items-center justify-center rounded-[2rem] shadow-xl shadow-primary/10 border border-white/50 rotate-3 transition-transform hover:rotate-0 overflow-hidden">
-                                <img src="/logo.svg" alt="Logo" className="w-full h-full object-cover p-1" />
+                <div className="max-w-md w-full animate-fade-up transition-all duration-1000">
+                    {/* The Card - Real Glassmorphism */}
+                    <div className="bg-white/80 backdrop-blur-2xl rounded-[48px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] border border-white flex flex-col gap-10 relative">
+                        {/* Premium Accent Line */}
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-gradient-to-r from-transparent via-primary to-transparent rounded-full opacity-40" />
+                        
+                        <div className="text-center space-y-6">
+                            <div className="relative mx-auto h-24 w-24">
+                                <div className="absolute inset-0 bg-primary/20 rounded-[32px] blur-2xl opacity-40 animate-pulse" />
+                                <div className="relative h-full w-full bg-white flex items-center justify-center rounded-[2.5rem] shadow-2xl border border-slate-50 overflow-hidden p-3 ring-1 ring-slate-100/50">
+                                    <img src="/logo.svg" alt="Logo" className="w-full h-full object-contain" />
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <h2 className="text-3xl font-display font-display font-black tracking-tight text-text-main">
+                            <div className="space-y-2">
+                                <h1 className="text-4xl font-display font-black tracking-tight text-slate-950">
                                     Bem-vindo
-                                </h2>
-                                <p className="text-sm font-medium text-text-muted">
-                                    Acesse sua área exclusiva de membros
+                                </h1>
+                                <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em]">
+                                    Acesse sua área de membros
                                 </p>
                             </div>
                         </div>
 
-                        <form className="space-y-6" onSubmit={handleLogin}>
-                            <div className="space-y-2">
-                                <label htmlFor="email" className="block text-xs font-bold text-text-muted uppercase tracking-widest ml-1">
+                        <form className="space-y-8" onSubmit={handleLogin}>
+                            <div className="space-y-3">
+                                <label htmlFor="email" className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">
                                     E-mail institucional
                                 </label>
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
-                                    className="block w-full px-5 py-4 bg-surface-50 border border-surface-100 text-text-main rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium placeholder:text-text-dim"
-                                    placeholder="exemplo@hotmart.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
+                                <div className="relative group">
+                                    <input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        autoComplete="email"
+                                        required
+                                        className="block w-full px-6 py-5 bg-white/50 border border-slate-100 text-slate-900 rounded-[28px] focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 focus:bg-white transition-all font-bold placeholder:text-slate-300 text-sm shadow-sm"
+                                        placeholder="Seu e-mail de compra"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                    <div className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-primary transition-colors">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                </div>
                             </div>
 
                             {error && (
-                                <div className="text-xs font-bold text-error bg-error/5 p-4 rounded-2xl border border-error/10 text-center animate-fade-up">
+                                <div className="text-[11px] font-black text-red-500 bg-red-50/50 backdrop-blur-sm p-5 rounded-[24px] border border-red-100/50 text-center animate-shake uppercase tracking-widest">
                                     {error}
                                 </div>
                             )}
@@ -118,84 +131,91 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="btn-primary w-full flex items-center justify-center gap-3 h-[58px]"
+                                className="relative w-full overflow-hidden group h-[68px] rounded-[28px] bg-primary text-white font-black text-[13px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:bg-slate-200 disabled:shadow-none"
                             >
-                                {isLoading ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        <span>Verificando acesso...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>Entrar na Plataforma</span>
-                                        <LogIn className="w-4 h-4" />
-                                    </>
-                                )}
+                                <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="relative flex items-center justify-center gap-4">
+                                    {isLoading ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            <span>Verificando...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>Entrar Agora</span>
+                                            <LogIn className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </div>
                             </button>
                         </form>
 
-                        <div className="pt-2 border-t border-surface-100 text-center">
-                            <p className="text-[10px] text-text-dim font-bold uppercase tracking-widest leading-relaxed">
-                                Utilize o mesmo e-mail <br /> usado na sua compra na Hotmart
+                        <div className="pt-4 text-center">
+                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em] leading-loose">
+                                Utilize o e-mail cadastrado <br /> na sua compra Hotmart
                             </p>
                         </div>
                     </div>
                 </div>
 
-                <footer className="mt-12 text-center animate-fade-up">
-                    <p className="text-[10px] font-bold text-text-dim uppercase tracking-[0.2em]">
-                        &copy; 2026 Plataforma Premium
+                <footer className="mt-16 text-center animate-fade-up">
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] flex items-center justify-center gap-2">
+                        <Shield className="w-3 h-3" /> 2026 Mounjaro Gelatina • Seguro
                     </p>
                 </footer>
             </div>
 
-            {/* Install Tutorial Modal */}
+            {/* Install Tutorial Modal - Ultramodern */}
             {showInstallModal && (
-                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={() => setShowInstallModal(false)} />
-                    <div className="relative bg-white rounded-[2.5rem] p-6 md:p-8 max-w-[420px] w-full shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
-                        <div className="text-center space-y-5">
-                            <div className="space-y-2">
-                                <h3 className="text-2xl font-display font-black text-slate-900 tracking-tight">Como instalar</h3>
-                                <p className="text-sm font-medium text-slate-500 leading-relaxed px-4">
-                                    Siga os passos abaixo para adicionar o App diretamente à sua tela de início.
+                <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-500">
+                    <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onClick={() => setShowInstallModal(false)} />
+                    <div className="relative bg-white/90 backdrop-blur-2xl rounded-[48px] p-10 max-w-[480px] w-full shadow-2xl animate-in zoom-in-95 duration-500 overflow-hidden border border-white">
+                        <div className="text-center space-y-8">
+                            <div className="space-y-3">
+                                <span className="bg-primary/10 text-primary px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest inline-block border border-primary/10">PWA Tutorial</span>
+                                <h3 className="text-4xl font-display font-black text-slate-950 tracking-tight">App no Celular</h3>
+                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] leading-loose px-4">
+                                    Siga o tutorial abaixo para adicionar à sua tela de início.
                                 </p>
                             </div>
                             
-                            {/* Larger Video Container */}
-                            <div className="rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl aspect-[9/16] max-h-[58vh] mx-auto relative bg-slate-100 ring-1 ring-slate-200">
+                            <div className="rounded-[40px] overflow-hidden border-[8px] border-white shadow-2xl aspect-[9/16] max-h-[50vh] mx-auto relative bg-slate-100 group">
                                 <video 
                                     src="/ezgif-6f29e7a5fd545037.mp4" 
                                     autoPlay 
                                     loop 
                                     muted 
                                     playsInline 
-                                    className="w-full h-full object-cover scale-105"
+                                    className="w-full h-full object-cover"
                                 />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
                             </div>
 
                             <button 
                                 onClick={() => setShowInstallModal(false)}
-                                className="btn-primary w-full py-4 text-base shadow-xl shadow-primary/30 font-bold"
+                                className="bg-primary text-white w-full py-6 rounded-[28px] text-[12px] font-black uppercase tracking-[0.25em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all"
                             >
-                                Entendi, obrigado!
+                                Entendi, vamos lá!
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Support WhatsApp - Floating Button */}
+            {/* Floating Support - Clean Style */}
             <a
                 href="https://wa.me/5517981980763"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="fixed bottom-8 right-4 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:shadow-hover hover:scale-110 transition-all z-[999] group flex items-center justify-center"
+                className="fixed bottom-8 right-6 bg-[#25D366] text-white p-5 rounded-[30px] shadow-2xl shadow-green-500/30 hover:scale-110 active:scale-95 transition-all z-[999] group border border-white/20"
                 aria-label="Suporte WhatsApp"
             >
-                <MessageCircle className="w-7 h-7" />
-                <span className="hidden md:block absolute right-full mr-3 bg-white text-[#25D366] px-3 py-1.5 rounded-xl text-xs font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap border border-[#25D366]/10">
-                    Precisa de ajuda?
+                <div className="relative flex items-center justify-center">
+                    <MessageCircle className="w-7 h-7" />
+                    <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white animate-pulse" />
+                </div>
+                <span className="hidden md:block absolute right-full mr-4 bg-white/90 backdrop-blur-md text-slate-800 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-2xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap border border-white translate-x-4 group-hover:translate-x-0">
+                    Precisa de suporte?
                 </span>
             </a>
         </>

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../../store/store';
-import { LogOut, Mail, HelpCircle, Shield, Camera, Loader2 } from 'lucide-react';
+import { LogOut, HelpCircle, Shield, Camera, Loader2, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../../hooks/useTranslation';
 
 export default function Profile() {
@@ -49,38 +49,41 @@ export default function Profile() {
     };
 
     return (
-        <div className="pt-8 px-4 md:px-0 animate-fade-up">
-            <header className="mb-10 text-center md:text-left">
-                <div className="inline-flex items-center gap-2 bg-primary/5 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-3">
-                    <Shield className="w-3 h-3" />
-                    Conta Premium
+        <div className="pt-8 px-4 md:px-0 pb-32 animate-fade-up">
+            <header className="mb-10 text-center">
+                <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 shadow-sm">
+                    <Shield className="w-3.5 h-3.5" />
+                    Membro VIP Premium
                 </div>
-                <h1 className="text-3xl font-display font-extrabold text-text-main">
-                    {t('myProfile')}
+                <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
+                    Seu Perfil
                 </h1>
-                <p className="text-text-muted mt-2 font-medium">
-                    Gerencie suas informações e configurações de conta.
+                <p className="text-slate-500 mt-2 font-medium text-sm">
+                    Gerencie suas preferências e segurança da conta.
                 </p>
             </header>
 
-            <div className="card-premium p-10 md:p-12 text-center bg-white">
-                <div className="relative inline-block mb-6">
+            <div className="card-modern p-10 md:p-16 text-center overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -mr-16 -mt-16" />
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -ml-16 -mb-16" />
+                
+                <div className="relative inline-block mb-10">
                     <div className="relative group">
                         <img
-                            src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=3B82F6&color=fff`}
+                            src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=A855F7&color=fff`}
                             alt={user?.name}
-                            className="w-32 h-32 rounded-[2.5rem] border-4 border-primary/20 shadow-xl object-cover"
+                            className="w-32 h-32 rounded-[32px] border-4 border-white shadow-2xl object-cover ring-1 ring-slate-100/50 group-hover:scale-105 transition-transform duration-500"
                         />
 
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isUploading}
-                            className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer disabled:cursor-not-allowed"
+                            className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] rounded-[32px] opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer disabled:cursor-not-allowed"
                         >
                             {isUploading ? (
                                 <Loader2 className="w-8 h-8 text-white animate-spin" />
                             ) : (
-                                <Camera className="w-8 h-8 text-white" />
+                                <Camera className="w-8 h-8 text-white scale-75 group-hover:scale-100 transition-transform" />
                             )}
                         </button>
                     </div>
@@ -93,36 +96,37 @@ export default function Profile() {
                         onChange={handlePhotoUpload}
                     />
 
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-success rounded-full border-4 border-white shadow-lg flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-white rounded-2xl shadow-xl flex items-center justify-center border border-slate-50">
+                        <div className="w-3 h-3 bg-success rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
                     </div>
                 </div>
 
-                <div className="mb-10">
-                    <h2 className="text-2xl font-display font-bold text-text-main mb-1">{user?.name}</h2>
-                    <div className="flex items-center justify-center gap-2 text-text-muted font-medium">
-                        <Mail className="w-4 h-4 text-primary/50" />
+                <div className="mb-12 relative z-10">
+                    <h2 className="text-3xl font-display font-black text-slate-900 tracking-tight mb-2">{user?.name}</h2>
+                    <div className="flex items-center justify-center gap-2 text-slate-500 font-bold text-xs uppercase tracking-widest">
+                        <div className="w-1.5 h-1.5 bg-primary/50 rounded-full" />
                         {user?.email}
                     </div>
                 </div>
 
-                <div className="grid gap-4 max-w-sm mx-auto">
-                    <button className="flex items-center justify-between bg-surface-50 p-5 rounded-2xl border border-surface-100 hover:bg-white hover:border-primary/30 hover:shadow-premium transition-all duration-300 group">
-                        <div className="flex items-center gap-4 font-bold text-text-main">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-surface-100 group-hover:scale-110 transition-transform">
-                                <HelpCircle className="w-5 h-5 text-primary" />
+                <div className="grid gap-4 max-w-sm mx-auto relative z-10">
+                    <button className="flex items-center justify-between bg-slate-50/50 p-6 rounded-[24px] border border-slate-100 hover:bg-white hover:border-primary/20 hover:shadow-premium transition-all duration-500 group">
+                        <div className="flex items-center gap-4 font-black text-[11px] uppercase tracking-widest text-slate-700 group-hover:text-primary transition-colors">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-50 group-hover:scale-110 transition-transform">
+                                <HelpCircle className="w-6 h-6 text-primary opacity-60" />
                             </div>
-                            Central de Suporte
+                            Suporte ao Aluno
                         </div>
+                        <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-primary group-hover:translate-x-1" />
                     </button>
 
                     <button
                         onClick={() => logout()}
-                        className="flex items-center justify-between bg-error/5 p-5 rounded-2xl border border-error/10 hover:bg-error hover:text-white transition-all duration-300 group"
+                        className="flex items-center justify-between bg-red-50/50 p-6 rounded-[24px] border border-red-100 hover:bg-red-500 hover:text-white transition-all duration-500 group"
                     >
-                        <div className="flex items-center gap-4 font-bold text-error group-hover:text-white">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm border border-error/10 group-hover:scale-110 transition-transform">
-                                <LogOut className="w-5 h-5 text-error" />
+                        <div className="flex items-center gap-4 font-black text-[11px] uppercase tracking-widest text-red-500 group-hover:text-white transition-colors">
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-red-50 group-hover:scale-110 transition-transform">
+                                <LogOut className="w-6 h-6 text-red-400 group-hover:text-white" />
                             </div>
                             {t('logout')}
                         </div>
@@ -130,8 +134,8 @@ export default function Profile() {
                 </div>
             </div>
 
-            <div className="mt-8 text-center text-[10px] font-bold text-text-dim uppercase tracking-[0.2em]">
-                Versão 2.4.0 • Acesso Seguro
+            <div className="mt-12 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                Versão 2.4.0 • Mounjaro Gelatina
             </div>
         </div>
     );

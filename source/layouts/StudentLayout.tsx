@@ -77,30 +77,38 @@ export default function StudentLayout() {
             </header>
 
             {/* Mobile Bottom Nav */}
-            <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] z-50 md:hidden animate-fade-up">
-                <div className="glass-effect rounded-[32px] px-2 py-2 flex justify-between shadow-premium border-white/30">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            className={({ isActive }) =>
-                                `flex flex-col items-center justify-center p-3 rounded-2xl transition-all duration-300 ${isActive
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105'
-                                    : 'text-text-muted hover:bg-surface-50'
-                                }`
-                            }
-                        >
-                            <item.icon className="h-5 w-5" />
-                            {/* <span className="text-[8px] font-bold mt-1 uppercase tracking-tighter">{item.label}</span> */}
-                        </NavLink>
-                    ))}
-                    <button
-                        onClick={() => logout()}
-                        className="flex flex-col items-center justify-center p-3 text-text-muted rounded-2xl hover:bg-error/5"
+            <nav className="fixed bottom-0 left-0 right-0 h-[85px] bg-white border-t border-slate-100 z-50 md:hidden flex items-center justify-around px-2 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] pb-safe">
+                {navItems.map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        className={({ isActive }) =>
+                            `flex flex-col items-center justify-center w-full h-full relative transition-all duration-300 ${isActive
+                                ? 'text-primary'
+                                : 'text-slate-400 hover:text-slate-600'
+                            }`
+                        }
                     >
-                        <LogOut className="h-5 w-5" />
-                    </button>
-                </div>
+                        {({ isActive }) => (
+                            <>
+                                <item.icon className={`h-6 w-6 transition-all duration-300 ${isActive ? 'scale-110' : ''}`} />
+                                <span className={`text-[10px] font-bold mt-1 transition-all duration-300 ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
+                                    {item.label}
+                                </span>
+                                {isActive && (
+                                    <div className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-b-full shadow-[0_2px_10px_rgba(168,85,247,0.4)]" />
+                                )}
+                            </>
+                        )}
+                    </NavLink>
+                ))}
+                <button
+                    onClick={() => logout()}
+                    className="flex flex-col items-center justify-center w-full h-full text-slate-400"
+                >
+                    <LogOut className="h-6 w-6" />
+                    <span className="text-[10px] font-bold mt-1 opacity-0">Sair</span>
+                </button>
             </nav>
 
             <main className="max-w-5xl mx-auto md:pt-28 md:px-6 w-full min-h-screen">
