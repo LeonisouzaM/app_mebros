@@ -120,29 +120,6 @@ export default function Home() {
 
         const moduleNames = Object.keys(modulesMap);
 
-        if (activeModuleName && modulesMap[activeModuleName]) {
-             return (
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <button onClick={() => setActiveModuleName(null)} className="flex items-center gap-2 text-slate-400 hover:text-primary transition-all font-black text-[10px] uppercase tracking-widest">
-                            <ChevronLeft className="w-3 h-3" /> VOLTAR PARA MÓDULOS
-                        </button>
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full">
-                            {activeModuleName}
-                        </span>
-                    </div>
-                    
-                    <h2 className="text-3xl font-display font-black text-slate-950 tracking-tight mb-8">
-                        Aulas do Módulo
-                    </h2>
-
-                    <div className="card-modern p-6">
-                         {renderLessonList(modulesMap[activeModuleName])}
-                    </div>
-                </div>
-             );
-        }
-
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-between mb-2">
@@ -155,49 +132,64 @@ export default function Home() {
                 </div>
                 
                 <h2 className="text-3xl font-display font-black text-slate-950 tracking-tight mb-8">
-                    Escolha um Módulo
+                    Conteúdo do Curso
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-6">
                     {moduleNames.length === 0 ? (
-                        <div className="col-span-full card-modern p-12 text-center bg-white/50 border-dashed border-slate-200">
+                        <div className="card-modern p-12 text-center bg-white/50 border-dashed border-slate-200">
                              <Info className="text-slate-300 w-8 h-8 mx-auto mb-4" />
                              <p className="text-slate-500 text-sm font-medium">Nenhum módulo cadastrado para este produto.</p>
                         </div>
                     ) : (
                         moduleNames.map((mName, idx) => {
                             const moduleCover = modulesMap[mName].find(c => c.coverUrl)?.coverUrl;
+                            const isOpen = activeModuleName === mName;
+
                             return (
-                                <button
-                                    key={idx} 
-                                    onClick={() => setActiveModuleName(mName)}
-                                    className="card-modern group text-left overflow-hidden border-none ring-1 ring-slate-100 hover:shadow-premium transition-all active:scale-95"
-                                >
-                                    <div className="relative aspect-video bg-slate-100">
-                                        {moduleCover ? (
-                                            <img src={moduleCover} alt={mName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                <BookOpen className="w-8 h-8" />
+                                <div key={idx} className="space-y-3">
+                                    <button
+                                        onClick={() => setActiveModuleName(isOpen ? null : mName)}
+                                        className={`w-full card-modern group text-left overflow-hidden border-none ring-1 ring-slate-100 hover:shadow-premium transition-all ${isOpen ? 'ring-primary shadow-premium' : ''}`}
+                                    >
+                                        <div className="flex flex-col sm:flex-row">
+                                            <div className="relative w-full sm:w-60 aspect-[4/3] bg-slate-100 shrink-0">
+                                                {moduleCover ? (
+                                                    <img src={moduleCover} alt={mName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                        <BookOpen className="w-8 h-8" />
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                                                <div className="absolute bottom-3 left-3">
+                                                    <span className="text-[10px] font-black text-white px-2 py-0.5 bg-primary rounded-full uppercase tracking-widest">
+                                                        {modulesMap[mName].length} Aulas
+                                                    </span>
+                                                </div>
                                             </div>
-                                        )}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                                        <div className="absolute bottom-4 left-4">
-                                             <span className="text-[10px] font-black text-white/80 uppercase tracking-widest">
-                                                {modulesMap[mName].length} Aulas
-                                            </span>
+                                            <div className="p-6 flex flex-col justify-center flex-1">
+                                                <h3 className="text-xl font-black text-slate-900 group-hover:text-primary transition-colors uppercase tracking-tight">
+                                                    {mName}
+                                                </h3>
+                                                <div className="flex items-center justify-between mt-4">
+                                                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
+                                                        {isOpen ? 'Ocultar conteúdo' : 'Ver conteúdo'}
+                                                    </span>
+                                                    <div className={`w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center transition-transform duration-300 ${isOpen ? 'rotate-90 bg-primary/10 text-primary' : 'text-slate-300'}`}>
+                                                        <ChevronRight className="w-5 h-5" />
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="p-5">
-                                        <h3 className="text-lg font-black text-slate-900 leading-tight group-hover:text-primary transition-colors">
-                                            {mName}
-                                        </h3>
-                                        <div className="flex items-center justify-between mt-4">
-                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ver conteúdo</span>
-                                             <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                    </button>
+
+                                    {isOpen && (
+                                        <div className="card-modern p-6 bg-white/50 animate-in slide-in-from-top-4 fade-in duration-300">
+                                             {renderLessonList(modulesMap[mName])}
                                         </div>
-                                    </div>
-                                </button>
+                                    )}
+                                </div>
                             );
                         })
                     )}

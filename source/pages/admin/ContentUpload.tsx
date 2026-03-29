@@ -261,7 +261,7 @@ export default function ContentUpload() {
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-gray-400 uppercase tracking-tight mb-1 flex justify-between">
-                                <span>Capa Aula (Link ou Arquivo)</span>
+                                <span>Capa Aula / Módulo (Ideal: 4:3 - 1024x768)</span>
                             </label>
                             <div className="flex gap-2">
                                 <input type="url" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" placeholder="Cole o link ou clique no botão" />
