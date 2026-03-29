@@ -76,8 +76,8 @@ export default function ClassView() {
                         <span className="group-hover:translate-x-1 transition-transform">{t('back')}</span>
                     </button>
 
-                    <div className="px-5 py-2.5 bg-primary/10 text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                    <div className="px-5 py-2.5 bg-emerald-50 text-emerald-600 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-100/50">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                         {t('available')}
                     </div>
                 </header>
