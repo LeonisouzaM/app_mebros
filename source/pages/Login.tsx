@@ -181,7 +181,7 @@ export default function Login() {
                             
                             <div className="rounded-[40px] overflow-hidden border-[8px] border-white shadow-2xl aspect-[9/16] max-h-[50vh] mx-auto relative bg-slate-100 group">
                                 <video 
-                                    src="/ezgif-6f29e7a5fd545037.mp4" 
+                                    src="/tutorial.mp4" 
                                     autoPlay 
                                     loop 
                                     muted 
