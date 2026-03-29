@@ -178,16 +178,18 @@ export default function Login() {
                             </p>
                         </div>
                         
-                        <div className="flex-1 min-h-0 overflow-hidden border-4 md:border-[8px] border-white shadow-xl relative bg-slate-100 rounded-[28px] md:rounded-[36px] w-full mx-auto max-w-[300px] flex items-center justify-center">
-                            <video 
-                                src="/tutorial.mp4" 
-                                autoPlay 
-                                loop 
-                                muted 
-                                playsInline 
-                                className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                        <div className="flex-1 min-h-0 flex items-center justify-center w-full">
+                            <div className="h-full max-w-full aspect-[9/16] overflow-hidden border-4 md:border-[8px] border-white shadow-xl relative bg-black rounded-[28px] md:rounded-[36px]">
+                                <video 
+                                    src="/tutorial.mp4" 
+                                    autoPlay 
+                                    loop 
+                                    muted 
+                                    playsInline 
+                                    className="w-full h-full object-contain"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+                            </div>
                         </div>
 
                         <div className="flex-shrink-0 mt-4 md:mt-6">
