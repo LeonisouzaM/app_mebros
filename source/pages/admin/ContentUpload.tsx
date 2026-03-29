@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useStore } from '../../store/store';
-import { CheckCircle2, FileUp, Loader2, Database } from 'lucide-react';
+import { CheckCircle2, FileUp, Loader2, Database, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 export default function ContentUpload() {
@@ -260,8 +260,21 @@ export default function ContentUpload() {
 
                     <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-tight mb-1">Capa Aula (Link)</label>
-                            <input type="url" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" />
+                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-tight mb-1 flex justify-between">
+                                <span>Capa Aula (Link ou Arquivo)</span>
+                            </label>
+                            <div className="flex gap-2">
+                                <input type="url" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} className="w-full px-4 py-3 border border-surface-200 rounded-xl bg-surface-50 text-[11px]" placeholder="Cole o link ou clique no botão" />
+                                <button
+                                    type="button"
+                                    onClick={() => coverInputRef.current?.click()}
+                                    disabled={isUploading}
+                                    className="px-4 py-3 bg-primary/10 text-primary font-bold rounded-xl text-xs hover:bg-primary/20 transition-all flex items-center justify-center shrink-0 disabled:opacity-50"
+                                    title="Fazer Upload de Capa"
+                                >
+                                    {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
+                                </button>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-gray-400 uppercase mb-1 tracking-tight">URL Destino</label>
