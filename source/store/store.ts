@@ -645,7 +645,7 @@ export const useStore = create<AppState>()(
 
                 if (res.ok) {
                     const result = await res.json();
-                    set({ currentUser: result.user });
+                    set((state) => ({ currentUser: { ...state.currentUser, ...result.user } as typeof state.currentUser }));
                     showToast('Perfil atualizado com sucesso!', 'success');
                 } else {
                     const error = await res.json();

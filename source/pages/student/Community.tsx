@@ -26,7 +26,8 @@ export default function Community() {
     const accessibleProductsList = isAdmin
         ? products
         : products.filter(p =>
-            user?.accessibleProducts?.includes(p.id)
+            user?.accessibleProducts?.includes(p.id) ||
+            (p.hotmartId && user?.accessibleProducts?.includes(p.hotmartId))
         );
 
     const [newComment, setNewComment] = useState('');

@@ -37,7 +37,7 @@ export default function Home() {
     // Filter banners based on active products
     const activeBanners = useMemo(() => {
         return products
-            .filter(p => user?.accessibleProducts?.includes(p.id) && p.coverUrl)
+            .filter(p => (user?.accessibleProducts?.includes(p.id) || (p.hotmartId && user?.accessibleProducts?.includes(p.hotmartId))) && p.coverUrl)
             .map(p => p.coverUrl) as string[];
     }, [products, user?.accessibleProducts]);
 
@@ -55,7 +55,10 @@ export default function Home() {
     }, [fetchInitialData]);
 
     const allowedProducts = useMemo(() => {
-        return products.filter(p => user?.accessibleProducts?.includes(p.id));
+        return products.filter(p => 
+            user?.accessibleProducts?.includes(p.id) || 
+            (p.hotmartId && user?.accessibleProducts?.includes(p.hotmartId))
+        );
     }, [products, user?.accessibleProducts]);
 
     const visibleProducts = useMemo(() => {
