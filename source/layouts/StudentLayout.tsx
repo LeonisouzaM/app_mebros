@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Navigate } from 'react-router-dom';
-import { Home as HomeIcon, Rss, MessageSquare, User, MessageCircle, LogOut } from 'lucide-react';
+import { Home as HomeIcon, Rss, MessageSquare, User, MessageCircle } from 'lucide-react';
 import { useTranslation } from '../hooks/useTranslation';
 import { useStore } from '../store/store';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -7,7 +7,6 @@ import { usePushNotifications } from '../hooks/usePushNotifications';
 export default function StudentLayout() {
     usePushNotifications();
     const { t } = useTranslation();
-    const logout = useStore((state) => state.logout);
     const user = useStore((state) => state.currentUser);
     const currentProductId = useStore((state) => state.currentProductId);
     const products = useStore((state) => state.products);
@@ -65,13 +64,7 @@ export default function StudentLayout() {
                             alt={user.name}
                             className="w-10 h-10 rounded-full border-2 border-primary/20 shadow-sm object-cover flex-shrink-0"
                         />
-                        <button
-                            onClick={() => logout()}
-                            className="p-2 text-text-muted hover:text-error transition-colors rounded-xl hover:bg-error/5"
-                            title="Sair"
-                        >
-                            <LogOut className="w-5 h-5" />
-                        </button>
+
                     </div>
                 </nav>
             </header>
@@ -102,13 +95,7 @@ export default function StudentLayout() {
                         )}
                     </NavLink>
                 ))}
-                <button
-                    onClick={() => logout()}
-                    className="flex flex-col items-center justify-center w-full h-full text-slate-400"
-                >
-                    <LogOut className="h-6 w-6" />
-                    <span className="text-[10px] font-bold mt-1 opacity-0">Sair</span>
-                </button>
+
             </nav>
 
             <main className="max-w-5xl mx-auto md:pt-28 md:px-6 w-full min-h-screen">
