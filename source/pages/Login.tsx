@@ -173,26 +173,23 @@ export default function Login() {
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-500">
                     <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onClick={() => setShowInstallModal(false)} />
                     <div className="relative bg-white/90 backdrop-blur-2xl rounded-[32px] md:rounded-[48px] p-6 md:p-8 max-w-[420px] w-full h-[90vh] md:h-auto md:max-h-[90vh] shadow-2xl animate-in zoom-in-95 duration-500 overflow-hidden border border-white flex flex-col">
-                        <div className="text-center flex-shrink-0 mb-4 md:mb-6">
-                            <span className="bg-primary/10 text-primary px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest inline-block border border-primary/10 mb-2 md:mb-3">Tutorial</span>
+                        <div className="text-center flex-shrink-0 mb-3 md:mb-6">
+                            <span className="bg-primary/10 text-primary px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest inline-block border border-primary/10 mb-2">Tutorial</span>
                             <h3 className="text-2xl md:text-3xl font-display font-black text-slate-950 tracking-tight mb-2">Instalar Aplicativo</h3>
                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] px-2 leading-relaxed">
                                 Siga os passos abaixo para adicionar à tela de início
                             </p>
                         </div>
                         
-                        <div className="flex-1 min-h-0 flex items-center justify-center w-full">
-                            <div className="h-full max-w-full relative overflow-hidden border-4 md:border-[8px] border-white shadow-xl bg-slate-100 rounded-[28px] md:rounded-[36px] flex items-center justify-center inline-block">
-                                <video 
-                                    src="/tutorial.mp4" 
-                                    autoPlay 
-                                    loop 
-                                    muted 
-                                    playsInline 
-                                    className="h-full w-auto object-contain"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/10 to-transparent pointer-events-none" />
-                            </div>
+                        <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+                            <video 
+                                src="/tutorial.mp4" 
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                                className="h-full w-auto max-w-full rounded-[24px] md:rounded-[36px] border-4 md:border-[8px] border-white shadow-xl object-contain bg-slate-100"
+                            />
                         </div>
 
                         <div className="flex-shrink-0 mt-4 md:mt-6">
