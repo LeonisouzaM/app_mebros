@@ -69,10 +69,13 @@ export default function Login() {
                 <div className="mb-12 animate-fade-up">
                     <button
                         onClick={handleInstallClick}
-                        className="bg-white/80 backdrop-blur-md hover:bg-white text-slate-600 flex items-center justify-center gap-2.5 py-3 px-8 rounded-full font-black shadow-xl shadow-black/[0.03] transition-all duration-300 text-[10px] uppercase tracking-[0.2em] border border-white/60 group"
+                        className="relative overflow-hidden group bg-primary hover:bg-primary-hover text-white flex items-center justify-center gap-2.5 py-4 px-8 rounded-full font-black shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all duration-300 text-[10px] uppercase tracking-[0.2em]"
                     >
-                        <Download className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
-                        Instalar Aplicativo
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary via-purple-500 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="relative flex items-center gap-2.5">
+                            <Download className="w-4 h-4 text-white group-hover:translate-y-0.5 transition-transform" />
+                            <span>Instalar Aplicativo</span>
+                        </div>
                     </button>
                 </div>
 
