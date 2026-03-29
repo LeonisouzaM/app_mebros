@@ -39,4 +39,16 @@ export default defineConfig({
       }
     })
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'zustand'],
+          pdf: ['@react-pdf-viewer/core', '@react-pdf-viewer/default-layout', 'pdfjs-dist'],
+          emoji: ['emoji-picker-react'],
+          supabase: ['@supabase/supabase-js']
+        }
+      }
+    }
+  }
 })
