@@ -236,7 +236,7 @@ export default function Home() {
                                 Área de Membros
                             </span>
                             <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
-                                Olá, {user?.name?.split(' ')[0]}!
+                                Olá, <span className="text-primary">{user?.name?.split(' ')[0]}</span>!
                             </h1>
                             <p className="text-slate-500 mt-1 font-medium text-sm">
                                 Continue sua jornada de aprendizado hoje.
