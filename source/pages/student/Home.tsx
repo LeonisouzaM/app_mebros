@@ -27,28 +27,10 @@ export default function Home() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [startY, setStartY] = useState(0);
 
-    const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-
     // Sync URL Product ID with Store for Community/Feed compatibility
     useEffect(() => {
         setCurrentProductId(urlProductId);
     }, [urlProductId, setCurrentProductId]);
-
-    // Filter banners based on active products
-    const activeBanners = useMemo(() => {
-        return products
-            .filter(p => (user?.accessibleProducts?.includes(p.id) || (p.hotmartId && user?.accessibleProducts?.includes(p.hotmartId))) && p.coverUrl)
-            .map(p => p.coverUrl) as string[];
-    }, [products, user?.accessibleProducts]);
-
-    useEffect(() => {
-        if (activeBanners.length > 1) {
-            const timer = setInterval(() => {
-                setCurrentBannerIndex((prev) => (prev + 1) % activeBanners.length);
-            }, 5000);
-            return () => clearInterval(timer);
-        }
-    }, [activeBanners.length]);
 
     useEffect(() => {
         fetchInitialData();
@@ -233,34 +215,6 @@ export default function Home() {
                             />
                         </div>
                     </section>
-
-                    {/* Premium 3D Banner */}
-                    {activeBanners.length > 0 && (
-                        <section className="relative w-full">
-                            <div className="relative h-60 md:h-80 w-full overflow-hidden rounded-[32px] shadow-2xl shadow-primary/10 border border-white/40">
-                                {activeBanners.map((banner, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`absolute inset-0 transition-opacity duration-1000 ${idx === currentBannerIndex ? 'opacity-100' : 'opacity-0'}`}
-                                    >
-                                        <img src={banner} alt="Banner" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-                                    </div>
-                                ))}
-                                
-                                {activeBanners.length > 1 && (
-                                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-                                        {activeBanners.map((_, idx) => (
-                                            <div 
-                                                key={idx}
-                                                className={`h-1 rounded-full transition-all duration-300 ${idx === currentBannerIndex ? 'bg-white w-6' : 'bg-white/40 w-1.5'}`} 
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-                    )}
 
                     {visibleProducts.length === 0 ? (
                         <div className="card-modern p-12 text-center bg-white/50 border-dashed border-slate-200">
