@@ -103,7 +103,7 @@ export default function Community() {
 
     const handlePostComment = (e: React.FormEvent) => {
         e.preventDefault();
-        const pid = targetProductId || currentProductId;
+        const pid = targetProductId || activeProductId;
         if (!newComment.trim() || !user || !pid) return;
 
         addComment({
@@ -119,7 +119,7 @@ export default function Community() {
     };
 
     const handlePostReply = (parentId: string) => {
-        const pid = currentProductId;
+        const pid = activeProductId;
         if (!replyText.trim() || !user || !pid) return;
 
         addComment({
@@ -134,7 +134,9 @@ export default function Community() {
         setReplyingTo(null);
     };
 
-    if (!currentProductId && !isAdmin) {
+    const activeProductId = currentProductId || (!isAdmin && accessibleProductsList.length === 1 ? accessibleProductsList[0].id : null);
+
+    if (!activeProductId && !isAdmin) {
         return (
             <div className="pt-6 px-4 md:px-0">
                 <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
@@ -155,7 +157,7 @@ export default function Community() {
                 </p>
             </header>
 
-            {!currentProductId && isAdmin ? (
+            {!activeProductId && isAdmin ? (
                 <div className="card-modern p-10 text-center bg-primary/5 border-primary/10 mb-8">
                     <p className="text-primary font-bold text-sm">Selecione um produto acima para ver e postar na comunidade.</p>
                 </div>

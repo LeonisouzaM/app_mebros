@@ -49,13 +49,23 @@ export default function Feed() {
         return parts;
     };
 
-    useEffect(() => {
-        if (currentProductId) {
-            fetchFeed(currentProductId);
-        }
-    }, [currentProductId, fetchFeed]);
+    const products = useStore((state) => state.products);
+    const user = useStore((state) => state.currentUser);
+    const isAdmin = user?.role === 'admin';
+    const accessibleProductsList = isAdmin
+        ? products
+        : products.filter(p =>
+            user?.accessibleProducts?.includes(p.id) || (p.hotmartId && user?.accessibleProducts?.includes(p.hotmartId))
+        );
+    const activeProductId = currentProductId || (!isAdmin && accessibleProductsList.length === 1 ? accessibleProductsList[0].id : null);
 
-    if (!currentProductId) {
+    useEffect(() => {
+        if (activeProductId) {
+            fetchFeed(activeProductId);
+        }
+    }, [activeProductId, fetchFeed]);
+
+    if (!activeProductId && !isAdmin) {
         return (
             <div className="pt-6 px-4 md:px-0">
                 <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
@@ -63,6 +73,16 @@ export default function Feed() {
                 </div>
             </div>
         );
+    }
+
+    if (!activeProductId && isAdmin) {
+         return (
+             <div className="pt-6 px-4 md:px-0">
+                 <div className="bg-white p-8 rounded-2xl text-center shadow-sm border border-surface-200">
+                     <p className="text-text-muted text-lg font-bold">Por favor, acesse a página inicial e selecione um curso para visualizar seu mural.</p>
+                 </div>
+             </div>
+         );
     }
 
     return (
