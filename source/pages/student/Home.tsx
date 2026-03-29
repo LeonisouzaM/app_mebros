@@ -216,7 +216,7 @@ export default function Home() {
                     <section className="flex items-center justify-between mb-2">
                         <div>
                              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest inline-block mb-3">
-                                Mounjaro Gelatina
+                                Área de Membros
                             </span>
                             <h1 className="text-4xl font-display font-black text-slate-900 tracking-tight">
                                 Olá, {user?.name?.split(' ')[0]}!

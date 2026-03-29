@@ -135,7 +135,7 @@ export default function Profile() {
             </div>
 
             <div className="mt-12 text-center text-[11px] font-black text-slate-400 uppercase tracking-[0.3em]">
-                Versão 2.4.0 • Mounjaro Gelatina
+                Versão 2.4.0 • Plataforma Oficial
             </div>
         </div>
     );

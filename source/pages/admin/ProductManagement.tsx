@@ -158,7 +158,7 @@ export default function ProductManagement() {
                     Gerenciar Produtos
                 </h1>
                 <p className="text-sm text-text-muted mt-1">
-                    Crie e edite as áreas de membros separadas (ex: Mounjaro Gelatina, Adestramento Canino).
+                    Crie e edite as áreas de membros separadas (ex: Curso de Inglês, Adestramento Canino).
                 </p>
             </header>
 

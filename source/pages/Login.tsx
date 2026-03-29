@@ -160,7 +160,7 @@ export default function Login() {
 
                 <footer className="mt-16 text-center animate-fade-up">
                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em] flex items-center justify-center gap-2">
-                        <Shield className="w-3 h-3" /> 2026 Mounjaro Gelatina • Seguro
+                        <Shield className="w-3 h-3" /> 2026 • Seguro
                     </p>
                 </footer>
             </div>
