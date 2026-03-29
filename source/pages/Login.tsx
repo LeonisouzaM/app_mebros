@@ -169,31 +169,31 @@ export default function Login() {
             {showInstallModal && (
                 <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-in fade-in duration-500">
                     <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" onClick={() => setShowInstallModal(false)} />
-                    <div className="relative bg-white/90 backdrop-blur-2xl rounded-[48px] p-10 max-w-[480px] w-full shadow-2xl animate-in zoom-in-95 duration-500 overflow-hidden border border-white">
-                        <div className="text-center space-y-8">
-                            <div className="space-y-3">
-                                <span className="bg-primary/10 text-primary px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest inline-block border border-primary/10">PWA Tutorial</span>
-                                <h3 className="text-4xl font-display font-black text-slate-950 tracking-tight">App no Celular</h3>
-                                <p className="text-[11px] font-black text-slate-500 uppercase tracking-[0.15em] leading-loose px-4">
-                                    Siga o tutorial abaixo para adicionar à sua tela de início.
-                                </p>
-                            </div>
-                            
-                            <div className="rounded-[40px] overflow-hidden border-[8px] border-white shadow-2xl aspect-[9/16] max-h-[50vh] mx-auto relative bg-slate-100 group">
-                                <video 
-                                    src="/tutorial.mp4" 
-                                    autoPlay 
-                                    loop 
-                                    muted 
-                                    playsInline 
-                                    className="w-full h-full object-cover"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
-                            </div>
+                    <div className="relative bg-white/90 backdrop-blur-2xl rounded-[32px] md:rounded-[48px] p-6 md:p-8 max-w-[420px] w-full h-[90vh] md:h-auto md:max-h-[90vh] shadow-2xl animate-in zoom-in-95 duration-500 overflow-hidden border border-white flex flex-col">
+                        <div className="text-center flex-shrink-0 mb-4 md:mb-6">
+                            <span className="bg-primary/10 text-primary px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest inline-block border border-primary/10 mb-2 md:mb-3">Tutorial</span>
+                            <h3 className="text-2xl md:text-3xl font-display font-black text-slate-950 tracking-tight mb-2">Instalar Aplicativo</h3>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] px-2 leading-relaxed">
+                                Siga os passos abaixo para adicionar à tela de início
+                            </p>
+                        </div>
+                        
+                        <div className="flex-1 min-h-0 overflow-hidden border-4 md:border-[8px] border-white shadow-xl relative bg-slate-100 rounded-[28px] md:rounded-[36px] w-full mx-auto max-w-[300px] flex items-center justify-center">
+                            <video 
+                                src="/tutorial.mp4" 
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+                        </div>
 
+                        <div className="flex-shrink-0 mt-4 md:mt-6">
                             <button 
                                 onClick={() => setShowInstallModal(false)}
-                                className="bg-primary text-white w-full py-6 rounded-[28px] text-[12px] font-black uppercase tracking-[0.25em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all"
+                                className="bg-primary text-white w-full py-4 md:py-5 rounded-[20px] md:rounded-[24px] text-[11px] md:text-[12px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all"
                             >
                                 Entendi, vamos lá!
                             </button>
