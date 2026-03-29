@@ -127,7 +127,7 @@ export default function ProductManagement() {
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Imagem de Capa (Quadrada - Ideal 512x512)</label>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Imagem de Capa (Recomendado: 1280x720 - Proporção 16:9)</label>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <div className="flex-1 space-y-2">
                                 <input
@@ -164,7 +164,7 @@ export default function ProductManagement() {
                                         {coverUrl ? 'Trocar Capa' : 'Fazer Upload da Capa'}
                                     </label>
                                     {coverUrl && (
-                                        <div className="h-12 w-12 rounded-lg overflow-hidden border border-surface-200 shadow-sm">
+                                        <div className="h-10 w-16 rounded-lg overflow-hidden border border-surface-200 shadow-sm">
                                             <img src={coverUrl} alt="Preview" className="w-full h-full object-cover" />
                                         </div>
                                     )}
