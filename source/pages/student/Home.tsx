@@ -231,7 +231,7 @@ export default function Home() {
                             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                                 {visibleProducts.map(product => (
                                     <Link key={product.id} to={`/?p=${product.id}`} className="card-modern group flex flex-col h-full overflow-hidden border-none ring-1 ring-slate-100">
-                                        <div className="relative aspect-[16/10] overflow-hidden bg-slate-50 p-3">
+                                        <div className="relative aspect-square overflow-hidden bg-slate-50 p-3">
                                             {product.coverUrl ? (
                                                 <img 
                                                     src={product.coverUrl}
